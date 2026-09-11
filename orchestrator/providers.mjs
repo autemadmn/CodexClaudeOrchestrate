@@ -68,7 +68,7 @@ function claudeToolArgs(policy, opts) {
 async function callClaude({ cfg, system, prompt, schema, cwd, policy, timeoutMs, opts }) {
   const bin = claudeBinary();
   if (!bin) throw new Error("claude CLI not found on PATH");
-  const args = ["-p", "--model", cfg.model, "--effort", cfg.reasoning, "--output-format", "json", "--no-session-persistence", "--permission-prompts", "none", "--max-budget-usd", String(cfg.max_budget_usd)];
+  const args = ["-p", "--model", cfg.model, "--effort", cfg.reasoning, "--output-format", "json", "--no-session-persistence", "--max-budget-usd", String(cfg.max_budget_usd)];
   if (schema) args.push("--json-schema", JSON.stringify(schema));
   if (system) args.push("--append-system-prompt", system);
   for (const d of opts.addDirs || []) args.push("--add-dir", d);

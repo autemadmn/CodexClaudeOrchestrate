@@ -1,0 +1,29 @@
+{
+  "understanding": "Append a short Glossary section to AGENTS_QUICKSTART.md defining Brain, Manager, Worker, and Run, then validate with npm test.",
+  "scope": [
+    "Add a final Glossary section with concise definitions: Brain directs scope and completion; Manager coordinates work and review; Worker implements a bounded task; Run is one tracked execution of the orchestration pipeline for an objective.",
+    "Run npm test and verify the feature diff contains only the requested documentation change."
+  ],
+  "out_of_scope": [
+    "Modifying any other file.",
+    "Changing existing documentation content, implementation, dependencies, or tests."
+  ],
+  "priorities": [
+    "Keep definitions short and consistent with the documented role hierarchy.",
+    "Preserve all existing content and append the section at the end.",
+    "Obtain passing npm test results and QA approval."
+  ],
+  "managers": [
+    "implementation-manager",
+    "qa-manager"
+  ],
+  "constraints": [
+    "Only AGENTS_QUICKSTART.md may be modified.",
+    "Test command: npm test.",
+    "No new dependencies or architectural changes.",
+    "Respect MAX_TASKS_PER_RUN=10, MAX_PARALLEL_WORKERS=3, and MAX_FIX_ATTEMPTS=3."
+  ],
+  "proceed": true,
+  "questions_for_human": [],
+  "risk_level": "low"
+}
