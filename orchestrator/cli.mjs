@@ -267,7 +267,9 @@ function cmdDoctor() {
   if (!c.loggedIn) failures++;
   if (c.available) {
     const flags = claudeSupportedFlags();
-    (flags.permissionPrompts ? ok : warn)("claude flags", true, flags.permissionPrompts ? "--permission-prompts supported (strict deny of unlisted tool permissions)" : "--permission-prompts not supported by this CLI version; -p mode still cannot grant permissions, worker allowlist/denylist apply");
+    const detail = flags.permissionPrompts ? "--permission-prompts supported (strict deny of unlisted tool permissions)" : "--permission-prompts not supported by this CLI version; -p mode still cannot grant permissions, worker allowlist/denylist apply";
+    if (flags.permissionPrompts) ok("claude flags", true, detail);
+    else warn("claude flags", detail);
   }
   // codex
   const x = codexStatus();
