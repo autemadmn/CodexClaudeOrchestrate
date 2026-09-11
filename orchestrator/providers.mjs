@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { SCHEMAS_DIR, readJson, writeJson, nowIso, appendJsonl } from "./util.mjs";
 import { assertValid } from "./validate.mjs";
 import { claudeBinary, codexBinary } from "./config.mjs";
@@ -65,10 +65,24 @@ function claudeToolArgs(policy, opts) {
   throw new Error(`unknown tool policy ${policy}`);
 }
 
+let claudeFlagsCache = null;
+/** Flags whose availability depends on the installed Claude CLI version (checked once via --help). */
+export function claudeSupportedFlags() {
+  if (claudeFlagsCache) return claudeFlagsCache;
+  let help = "";
+  try {
+    help = execFileSync(claudeBinary(), ["--help"], { encoding: "utf8", timeout: 20000, stdio: ["ignore", "pipe", "ignore"] });
+  } catch {}
+  claudeFlagsCache = { permissionPrompts: help.includes("--permission-prompts") };
+  return claudeFlagsCache;
+}
+
 async function callClaude({ cfg, system, prompt, schema, cwd, policy, timeoutMs, opts }) {
   const bin = claudeBinary();
   if (!bin) throw new Error("claude CLI not found on PATH");
   const args = ["-p", "--model", cfg.model, "--effort", cfg.reasoning, "--output-format", "json", "--no-session-persistence", "--max-budget-usd", String(cfg.max_budget_usd)];
+  // Newer CLIs: deny anything not pre-allowed instead of waiting for a prompt nobody can answer. Older CLIs deny by default in -p mode.
+  if (claudeSupportedFlags().permissionPrompts) args.push("--permission-prompts", "none");
   if (schema) args.push("--json-schema", JSON.stringify(schema));
   if (system) args.push("--append-system-prompt", system);
   for (const d of opts.addDirs || []) args.push("--add-dir", d);

@@ -6,6 +6,7 @@ import { resolveModels, loadRawConfig, codexStatus, claudeStatus, codexBinary, c
 import { loadTasks, saveTasks, getTask, setStatus } from "./tasks.mjs";
 import { createRun, loadRun, saveRun, latestRunId, drive, runDir } from "./run.mjs";
 import { listSkills, auditSkill, approveSkill, formatAudit, loadRegistry } from "./skills.mjs";
+import { claudeSupportedFlags } from "./providers.mjs";
 import * as g from "./git.mjs";
 
 const HELP = `agents — multi-agent development system (Brain -> Managers -> Workers -> Review -> QA -> Brain)
@@ -264,12 +265,23 @@ function cmdDoctor() {
   if (!c.available) failures++;
   ok("claude auth", c.loggedIn, c.loggedIn ? `logged in (${c.detail})` : "not logged in — run `claude auth login` or set ANTHROPIC_API_KEY");
   if (!c.loggedIn) failures++;
+  if (c.available) {
+    const flags = claudeSupportedFlags();
+    (flags.permissionPrompts ? ok : warn)("claude flags", true, flags.permissionPrompts ? "--permission-prompts supported (strict deny of unlisted tool permissions)" : "--permission-prompts not supported by this CLI version; -p mode still cannot grant permissions, worker allowlist/denylist apply");
+  }
   // codex
   const x = codexStatus();
   ok("codex CLI", x.available, x.available ? `${x.bin} ${safeVersion(x.bin)}` : x.detail);
   if (x.available) {
     if (x.loggedIn) ok("codex auth", true, `authenticated (${x.detail})`);
-    else warn("codex auth", `${x.detail} — run \`npx codex login\`; brain/worker will fall back to claude until then`);
+    else {
+      let pinned = [];
+      try {
+        const raw = loadRawConfig();
+        pinned = ["brain", "manager", "worker"].filter((r) => raw.roles[r].provider === "codex" || process.env[`${r.toUpperCase()}_PROVIDER`] === "codex");
+      } catch {}
+      warn("codex auth", `${x.detail} — run \`npx codex login\`; ${pinned.length ? `roles pinned to codex (${pinned.join(", ")}) will FAIL at their first call` : "brain/worker will fall back to claude until then"}`);
+    }
   }
   // credentials presence (never printed)
   const cred = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "CODEX_API_KEY"].map((k) => `${k}=${process.env[k] ? "set" : "unset"}`).join(" ");
@@ -283,7 +295,9 @@ function cmdDoctor() {
     for (const r of ["brain", "manager", "worker"]) {
       const m = models.roles[r];
       const providerOk = m.provider === "claude" ? c.loggedIn : m.provider === "codex" ? x.loggedIn : true;
-      (providerOk ? ok : warn)(`model ${r}`, providerOk, `${m.provider}/${m.model} reasoning=${m.reasoning} budget=$${m.max_budget_usd}${m.fallbackNote ? " [" + m.fallbackNote + "]" : ""}`);
+      const detail = `${m.provider}/${m.model} reasoning=${m.reasoning} budget=$${m.max_budget_usd}${m.fallbackNote ? " [" + m.fallbackNote + "]" : ""}`;
+      if (providerOk) ok(`model ${r}`, true, detail);
+      else warn(`model ${r}`, `${detail} — provider not authenticated`);
     }
     ok("limits", true, Object.entries(models.limits).map(([k, v]) => `${k}=${v}`).join(" "));
   } catch (err) {

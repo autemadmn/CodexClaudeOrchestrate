@@ -108,6 +108,12 @@ Edita `.ai/config.json` (o usa variables de entorno como `MODEL_WORKER=gpt-5.6-t
 | Managers | `claude-opus-5` (high) | — |
 | Workers | `gpt-5.6-luna` (medium) | `claude-sonnet-5` |
 
+## Windows
+
+- Funciona con PowerShell o cmd: los comandos de test de cada tarea se ejecutan con `cmd.exe`, así que escríbelos como en Windows (`npm test`, `npx vitest run`, …). En Linux/macOS se usan con `bash`.
+- Requisitos: Git para Windows (los workers usan `git worktree`), Node 22+, Claude Code CLI y `npm install` (instala `codex.exe` en `node_modules`).
+- Si `agents doctor` muestra `claude flags ⚠`, tu Claude CLI es anterior y no admite `--permission-prompts`; el sistema lo omite automáticamente y sigue aplicando la lista de herramientas permitidas/denegadas del worker.
+
 ## Problemas frecuentes
 
 - **"Working tree is not clean"**: guarda tus cambios (`git add -A && git commit -m "wip"`) y vuelve a lanzar.
