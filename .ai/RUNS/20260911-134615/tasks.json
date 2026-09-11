@@ -1,0 +1,60 @@
+[
+  {
+    "id": "TASK-001",
+    "title": "Add unit tests for slugify() and truncate() in orchestrator/test/util.test.mjs",
+    "description": "Create exactly one new file, `orchestrator/test/util.test.mjs`, with unit tests for the two pure helpers `slugify(text, max = 40)` and `truncate(text, max)` exported by `orchestrator/util.mjs`. This change is STRICTLY ADDITIVE: one file created, zero files modified.\n\nRead `orchestrator/util.mjs:60-78` first and derive every assertion from that source, not from intuition. Match the idiom of `orchestrator/test/planner.test.mjs:1-5`: ESM, flat top-level `test(\"...\", () => { ... })` calls (no `describe`), and exactly these imports:\n  import { test } from \"node:test\";\n  import assert from \"node:assert/strict\";\n  import { slugify, truncate } from \"../util.mjs\";\n\ntruncate() implementation under test:\n  if (!text) return \"\"; if (text.length <= max) return text; return text.slice(0, max) + `\\n... [truncated ${text.length - max} chars]`;\nCover: (1) falsy inputs \"\", undefined, null, 0 each return \"\" without throwing; (2) text shorter than max returned unchanged; (3) boundary text.length === max returned unchanged with NO suffix; (4) text longer than max returns the exact full string, asserted literally, e.g. assert.equal(truncate(\"abcdef\", 5), \"abcde\\n... [truncated 1 chars]\"); (5) max === 0 with \"abc\" returns \"\\n... [truncated 3 chars]\" (empty prefix, suffix still appended); (6) multi-line input is sliced byte-for-byte by slice(0, max) with no special newline handling.\n\nslugify() pipeline under test: toLowerCase() -> replace(/[^a-z0-9]+/g, \"-\") -> replace(/^-+|-+$/g, \"\") -> slice(0, max) -> || \"objective\".\nCover: (1) slugify(\"Hello World\") === \"hello-world\"; (2) runs collapse and edge dashes trimmed: slugify(\"  ---Hello,   World!!! ---  \") === \"hello-world\"; (3) digits survive: slugify(\"TASK-001 Fix Bug\") === \"task-001-fix-bug\"; (4) already-slug input is unchanged (idempotent for \"hello-world\"); (5) non-ASCII is DROPPED, not transliterated: slugify(\"café\") === \"caf\" and slugify(\"日本語\") === \"objective\" (do NOT assert \"cafe\"); (6) \"objective\" fallback for \"\", \"!!!\", \"---\", and for slugify(\"hello world\", 0); (7) default max is 40: slugify(\"a\".repeat(50)) === \"a\".repeat(40), and explicit max works: slugify(\"hello world\", 5) === \"hello\".\n\nMANDATORY quirk test (trim-before-slice): truncation happens AFTER the edge-dash trim, so the result can end with \"-\". For the input \"a b c d e f g h i j k l m n o p q r s t u\" (21 single-letter words) the untruncated slug is 41 chars, so slugify(...) returns a 40-char string ENDING IN \"-\". Assert the real value (length 40 and endsWith(\"-\"), or the exact literal). Do NOT assert a re-trimmed value.\n\nOptional: slugify(undefined) / slugify(null) throw TypeError (no falsy guard, unlike truncate). If you include this, use assert.throws(() => slugify(undefined), TypeError) and name the test so it reads as documenting current behavior.\n\nDo NOT encode as tests and do NOT fix: truncate(\"abc\") with max omitted returns \"abc\\n... [truncated NaN chars]\", and a negative max drops trailing chars while reporting an inflated count. Per DEC-003, report these latent quirks in your task summary as technical debt instead.\n\nTests must be deterministic: no filesystem writes, no network, no temp dirs, no timers, no dependence on cwd or the clock. Importing util.mjs runs findRepoRoot() at module load; that is pre-existing and harmless — do not work around it.\n\nFinish by running `npm test` and `git status --porcelain`; the latter must show exactly one entry for orchestrator/test/util.test.mjs and zero `M` entries.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P1",
+    "dependencies": [],
+    "allowed_files": [
+      "orchestrator/test/util.test.mjs"
+    ],
+    "context_files": [
+      "orchestrator/util.mjs",
+      "orchestrator/test/planner.test.mjs",
+      "orchestrator/test/guardrails.test.mjs",
+      "package.json",
+      ".ai/DECISIONS/DEC-003-test-observed-behavior-including-quirks-rather-tha.md"
+    ],
+    "acceptance_criteria": [
+      "orchestrator/test/util.test.mjs exists and is the only file added; `git status --porcelain` shows a single `??`/`A` entry for it and zero `M` entries.",
+      "The file imports only `node:test` and `node:assert/strict` plus `import { slugify, truncate } from \"../util.mjs\";` and uses flat top-level test() calls with no describe blocks, matching orchestrator/test/planner.test.mjs.",
+      "`npm test` exits 0; all pre-existing guardrails/planner/routing tests still pass and every new test is reported as passing by the node:test runner.",
+      "truncate coverage: \"\", undefined, null and 0 each return \"\"; shorter-than-max returns input unchanged; text.length === max returns input unchanged with no suffix; longer-than-max is asserted as one exact full string equal to text.slice(0, max) + \"\\n... [truncated N chars]\" with N = text.length - max; max === 0 on non-empty text returns the suffix with an empty prefix; a multi-line input case is present.",
+      "slugify coverage: basic lowercase/space case; collapsed punctuation runs with edge dashes trimmed; digits preserved; already-slug input unchanged; slugify(\"café\") === \"caf\"; \"objective\" fallback for empty, punctuation-only and max === 0 inputs; default max 40 via \"a\".repeat(50) -> \"a\".repeat(40); explicit custom max.",
+      "A test covers the trim-before-slice quirk, asserting the real 40-char result ending in \"-\" for the 21-single-letter-word input, not a re-trimmed value.",
+      "orchestrator/util.mjs, package.json and package-lock.json are byte-identical to HEAD; no dependency added.",
+      "Tests are deterministic: no filesystem writes, network calls, timers, cwd or clock dependence; two consecutive `npm test` runs give identical results.",
+      "The worker summary reports the latent util.mjs quirks (truncate with omitted or negative max, slugify throwing TypeError on undefined/null) as technical debt, with no change made to util.mjs."
+    ],
+    "test_commands": [
+      "npm test",
+      "git status --porcelain"
+    ],
+    "forbidden": [
+      "Modifying orchestrator/util.mjs or any existing file, including 'obvious' fixes for the documented quirks.",
+      "Modifying package.json, package-lock.json, CI config, or existing test files.",
+      "Adding dependencies or test frameworks other than the built-in node:test and node:assert/strict.",
+      "Creating additional files (helpers, fixtures, snapshots, temp files) anywhere in the repo.",
+      "Placing the file outside orchestrator/test/ or naming it without the .test.mjs suffix (it would silently not run).",
+      "Asserting wished-for behavior instead of observed behavior — e.g. \"cafe\" for \"café\", or a re-trimmed slug without the trailing \"-\".",
+      "Encoding the omitted-max NaN or negative-max truncate quirks as tests.",
+      "Adding tests for other util.mjs exports (globToRegExp, matchesAny, globsOverlap, readJson, ...).",
+      "Any filesystem, network, timer or clock dependence in the tests."
+    ],
+    "approval_category": "AUTO_APPROVED",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-134615",
+    "created_at": "2026-09-11T13:49:01.411Z",
+    "updated_at": "2026-09-11T13:49:01.414Z"
+  }
+]
