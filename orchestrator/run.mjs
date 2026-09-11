@@ -62,7 +62,9 @@ async function agent(run, { label, role, roleKey, prompt, schemaName, cwd = ROOT
 
 function runCommand(cmd, cwd, timeoutMs = 600000) {
   return new Promise((resolve) => {
-    execFile("bash", ["-lc", cmd], { cwd, timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024, env: { ...process.env, CI: "1" } }, (err, stdout, stderr) => {
+    const shell = process.platform === "win32" ? (process.env.ComSpec || "cmd.exe") : "bash";
+    const shellArgs = process.platform === "win32" ? ["/d", "/s", "/c", cmd] : ["-lc", cmd];
+    execFile(shell, shellArgs, { cwd, timeout: timeoutMs, maxBuffer: 16 * 1024 * 1024, env: { ...process.env, CI: "1" } }, (err, stdout, stderr) => {
       resolve({ cmd, code: err ? (typeof err.code === "number" ? err.code : 1) : 0, output: `${stdout}\n${stderr}`.trim(), timedOut: !!(err && err.killed) });
     });
   });
