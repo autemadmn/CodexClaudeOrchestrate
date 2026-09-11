@@ -4,6 +4,14 @@
 
 **Beta parcial: este tramo NO completa CORE-7 (§20.2).** Faltan el centro económico completo, persistencia, app y validación en dispositivo/campo.
 
+## Taxonomía de etiquetas (DEC-006)
+
+- **VERIFIED** — comando ejecutado en este host y salida real registrada en este documento.
+- **UNVERIFIED-BUILD** — código escrito, pero no compilado aquí por falta de toolchain Swift; no es EXTERNO.
+- **UNVERIFIED** — entregable no entregado o verificación omitida; no es VERIFIED ni EXTERNO. En G2 se conserva la causa explícita.
+- **EXTERNO** — depende de Apple, hardware, credenciales o pruebas de campo; su procedimiento está en `FIELD_TESTS.md`.
+- **NO ENTREGADO** — entregable que todavía no existe en el código congelado; puede formar parte de lo RECORTADO.
+
 ## Evidencia de comandos
 
 ### Gate G0 — Swift — UNVERIFIED-BUILD
@@ -44,7 +52,7 @@ Salida final real:
 
 Verifica el orquestador, no la compilación de CostCore.
 
-### Gate G2 — esquema — UNVERIFIED-BUILD
+### Gate G2 — esquema — UNVERIFIED
 
 La verificación se saltó porque `EuroGas/Packages/CostCore/v1_initial.sql` no existe todavía. No se pudo aplicar el DDL ni ejecutar los rechazos de constraints contra SQLite; no se afirma VERIFIED ni EXTERNO.
 
@@ -55,8 +63,8 @@ Cada fila tiene exactamente una etiqueta.
 | Entregable | Etiqueta | Evidencia o limitación |
 |---|---|---|
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
-| CostCore completo (cálculo, reparto, ledger) | **UNVERIFIED-BUILD** | No implementado en el código congelado |
-| Esquema v1 / G2 | **UNVERIFIED-BUILD** | Falta `v1_initial.sql`; causa indicada arriba |
+| CostCore completo (cálculo, reparto, ledger) | **NO ENTREGADO** | No existe código de cálculo, reparto ni ledger en el código congelado |
+| Esquema v1 / G2 | **UNVERIFIED** | Falta `v1_initial.sql`; causa indicada arriba |
 | Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0 |
 | Xcode | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
 | iPhone | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
@@ -68,7 +76,7 @@ Los cinco elementos EXTERNO no se han probado; sus procedimientos están en `FIE
 
 ## RECORTADO
 
-- Motor de coste completo, reparto, ledger y persistencia: recortados; sólo existe el contrato monetario.
+- El centro económico completo y la persistencia quedan fuera del entregable congelado; sólo existe el contrato monetario.
 - `v1_initial.sql` y G2: recortados/no entregados.
 - S3 (GPS y máquina de estados): recortado.
 

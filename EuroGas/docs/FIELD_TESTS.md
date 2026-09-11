@@ -1,5 +1,7 @@
 # Procedimientos externos — EXTERNO
 
+Estos cinco procedimientos figuran como **EXTERNO** en [STATUS.md](STATUS.md) y no se han ejecutado; la referencia es bidireccional.
+
 ## Apertura en Xcode — EXTERNO
 
 **Se necesita:** un Mac con una versión compatible de Xcode y el repositorio.
