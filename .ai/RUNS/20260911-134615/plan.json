@@ -1,0 +1,41 @@
+{
+  "understanding": "Smoke test of the orchestration pipeline on a trivial, low-risk task: create a new test file `orchestrator/test/util.test.mjs` using the built-in `node:test` runner, covering the exported `slugify()` and `truncate()` helpers from `orchestrator/util.mjs`. Strictly additive — no existing file may be modified. Verification is `npm test` passing. No product decision is involved, so no human input is required.",
+  "scope": [
+    "Create one new file: orchestrator/test/util.test.mjs",
+    "Unit tests for slugify(): typical strings, spaces/punctuation, casing, accents/unicode if supported, empty string, and other edge cases actually observable from util.mjs behavior",
+    "Unit tests for truncate(): string shorter than limit, equal to limit, longer than limit (including suffix/ellipsis behavior as implemented), zero/small limits, empty string",
+    "Use node:test (test/describe/it) with node:assert/strict, matching the idiom of any existing tests in the repo",
+    "Verify the full suite passes via `npm test` with no regressions"
+  ],
+  "out_of_scope": [
+    "Any modification to orchestrator/util.mjs (including 'obvious' bug fixes — report instead)",
+    "Modifying package.json, test scripts, CI config, or any other existing file",
+    "Adding test frameworks, assertion libraries, or any new dependency",
+    "Tests for other helpers/modules in the orchestrator",
+    "Refactoring, renaming, or restructuring existing code or test layout",
+    "Documentation, ROADMAP or feature work beyond the smoke test"
+  ],
+  "priorities": [
+    "1. Read util.mjs first and test the actual implemented behavior — never assume semantics; document real behavior, do not encode wishful behavior",
+    "2. Strictly additive change: exactly one new file created, zero files modified",
+    "3. `npm test` passes cleanly, including all pre-existing tests",
+    "4. Tests are deterministic, dependency-free, and readable; clear test names per case",
+    "5. If util.mjs appears buggy or the helpers are not exported, report it in the summary and escalate rather than editing util.mjs"
+  ],
+  "managers": [
+    "implementation-manager",
+    "qa-manager"
+  ],
+  "constraints": [
+    "Only `node:test` and `node:assert` — no new dependencies (a new dependency would be REQUIRES_BRAIN_APPROVAL and is rejected in advance for this run)",
+    "Node >= 22; orchestrator has no runtime dependencies — keep it that way",
+    "Exactly one file created: orchestrator/test/util.test.mjs; any other file touched is out of scope and must be escalated",
+    "Test command is `npm test` — do not change it",
+    "Work on a feature branch per the standard flow; no force-push, no history rewrite",
+    "MAX_TASKS_PER_RUN=10, MAX_PARALLEL_WORKERS=3, MAX_FIX_ATTEMPTS=3",
+    "Keep the run small: this is a pipeline smoke test, not a testing-coverage initiative"
+  ],
+  "proceed": true,
+  "questions_for_human": [],
+  "risk_level": "low"
+}

@@ -1,14 +1,8 @@
 {
-  "next_id": 2,
   "tasks": [
     {
-      "id": "TASK-001",
       "title": "Add unit tests for slugify() and truncate() in orchestrator/test/util.test.mjs",
       "description": "Create exactly one new file, `orchestrator/test/util.test.mjs`, with unit tests for the two pure helpers `slugify(text, max = 40)` and `truncate(text, max)` exported by `orchestrator/util.mjs`. This change is STRICTLY ADDITIVE: one file created, zero files modified.\n\nRead `orchestrator/util.mjs:60-78` first and derive every assertion from that source, not from intuition. Match the idiom of `orchestrator/test/planner.test.mjs:1-5`: ESM, flat top-level `test(\"...\", () => { ... })` calls (no `describe`), and exactly these imports:\n  import { test } from \"node:test\";\n  import assert from \"node:assert/strict\";\n  import { slugify, truncate } from \"../util.mjs\";\n\ntruncate() implementation under test:\n  if (!text) return \"\"; if (text.length <= max) return text; return text.slice(0, max) + `\\n... [truncated ${text.length - max} chars]`;\nCover: (1) falsy inputs \"\", undefined, null, 0 each return \"\" without throwing; (2) text shorter than max returned unchanged; (3) boundary text.length === max returned unchanged with NO suffix; (4) text longer than max returns the exact full string, asserted literally, e.g. assert.equal(truncate(\"abcdef\", 5), \"abcde\\n... [truncated 1 chars]\"); (5) max === 0 with \"abc\" returns \"\\n... [truncated 3 chars]\" (empty prefix, suffix still appended); (6) multi-line input is sliced byte-for-byte by slice(0, max) with no special newline handling.\n\nslugify() pipeline under test: toLowerCase() -> replace(/[^a-z0-9]+/g, \"-\") -> replace(/^-+|-+$/g, \"\") -> slice(0, max) -> || \"objective\".\nCover: (1) slugify(\"Hello World\") === \"hello-world\"; (2) runs collapse and edge dashes trimmed: slugify(\"  ---Hello,   World!!! ---  \") === \"hello-world\"; (3) digits survive: slugify(\"TASK-001 Fix Bug\") === \"task-001-fix-bug\"; (4) already-slug input is unchanged (idempotent for \"hello-world\"); (5) non-ASCII is DROPPED, not transliterated: slugify(\"café\") === \"caf\" and slugify(\"日本語\") === \"objective\" (do NOT assert \"cafe\"); (6) \"objective\" fallback for \"\", \"!!!\", \"---\", and for slugify(\"hello world\", 0); (7) default max is 40: slugify(\"a\".repeat(50)) === \"a\".repeat(40), and explicit max works: slugify(\"hello world\", 5) === \"hello\".\n\nMANDATORY quirk test (trim-before-slice): truncation happens AFTER the edge-dash trim, so the result can end with \"-\". For the input \"a b c d e f g h i j k l m n o p q r s t u\" (21 single-letter words) the untruncated slug is 41 chars, so slugify(...) returns a 40-char string ENDING IN \"-\". Assert the real value (length 40 and endsWith(\"-\"), or the exact literal). Do NOT assert a re-trimmed value.\n\nOptional: slugify(undefined) / slugify(null) throw TypeError (no falsy guard, unlike truncate). If you include this, use assert.throws(() => slugify(undefined), TypeError) and name the test so it reads as documenting current behavior.\n\nDo NOT encode as tests and do NOT fix: truncate(\"abc\") with max omitted returns \"abc\\n... [truncated NaN chars]\", and a negative max drops trailing chars while reporting an inflated count. Per DEC-003, report these latent quirks in your task summary as technical debt instead.\n\nTests must be deterministic: no filesystem writes, no network, no temp dirs, no timers, no dependence on cwd or the clock. Importing util.mjs runs findRepoRoot() at module load; that is pre-existing and harmless — do not work around it.\n\nFinish by running `npm test` and `git status --porcelain`; the latter must show exactly one entry for orchestrator/test/util.test.mjs and zero `M` entries.",
-      "parent_task": null,
-      "assigned_manager": "implementation-manager",
-      "assigned_worker": "claude/claude-sonnet-5",
-      "status": "DONE",
       "priority": "P1",
       "dependencies": [],
       "allowed_files": [
@@ -47,45 +41,17 @@
         "Adding tests for other util.mjs exports (globToRegExp, matchesAny, globsOverlap, readJson, ...).",
         "Any filesystem, network, timer or clock dependence in the tests."
       ],
-      "approval_category": "AUTO_APPROVED",
-      "branch": "agent/TASK-001",
-      "worktree": null,
-      "attempts": 1,
-      "result": {
-        "task_id": "TASK-001",
-        "status": "completed",
-        "files_changed": [
-          "orchestrator/test/util.test.mjs"
-        ],
-        "tests_run": [
-          "npm test",
-          "git status --porcelain"
-        ],
-        "tests_passed": true,
-        "issues": [
-          "Technical debt (not fixed, per DEC-003): truncate(text) with max omitted returns a suffix reading '[truncated NaN chars]' because max is undefined and text.length - undefined is NaN. A negative max also produces a misleading truncated-count message while silently dropping trailing characters. slugify(undefined)/slugify(null) throw TypeError since the function has no falsy-input guard (unlike truncate). None of these are encoded as tests and util.mjs was left unmodified."
-        ],
-        "summary": "Created orchestrator/test/util.test.mjs with 15 flat node:test cases covering truncate() (falsy inputs, shorter/equal/longer than max, max=0, multi-line slicing) and slugify() (lowercase/hyphenate, punctuation collapse/trim, digits, idempotency, non-ASCII dropping, 'objective' fallback, default/custom max, and the mandatory trim-before-slice trailing-dash quirk for the 21-word input, plus an optional TypeError-on-undefined/null test documenting current behavior). npm test passes all 35 tests (including pre-existing guardrails/planner/routing suites); git status --porcelain shows a single untracked entry for the new file and zero modified files. util.mjs, package.json, and package-lock.json are untouched.",
-        "needs_escalation": false,
-        "escalation_reason": ""
-      },
-      "review_status": "approve",
-      "qa_status": "approve",
-      "blockers": [],
-      "run_id": "20260911-134615",
-      "created_at": "2026-09-11T13:49:01.411Z",
-      "updated_at": "2026-09-11T13:50:25.661Z",
-      "review": {
-        "task_id": "TASK-001",
-        "decision": "approve",
-        "issues": [
-          "Non-blocking: the orchestrator's `git status --porcelain` output was empty rather than showing a `??` entry, because the worker committed the new file on its branch. The diff against HEAD confirms the intended invariant: exactly one added file (orchestrator/test/util.test.mjs), zero `M` entries, util.mjs/package.json/package-lock.json untouched.",
-          "Latent util.mjs quirks correctly reported as technical debt and NOT fixed, per DEC-003 and the spec's non-goals: truncate(text) with max omitted yields '[truncated NaN chars]'; a negative max silently drops trailing chars while reporting an inflated count; slugify(undefined)/slugify(null) throw TypeError (no falsy guard, unlike truncate). Worth carrying forward as a separate hardening objective if the Brain wants util.mjs changed."
-        ],
-        "required_changes": [],
-        "summary": "Approved. Strictly additive: one new file, orchestrator/test/util.test.mjs (76 lines, 15 flat top-level test() calls, no describe), exactly the three mandated imports, matching the planner.test.mjs idiom and the `orchestrator/test/*.test.mjs` npm glob. Diff is confined to allowed_files; no dependency, no secrets, no dangerous commands, no scope creep.\n\nI re-derived each assertion from orchestrator/util.mjs:60-78 rather than trusting the worker: truncate(\"ab\\\\ncd\\\\nef\", 5) -> \"ab\\\\ncd\" + suffix with N=3 (correct, newline is the 3rd sliced char); truncate(\"abcdef\",5) and the max===0 case are asserted as exact literals; the 0/null/undefined/\"\" falsy cases and the length===max boundary (no suffix) are all right. On slugify: \"café\" -> \"caf-\" -> trimmed \"caf\" (non-ASCII dropped, not transliterated); \"日本語\" -> \"objective\"; \"TASK-001 Fix Bug\" -> \"task-001-fix-bug\"; \"a\".repeat(50) -> 40 a's; slugify(\"hello world\", 5) -> \"hello\"; \"objective\" fallback for \"\", \"!!!\", \"---\" and max===0.\n\nThe mandatory trim-before-slice quirk test is correct and asserts the real value, not a re-trimmed one: the 21-single-letter-word input produces a 41-char slug, sliced to the 40-char \"a-b-...-s-t-\" ending in \"-\", checked three ways (length, endsWith, exact literal). The optional TypeError test is present and named as documenting current behavior.\n\nTests are deterministic — pure function calls only, no fs/network/timers/cwd/clock. npm test exits 0 with all 35 tests passing, including the 20 pre-existing guardrails/planner/routing tests, which are unaffected. Every acceptance criterion is met."
-      }
+      "approval_category": "AUTO_APPROVED"
     }
   ],
-  "updated_at": "2026-09-11T13:51:41.592Z"
+  "parallelization_notes": "No parallelism: the entire deliverable is a single new file (orchestrator/test/util.test.mjs). Splitting truncate and slugify into separate tasks would force two workers onto identical allowed_files, which is prohibited, and serializing them would add coordination cost for roughly 20 minutes of work. One task, one wave, one worker.",
+  "risks": [
+    "Wishful assertions instead of observed behavior — chiefly slugify's trailing dash after trim-before-slice and truncate's exact suffix wording. Mitigated by requiring every assertion to be derived from orchestrator/util.mjs:60-78 and by making the quirk test mandatory in the acceptance criteria.",
+    "Non-ASCII results look wrong at a glance (\"café\" -> \"caf\", not \"cafe\"); a mis-assertion here produces a red suite. Called out explicitly in the task description and forbidden list.",
+    "Scope creep into 'fixing' util.mjs quirks, which would violate the strictly-additive constraint and DEC-003. Enforced by allowed_files covering only the new test file plus the `git status --porcelain` acceptance check.",
+    "A file placed outside orchestrator/test/ or missing the .test.mjs suffix would not match the npm test glob and would pass silently without running. Mitigated by requiring the new tests to appear as passing in the node:test runner output.",
+    "Otherwise very low blast radius: pure functions, no I/O, no shared state, no production code touched."
+  ],
+  "needs_escalation": false,
+  "escalation_reason": ""
 }

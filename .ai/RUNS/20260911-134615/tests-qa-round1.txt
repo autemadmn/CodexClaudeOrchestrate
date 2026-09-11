@@ -1,0 +1,140 @@
+$ npm test
+exit=0
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+TAP version 13
+# Subtest: normal task stays AUTO_APPROVED
+ok 1 - normal task stays AUTO_APPROVED
+  ---
+  duration_ms: 3.257037
+  type: 'test'
+  ...
+# Subtest: new dependency requires brain approval (escalation test)
+ok 2 - new dependency requires brain approval (escalation test)
+  ---
+  duration_ms: 0.802442
+  type: 'test'
+  ...
+# Subtest: billing / production / secrets require human approval
+ok 3 - billing / production / secrets require human approval
+  ---
+  duration_ms: 0.304924
+  type: 'test'
+  ...
+# Subtest: category never lowered below manager declaration
+ok 4 - category never lowered below manager declaration
+  ---
+  duration_ms: 0.17236
+  type: 'test'
+  ...
+# Subtest: changed files outside allowed_files or forbidden are detected
+ok 5 - changed files outside allowed_files or forbidden are detected
+  ---
+  duration_ms: 1.668451
+  type: 'test'
+  ...
+# Subtest: schema validator catches missing/enum/extra
+ok 6 - schema validator catches missing/enum/extra
+  ---
+  duration_ms: 0.682482
+  type: 'test'
+  ...
+# Subtest: independent tasks run in one wave up to maxParallel
+ok 7 - independent tasks run in one wave up to maxParallel
+  ---
+  duration_ms: 3.267525
+  type: 'test'
+  ...
+# Subtest: two tasks editing the same file are serialized (conflict test)
+ok 8 - two tasks editing the same file are serialized (conflict test)
+  ---
+  duration_ms: 0.343567
+  type: 'test'
+  ...
+# Subtest: glob overlap detection
+ok 9 - glob overlap detection
+  ---
+  duration_ms: 0.320676
+  type: 'test'
+  ...
+# Subtest: dependencies order waves
+ok 10 - dependencies order waves
+  ---
+  duration_ms: 0.32359
+  type: 'test'
+  ...
+# Subtest: unsatisfiable dependency reported
+ok 11 - unsatisfiable dependency reported
+  ---
+  duration_ms: 0.139759
+  type: 'test'
+  ...
+# Subtest: matchesAny handles globs and directories
+ok 12 - matchesAny handles globs and directories
+  ---
+  duration_ms: 0.258202
+  type: 'test'
+  ...
+# Subtest: happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final
+ok 13 - happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final
+  ---
+  duration_ms: 874.324967
+  type: 'test'
+  ...
+# Subtest: QA can reject: fix tasks are created, executed, and QA re-runs
+ok 14 - QA can reject: fix tasks are created, executed, and QA re-runs
+  ---
+  duration_ms: 1124.351198
+  type: 'test'
+  ...
+# Subtest: review request_changes triggers a worker fix attempt (retry count works)
+ok 15 - review request_changes triggers a worker fix attempt (retry count works)
+  ---
+  duration_ms: 1002.988937
+  type: 'test'
+  ...
+# Subtest: repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain
+ok 16 - repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain
+  ---
+  duration_ms: 552.916438
+  type: 'test'
+  ...
+# Subtest: conflict test: overlapping allowed_files are serialized, never in the same wave
+ok 17 - conflict test: overlapping allowed_files are serialized, never in the same wave
+  ---
+  duration_ms: 1169.68777
+  type: 'test'
+  ...
+# Subtest: escalation test: dependency change goes to the brain, billing change waits for a human
+ok 18 - escalation test: dependency change goes to the brain, billing change waits for a human
+  ---
+  duration_ms: 1393.208076
+  type: 'test'
+  ...
+# Subtest: guardrail: worker touching a forbidden file is reverted and the task fails
+ok 19 - guardrail: worker touching a forbidden file is reverted and the task fails
+  ---
+  duration_ms: 444.370591
+  type: 'test'
+  ...
+# Subtest: stop + resume: STOP marker halts the run and resume finishes it
+ok 20 - stop + resume: STOP marker halts the run and resume finishes it
+  ---
+  duration_ms: 1070.858358
+  type: 'test'
+  ...
+# Subtest: truncate returns empty string for falsy inputs
+ok 21 - truncate returns empty string for falsy inputs
+  ---
+  duration_ms: 1.987083
+  type: 'test'
+  ...
+# Subtest: truncate return
+... [truncated 2810 chars]
+
+$ git status --porcelain
+exit=0
+M .ai/TASKS.json
+?? .ai/DECISIONS/DEC-003-test-observed-behavior-including-quirks-rather-tha.md
+?? .ai/RUNS/20260911-134615/
