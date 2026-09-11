@@ -10,6 +10,12 @@ export function loadRawConfig() {
 }
 
 export function codexBinary() {
+  if (process.platform === "win32") {
+    const target = process.arch === "arm64" ? "aarch64-pc-windows-msvc" : "x86_64-pc-windows-msvc";
+    const packageName = process.arch === "arm64" ? "codex-win32-arm64" : "codex-win32-x64";
+    const localExe = path.join(ROOT, "node_modules", "@openai", packageName, "vendor", target, "bin", "codex.exe");
+    if (fs.existsSync(localExe)) return localExe;
+  }
   const local = path.join(ROOT, "node_modules", ".bin", "codex");
   if (fs.existsSync(local)) return local;
   try {
