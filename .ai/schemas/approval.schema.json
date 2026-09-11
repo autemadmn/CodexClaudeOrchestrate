@@ -1,0 +1,12 @@
+{
+  "$id": "approval.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["subject", "decision", "reason", "conditions"],
+  "properties": {
+    "subject": { "type": "string" },
+    "decision": { "type": "string", "enum": ["approve", "reject", "escalate_to_human"] },
+    "reason": { "type": "string" },
+    "conditions": { "type": "array", "items": { "type": "string" } }
+  }
+}

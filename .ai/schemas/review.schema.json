@@ -1,0 +1,13 @@
+{
+  "$id": "review.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "decision", "issues", "required_changes", "summary"],
+  "properties": {
+    "task_id": { "type": "string" },
+    "decision": { "type": "string", "enum": ["approve", "request_changes", "reject"] },
+    "issues": { "type": "array", "items": { "type": "string" } },
+    "required_changes": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" }
+  }
+}

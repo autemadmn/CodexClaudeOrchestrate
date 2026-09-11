@@ -1,0 +1,30 @@
+{
+  "$id": "task.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "description", "parent_task", "assigned_manager", "assigned_worker", "status", "priority", "dependencies", "allowed_files", "context_files", "acceptance_criteria", "test_commands", "forbidden", "approval_category", "branch", "worktree", "attempts", "result", "review_status", "qa_status", "blockers"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" },
+    "title": { "type": "string", "minLength": 3 },
+    "description": { "type": "string", "minLength": 10 },
+    "parent_task": { "type": ["string", "null"] },
+    "assigned_manager": { "type": "string", "enum": ["implementation-manager", "product-architect-manager", "qa-manager"] },
+    "assigned_worker": { "type": ["string", "null"] },
+    "status": { "type": "string", "enum": ["BACKLOG", "READY", "IN_PROGRESS", "BLOCKED", "REVIEW", "QA", "FAILED", "DONE"] },
+    "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+    "dependencies": { "type": "array", "items": { "type": "string" } },
+    "allowed_files": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "context_files": { "type": "array", "items": { "type": "string" } },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "test_commands": { "type": "array", "items": { "type": "string" } },
+    "forbidden": { "type": "array", "items": { "type": "string" } },
+    "approval_category": { "type": "string", "enum": ["AUTO_APPROVED", "REQUIRES_BRAIN_APPROVAL", "REQUIRES_HUMAN_APPROVAL"] },
+    "branch": { "type": ["string", "null"] },
+    "worktree": { "type": ["string", "null"] },
+    "attempts": { "type": "integer", "minimum": 0 },
+    "result": { "type": ["object", "null"] },
+    "review_status": { "type": ["string", "null"], "enum": [null, "pending", "approve", "request_changes", "reject"] },
+    "qa_status": { "type": ["string", "null"], "enum": [null, "pending", "approve", "request_changes", "reject"] },
+    "blockers": { "type": "array", "items": { "type": "string" } }
+  }
+}

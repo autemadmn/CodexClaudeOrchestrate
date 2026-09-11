@@ -1,0 +1,45 @@
+{
+  "$comment": "Central model/provider configuration. Env vars override: MODEL_BRAIN, MODEL_MANAGER, MODEL_WORKER, BRAIN_PROVIDER, MANAGER_PROVIDER, WORKER_PROVIDER, BRAIN_REASONING, MANAGER_REASONING, WORKER_REASONING, MAX_PARALLEL_WORKERS, MAX_FIX_ATTEMPTS, MAX_TASKS_PER_RUN, MAX_BUDGET_USD_PER_RUN. provider 'auto' = codex if Codex CLI is authenticated, else claude.",
+  "roles": {
+    "brain": {
+      "provider": "auto",
+      "model": { "codex": "gpt-6-astra", "claude": "claude-opus-5" },
+      "reasoning": "high",
+      "max_budget_usd": 2.0
+    },
+    "manager": {
+      "provider": "claude",
+      "model": { "codex": "gpt-6-astra", "claude": "claude-opus-5" },
+      "reasoning": "high",
+      "max_budget_usd": 3.0
+    },
+    "worker": {
+      "provider": "auto",
+      "model": { "codex": "gpt-5.6-luna", "claude": "claude-sonnet-5" },
+      "reasoning": "medium",
+      "max_budget_usd": 2.0
+    }
+  },
+  "limits": {
+    "MAX_PARALLEL_WORKERS": 3,
+    "MAX_FIX_ATTEMPTS": 3,
+    "MAX_TASKS_PER_RUN": 10,
+    "MAX_BUDGET_USD_PER_RUN": 25,
+    "CALL_TIMEOUT_MS": 1200000,
+    "MAX_DIFF_CHARS": 60000,
+    "MAX_CONTEXT_FILE_CHARS": 12000
+  },
+  "git": {
+    "feature_branch_prefix": "feature/",
+    "task_branch_prefix": "agent/",
+    "worktrees_dir": ".worktrees",
+    "in_place": false
+  },
+  "guardrails": {
+    "forbidden_paths": [".env", ".env.*", "**/*.pem", "**/*.key", "**/secrets/**", "**/.ssh/**", ".ai/skills/registry.json", ".ai/config.json", ".git/**"],
+    "brain_approval_paths": ["package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "requirements*.txt", "pyproject.toml", "poetry.lock", "Cargo.toml", "go.mod", "**/migrations/**", "**/auth/**", "**/schema.prisma", "**/*.sql"],
+    "human_approval_paths": ["**/billing/**", "**/payments/**", "**/infra/**", "**/terraform/**", ".github/workflows/**", "Dockerfile*", "**/*.tfstate", "**/deploy/**", "**/production/**"],
+    "brain_approval_keywords": ["new dependency", "add dependency", "migration", "architecture change", "api redesign", "auth change", "framework", "major refactor"],
+    "human_approval_keywords": ["production", "secret", "payment", "billing", "delete data", "drop table", "external account", "credential", "irreversible"]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$id": "worker_result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "status", "files_changed", "tests_run", "tests_passed", "issues", "summary", "needs_escalation", "escalation_reason"],
+  "properties": {
+    "task_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["completed", "partial", "blocked", "failed"] },
+    "files_changed": { "type": "array", "items": { "type": "string" } },
+    "tests_run": { "type": "array", "items": { "type": "string" } },
+    "tests_passed": { "type": "boolean" },
+    "issues": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "needs_escalation": { "type": "boolean" },
+    "escalation_reason": { "type": "string" }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "codex-claude-orchestrate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-agent development system: Brain (GPT Astra) -> Claude Opus managers -> Codex workers, with Git as shared state.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "bin": { "agents": "./bin/agents.mjs" },
+  "scripts": {
+    "agents": "node bin/agents.mjs",
+    "test": "node --test orchestrator/test/*.test.mjs",
+    "doctor": "node bin/agents.mjs doctor"
+  },
+  "devDependencies": {
+    "@openai/codex": "0.154.0"
+  }
+}

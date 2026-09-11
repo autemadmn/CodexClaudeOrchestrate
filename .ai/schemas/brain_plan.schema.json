@@ -1,0 +1,17 @@
+{
+  "$id": "brain_plan.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["understanding", "scope", "out_of_scope", "priorities", "managers", "constraints", "proceed", "questions_for_human", "risk_level"],
+  "properties": {
+    "understanding": { "type": "string" },
+    "scope": { "type": "array", "items": { "type": "string" } },
+    "out_of_scope": { "type": "array", "items": { "type": "string" } },
+    "priorities": { "type": "array", "items": { "type": "string" } },
+    "managers": { "type": "array", "items": { "type": "string", "enum": ["product-architect-manager", "implementation-manager", "qa-manager"] } },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "proceed": { "type": "boolean" },
+    "questions_for_human": { "type": "array", "items": { "type": "string" } },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high"] }
+  }
+}

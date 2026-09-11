@@ -1,0 +1,24 @@
+{
+  "$id": "skill_audit.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["skill", "source", "author", "purpose", "trust_tier", "files_reviewed", "permissions", "network_access", "filesystem_access", "shell_commands", "security_findings", "quality_findings", "why_this_one", "alternatives_considered", "recommendation", "recommendation_reason"],
+  "properties": {
+    "skill": { "type": "string" },
+    "source": { "type": "string" },
+    "author": { "type": "string" },
+    "purpose": { "type": "string" },
+    "trust_tier": { "type": "integer", "minimum": 0, "maximum": 3 },
+    "files_reviewed": { "type": "array", "items": { "type": "string" } },
+    "permissions": { "type": "string" },
+    "network_access": { "type": "string" },
+    "filesystem_access": { "type": "string" },
+    "shell_commands": { "type": "string" },
+    "security_findings": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["severity", "finding", "location"], "properties": { "severity": { "type": "string", "enum": ["info", "low", "medium", "high", "critical"] }, "finding": { "type": "string" }, "location": { "type": "string" } } } },
+    "quality_findings": { "type": "array", "items": { "type": "string" } },
+    "why_this_one": { "type": "string" },
+    "alternatives_considered": { "type": "array", "items": { "type": "string" } },
+    "recommendation": { "type": "string", "enum": ["approve", "needs_brain_approval", "reject"] },
+    "recommendation_reason": { "type": "string" }
+  }
+}

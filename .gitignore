@@ -1,0 +1,7 @@
+node_modules/
+.worktrees/
+.ai/tmp/
+.ai/RUNS/*/STOP
+.env
+.env.*
+*.log

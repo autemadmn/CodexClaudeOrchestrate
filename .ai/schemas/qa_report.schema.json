@@ -1,0 +1,31 @@
+{
+  "$id": "qa_report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "acceptance_criteria_met", "acceptance_criteria_unmet", "issues", "edge_cases_checked", "regressions_suspected", "required_changes", "definition_of_done_met", "summary"],
+  "properties": {
+    "decision": { "type": "string", "enum": ["approve", "request_changes", "reject"] },
+    "acceptance_criteria_met": { "type": "array", "items": { "type": "string" } },
+    "acceptance_criteria_unmet": { "type": "array", "items": { "type": "string" } },
+    "issues": { "type": "array", "items": { "type": "string" } },
+    "edge_cases_checked": { "type": "array", "items": { "type": "string" } },
+    "regressions_suspected": { "type": "array", "items": { "type": "string" } },
+    "required_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "description", "allowed_files", "acceptance_criteria", "test_commands"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "allowed_files": { "type": "array", "items": { "type": "string" } },
+          "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+          "test_commands": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "definition_of_done_met": { "type": "boolean" },
+    "summary": { "type": "string" }
+  }
+}

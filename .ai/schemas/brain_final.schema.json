@@ -1,0 +1,17 @@
+{
+  "$id": "brain_final.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["objective", "result", "completed", "failed", "blockers", "decisions", "next_recommended_action", "project_state_md", "roadmap_update"],
+  "properties": {
+    "objective": { "type": "string" },
+    "result": { "type": "string", "enum": ["SUCCESS", "PARTIAL", "BLOCKED"] },
+    "completed": { "type": "array", "items": { "type": "string" } },
+    "failed": { "type": "array", "items": { "type": "string" } },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "decisions": { "type": "array", "items": { "type": "string" } },
+    "next_recommended_action": { "type": "string" },
+    "project_state_md": { "type": "string", "minLength": 20 },
+    "roadmap_update": { "type": "string" }
+  }
+}

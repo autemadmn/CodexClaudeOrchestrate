@@ -1,0 +1,35 @@
+{
+  "$id": "spec.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["feature_name", "feature_spec_md", "acceptance_criteria", "components_to_change", "interfaces", "dependencies_between_components", "risks", "technical_debt_detected", "decisions", "needs_brain_decision", "requires_human_approval", "human_approval_reasons"],
+  "properties": {
+    "feature_name": { "type": "string" },
+    "feature_spec_md": { "type": "string", "minLength": 20 },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "components_to_change": { "type": "array", "items": { "type": "string" } },
+    "interfaces": { "type": "array", "items": { "type": "string" } },
+    "dependencies_between_components": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "technical_debt_detected": { "type": "array", "items": { "type": "string" } },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "context", "decision", "reason", "alternatives", "consequences"],
+        "properties": {
+          "title": { "type": "string" },
+          "context": { "type": "string" },
+          "decision": { "type": "string" },
+          "reason": { "type": "string" },
+          "alternatives": { "type": "array", "items": { "type": "string" } },
+          "consequences": { "type": "string" }
+        }
+      }
+    },
+    "needs_brain_decision": { "type": "array", "items": { "type": "string" } },
+    "requires_human_approval": { "type": "boolean" },
+    "human_approval_reasons": { "type": "array", "items": { "type": "string" } }
+  }
+}
