@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "label": "skill-audit-fable-orchestrator",
+    "role": "skill-curator",
+    "provider": "claude",
+    "model": "claude-opus-5",
+    "reasoning": "high",
+    "policy": "readonly",
+    "started_at": "2026-09-11T13:52:27.166Z",
+    "duration_ms": 116109,
+    "cost_usd": 0.5768420000000001,
+    "turns": 13,
+    "models_used": [
+      "claude-opus-5"
+    ],
+    "permission_denials": [],
+    "error": null
+  },
+  "prompt_chars": 1622,
+  "prompt": "SKILL / REPOSITORY AUDIT\n\nSOURCE: czlonkowski/fables (path: plugins/fable-orchestrator/skills/fable-orchestrator)\nLOCAL CLONE (read-only, do not execute anything from it): /home/user/CodexClaudeOrchestrate/.ai/tmp/skill-audits/czlonkowski__fables/plugins/fable-orchestrator/skills/fable-orchestrator\n\n## METADATA (collected by the orchestrator)\n{\n  \"source\": \"czlonkowski/fables\",\n  \"commit\": \"914a31c\",\n  \"last_commit_date\": \"2026-09-07T10:45:00+02:00\",\n  \"last_commit_author\": \"czlonkowski\",\n  \"file_count\": 32,\n  \"skill_files\": [\n    \"plugins/astra-advisor/skills/astra-advisor/SKILL.md\",\n    \"plugins/astra-orchestrator/skills/astra-orchestrator/SKILL.md\",\n    \"plugins/fable-advisor/skills/fable-advisor/SKILL.md\",\n    \"plugins/fable-orchestrator/skills/fable-orchestrator/SKILL.md\"\n  ],\n  \"manifests\": [\n    \".claude-plugin/marketplace.json\",\n    \"plugins/astra-advisor/.claude-plugin/plugin.json\",\n    \"plugins/astra-advisor/.codex-plugin/plugin.json\",\n    \"plugins/astra-orchestrator/.codex-plugin/plugin.json\",\n    \"plugins/fable-advisor/.claude-plugin/plugin.json\",\n    \"plugins/fable-orchestrator/.claude-plugin/plugin.json\"\n  ],\n  \"scripts\": [\n    \"evals/fixtures/eval-1/sync.py\"\n  ],\n  \"license_file\": \"LICENSE\",\n  \"license_head\": \"MIT License\",\n  \"github_stats\": \"unavailable (network restricted); verify manually\"\n}\n\n## AUTOMATED GREP FINDINGS (risky patterns; verify each)\n- (none)\n\nRead SKILL.md, README, scripts, package manifests, install scripts, hooks and MCP config in the clone. Classify the trust tier, list security findings with locations, decide the recommendation. Produce the skill_audit JSON.",
+  "output": {
+    "skill": "fable-orchestrator (plugins/fable-orchestrator)",
+    "source": "czlonkowski/fables @ 914a31c6f6efab0450def55d218dfa16cb308c16 (2026-09-07, branch main, shallow clone; no tags present in clone)",
+    "author": "Romuald Członkowski (@czlonkowski, aiadvisors.pl) — sole author on all manifests, LICENSE and the single clone commit; identity/reputation NOT independently verified (network restricted)",
+    "purpose": "A prompt-only delegation protocol for a premium-model session (\"plan big, execute small\"): a gate for deciding when bulk reading should be fanned out, five workload shapes, a worker-brief format (SUB-QUESTION/SCOPE/REPORT/DON'T), model-tier selection, premise verification, and a bundled read-only `worker` subagent pinned to Sonnet that returns distilled findings with evidence pointers.",
+    "trust_tier": 2,
+    "files_reviewed": [
+      "plugins/fable-orchestrator/skills/fable-orchestrator/SKILL.md (172 lines, full)",
+      "plugins/fable-orchestrator/agents/worker.md (41 lines, full)",
+      "plugins/fable-orchestrator/.claude-plugin/plugin.json (full)",
+      ".claude-plugin/marketplace.json (full)",
+      "README.md (429 lines, full)",
+      "LICENSE (MIT header)",
+      "evals/fixtures/eval-1/sync.py (only script in repo; eval fixture, outside the plugin)",
+      ".git/packed-refs (commit pin verification)",
+      "directory listing of the whole clone (32 tracked files) — no package.json, no lockfile, no pyproject/requirements, no install script, no hooks, no MCP config",
+      "targeted greps across plugins/ for curl|wget|eval|exec|subprocess|postinstall|.ssh|.env|sudo|rm -rf|--dangerously|chmod|api_key|bash -c and for mcpServers|hooks|allowed-tools|Bash("
+    ],
+    "permissions": "Plugin declares no permission block, no allowed-tools, no hooks, no MCP servers, no settings changes. The only tool grant in the package is the bundled agent's front matter: `tools: Read, Grep, Glob, WebFetch, WebSearch`, `model: sonnet` (worker.md:4-5). Everything else is natural-language instruction to the host model; installing it grants no new capability by itself, but it does instruct the host to use the Agent/subagent tool for fan-out.",
+    "network_access": "No network calls in the package itself (no curl/wget/fetch/http client anywhere under plugins/fable-orchestrator). Indirect only: the bundled worker agent is granted WebFetch and WebSearch, so spawned workers can fetch arbitrary URLs when a brief tells them to (SKILL.md:54-55 \"web research\" shape). README links are informational and were not followed.",
+    "filesystem_access": "No file writes, no path manipulation, no installer. Worker agent has Read/Grep/Glob only — read-only, scoped by the brief (\"Stay inside the brief's scope\", worker.md:22-24). No reads of ~/.ssh, .env, credential stores, or any absolute system path anywhere in the package.",
+    "shell_commands": "None. No Bash tool grant, no shell snippets, no install/postinstall step in the fable-orchestrator plugin. (Note: the sibling `fable-advisor` plugin in the same repo DOES shell out to `claude -p ...`; it is out of scope here and must not be installed as part of this decision.)",
+    "security_findings": [
+      {
+        "severity": "info",
+        "finding": "Package is entirely Markdown + one JSON manifest — no executable code, no dependencies, no lockfile, no install/postinstall hook, no MCP server, no hooks. Automated grep for the standard dangerous patterns (curl|bash, wget+exec, eval/exec, subprocess, sudo, rm -rf, ~/.ssh, .env reads, --dangerously-skip-permissions, force push) returned zero hits inside the plugin. Attack surface is prompt content only.",
+        "location": "plugins/fable-orchestrator/** (whole package)"
+      },
+      {
+        "severity": "low",
+        "finding": "Prompt-injection laundering surface: workers are granted WebFetch/WebSearch and read untrusted web/log/file content, while the coordinator is explicitly told to trust their distilled reports — 'Don't re-read what a worker read', 'Spot-check narrowly, not broadly'. Injected instructions in fetched content could reach the coordinator as an authoritative-looking 'finding' with no raw-source review. The worker prompt does require evidence pointers and verified-vs-inferred separation, which mitigates but does not remove this.",
+        "location": "SKILL.md:133-140 (Trusting the reports); worker.md:4 (tools incl. WebFetch/WebSearch)"
+      },
+      {
+        "severity": "low",
+        "finding": "Instructional pressure against self-verification: on worker failure the skill says to re-assign the same brief and 'resist' reading the material yourself, and to rewrite the brief 'rather than escalating the reading to yourself'. Combined with the trust-the-reports rule, a session could accept two degraded reports without ever inspecting the source. This is a cost-optimization instruction, not malicious, but it weakens the verification posture our roles require.",
+        "location": "SKILL.md:124-130 (When a worker fails)"
+      },
+      {
+        "severity": "info",
+        "finding": "The only script in the repository (evals/fixtures/eval-1/sync.py) accepts an API key via --api-key argv and POSTs base64 file contents to a user-supplied URL. It is a deliberately imperfect eval fixture used as reading material, is not part of the fable-orchestrator plugin, is never referenced or executed by the skill, and was not run during this audit. No exfiltration risk from installing the plugin; noted only so it is not mistaken for skill code.",
+        "location": "evals/fixtures/eval-1/sync.py:47-63"
+      },
+      {
+        "severity": "info",
+        "finding": "No release tag or signed release available in the clone (shallow, tags not fetched); plugin.json is version 0.1.0 and marketplace.json 0.6.0. Pinning is therefore only possible by commit hash 914a31c6f6efab0450def55d218dfa16cb308c16, which is verified present in .git/packed-refs for origin/main.",
+        "location": ".git/packed-refs:2; plugins/fable-orchestrator/.claude-plugin/plugin.json:4; .claude-plugin/marketplace.json:10"
+      }
+    ],
+    "quality_findings": [
+      "Well-written, internally consistent protocol: explicit gate, explicit non-use cases ('When NOT to split'), explicit user-override clause (SKILL.md:152-153), and a worker contract that demands evidence pointers instead of raw dumps. Prose quality is high and the scope is narrow — no scope creep into generation or decisions.",
+      "Honest self-reporting: the README states that the ~2.5x cheaper / 3x faster / 84-98% figures are Anthropic's cookbook numbers on a web-research workload, not re-measured in Claude Code, and that the orchestrator evals are 'still planned' (README.md:310-312, 415-418). The SKILL.md itself repeats those figures three times without the same caveat, so the skill text reads more confident than the evidence behind it.",
+      "Author's own trigger benchmark reports near-zero recall for this skill — it rarely auto-fires — and the documented workaround is to hardcode a line into CLAUDE.md (README.md:390-413). Value therefore depends on us editing CLAUDE.md, which is itself a change worth deciding deliberately.",
+      "Hardcoded, dated pricing ($10/$50 per MTok, '5x Sonnet, 10x Haiku, as of 2026-07') in both SKILL.md:8-9 and README.md:302-303 will silently rot and start feeding stale cost claims into sessions.",
+      "The SKILL.md front-matter `description` is a single ~1,400-character block (SKILL.md:3). Some hosts cap skill descriptions around 1024 characters; verify it loads without truncation before relying on it.",
+      "Repo maturity signals are thin: single author, version 0.1.0, no CI, no automated tests (evals/ are JSON scenario specs, not an executable suite), no CHANGELOG, no SECURITY policy, no releases/tags visible. GitHub stars/forks/contributors could not be checked (network restricted), so Tier 1 popularity and maintenance criteria are unverified rather than met.",
+      "README documents `.agents/skills/...` relative symlinks as present 'in this checkout' (README.md:44-45, 133-134); no `.agents` directory exists in the 32-file clone. Minor doc/repo mismatch — worth confirming the packaged layout matches the docs before install.",
+      "Architecture fit is imperfect: the skill assumes Claude-native subagents pinned to Sonnet/Haiku, while our system runs workers as Codex processes per .ai/config.json and AGENTS.md, and our common rules forbid the Agent tool unless a skill or CLAUDE.md authorizes it. Adopting this skill effectively changes that default and overlaps with roles we already have."
+    ],
+    "why_this_one": "It is the only candidate that is pure prompt text with zero executable surface — nothing to install, nothing to run, trivially reversible by deleting one directory — while still encoding a concrete, reviewable delegation contract (brief format, tier selection, premise verification, anti-over-splitting rule) rather than vague advice. It also derives from a Tier 0 source pattern (Anthropic's plan-big-execute-small cookbook) and ships a read-only worker agent whose tool grant is minimal and auditable in four lines.",
+    "alternatives_considered": [
+      "Write an internal skill in .claude/skills/ (~60-80 lines) implementing the same gate + brief format against OUR worker model from .ai/config.json — no external dependency, no trust question, no Claude-subagent assumption. Strongest alternative; our role rules already prefer an internal sub-100-line skill over a doubtful external one.",
+      "Use Anthropic's plan-big-execute-small cookbook directly (anthropics/claude-cookbooks, Tier 0) as the reference and adapt it ourselves — authoritative source, but it is a notebook, not a packaged skill, so it needs the same authoring work as the internal option.",
+      "Install nothing: our orchestrator already defines manager/worker roles, task decomposition in .ai/TASKS.json, and run logging in .ai/RUNS/, which covers much of the fan-out discipline this skill teaches.",
+      "The sibling plugins in the same repo (fable-advisor, astra-advisor, astra-orchestrator) were explicitly NOT evaluated for installation and must not be bundled in: fable-advisor shells out to `claude -p` and astra-advisor to `codex exec`, which is a materially larger and separate audit."
+    ],
+    "recommendation": "needs_brain_approval",
+    "recommendation_reason": "No security blocker was found — the package contains no executable code, no dependencies, no install hooks, no shell, no network calls, and the bundled worker is read-only; the two low findings (report-trust weakening verification, WebFetch-borne injection reaching the coordinator) are design characteristics, not malice. But it does not reach Tier 1: single author, v0.1.0, no CI/tests/tags/changelog/security policy, and popularity and maintainer-reputation signals were unverifiable offline, so it lands at Tier 2 (promising but unproven), which per our rules cannot be manager-approved. Independently, adoption is an architecture decision for BRAIN: it presumes Claude-native subagents pinned to Sonnet/Haiku while our workers are Codex per .ai/config.json, it only fires reliably if we add a line to CLAUDE.md, and it overlaps with roles we already have — so an internal sub-100-line equivalent is a live and cheaper option. If BRAIN approves, conditions: install ONLY plugins/fable-orchestrator (never the advisor siblings), pin to commit 914a31c6f6efab0450def55d218dfa16cb308c16 (no tag exists; never track main), record a DEC-* ADR for the Agent-tool/CLAUDE.md change, keep spot-checking of load-bearing worker claims mandatory in our wrapper despite SKILL.md:133-140, strip or date-guard the hardcoded pricing lines, confirm GitHub stats and the ~1,400-char description limit once network is available, and re-audit by diff on any update."
+  },
+  "stderr_tail": ""
+}
