@@ -19,8 +19,10 @@ export function currentBranch(cwd) {
   return git(["rev-parse", "--abbrev-ref", "HEAD"], { cwd });
 }
 
+/** Clean working tree, ignoring orchestrator run artifacts (.ai/RUNS, .ai/tmp) which are written during a run. */
 export function isClean(cwd = ROOT) {
-  return git(["status", "--porcelain", "--untracked-files=normal"], { cwd }) === "";
+  const lines = git(["status", "--porcelain", "--untracked-files=normal"], { cwd }).split("\n").filter(Boolean);
+  return lines.every((l) => /^.. \.ai\/(RUNS|tmp)\//.test(l));
 }
 
 export function hasCommits(cwd = ROOT) {
@@ -52,10 +54,11 @@ export function removeWorktree(dir, branch, cwd = ROOT) {
 }
 
 export function changedFiles(cwd) {
-  const out = git(["status", "--porcelain", "--untracked-files=all"], { cwd });
+  // do not trim: the first column of porcelain output can be a space (" M file")
+  const out = execFileSync("git", ["status", "--porcelain", "--untracked-files=all"], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   return out
     .split("\n")
-    .filter(Boolean)
+    .filter((l) => l.length > 3)
     .map((l) => l.slice(3).trim().replace(/^"|"$/g, ""))
     .map((f) => (f.includes(" -> ") ? f.split(" -> ")[1] : f));
 }

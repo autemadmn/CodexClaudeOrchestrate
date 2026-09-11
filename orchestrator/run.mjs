@@ -398,6 +398,11 @@ async function phaseExecute(run) {
     const tasks = wave.map((id) => store.tasks.find((t) => t.id === id));
     await Promise.all(tasks.map((t) => executeTask(run, t, store, spec)));
     for (const t of tasks) if (t.status === "REVIEW" && t.review_status === "approve") mergeTask(run, t, store);
+    // failed/blocked tasks: drop the worktree, keep the agent/TASK-xxx branch for human inspection
+    for (const t of tasks) if (["FAILED", "BLOCKED"].includes(t.status) && t.worktree) {
+      g.removeWorktree(path.join(ROOT, t.worktree), null);
+      t.worktree = null;
+    }
     saveTasks(store);
   }
   const mine = tasksForRun(store, run.id);
@@ -470,13 +475,14 @@ async function phaseFinal(run) {
   if (final.roadmap_update?.trim()) fs.appendFileSync(path.join(AI_DIR, "ROADMAP.md"), `\n<!-- run ${run.id} -->\n${final.roadmap_update.trim()}\n`);
   const md = `# Run ${run.id}\n\nOBJECTIVE:\n${final.objective}\n\nRESULT:\n${final.result}\n\nCOMPLETED:\n${final.completed.map((x) => `- ${x}`).join("\n") || "- (none)"}\n\nFAILED:\n${final.failed.map((x) => `- ${x}`).join("\n") || "- (none)"}\n\nBLOCKERS:\n${final.blockers.map((x) => `- ${x}`).join("\n") || "- (none)"}\n\nDECISIONS:\n${final.decisions.map((x) => `- ${x}`).join("\n") || "- (none)"}\n\nNEXT RECOMMENDED ACTION:\n${final.next_recommended_action}\n\n---\nBranch: ${run.feature_branch} (base: ${run.base_branch})\nTasks: ${mine.map((t) => `${t.id}=${t.status}`).join(", ")}\nQA: ${run.qa?.decision || "n/a"} | Cost (claude calls only): $${run.cost_usd}\nModels: brain=${run.models.roles.brain.provider}/${run.models.roles.brain.model}, manager=${run.models.roles.manager.provider}/${run.models.roles.manager.model}, worker=${run.models.roles.worker.provider}/${run.models.roles.worker.model}\n`;
   writeText(path.join(runDir(run.id), "final-summary.md"), md);
-  g.commitAll(ROOT, `agents: run ${run.id} state update (${final.result})`);
   run.final = final;
-  run.status = final.result === "BLOCKED" || run.human_pending?.length ? (run.human_pending?.length ? "PAUSED" : "DONE") : "DONE";
-  if (run.human_pending?.length) run.pause_reason = `Tasks waiting for HUMAN approval: ${run.human_pending.join(", ")}. Approve with: agents approve <TASK-ID>  then: agents resume ${run.id}`;
+  run.status = run.human_pending?.length ? "PAUSED" : "DONE";
+  if (run.human_pending?.length) run.pause_reason = `Tasks waiting for HUMAN approval: ${run.human_pending.join(", ")}. Approve with: ${run.human_pending.map((id) => `agents approve ${id}`).join(" ; ")}  then: agents resume ${run.id}`;
   run.phase = "done";
   saveRun(run);
   event(run, "run_finished", { result: final.result, status: run.status });
+  // commit state + run artifacts last, so the tree is clean after the run
+  g.commitAll(ROOT, `agents: run ${run.id} state update (${final.result})`);
   return md;
 }
 
