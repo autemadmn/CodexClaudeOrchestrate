@@ -13,9 +13,19 @@ public struct CostInputs: Equatable, Sendable {
         realWorldFactor: Decimal = Decimal(1),
         unitPriceMilliEUR: UnitPriceMilliEUR,
         manualExpenses: [MoneyCents] = []
-    ) {
-        precondition(distanceMeters.isFinite && distanceMeters >= 0)
-        precondition(consumptionPer100 > 0 && realWorldFactor > 0 && unitPriceMilliEUR.milliEUR > 0)
+    ) throws {
+        guard distanceMeters.isFinite && distanceMeters >= 0 else {
+            throw CostCoreError.invalidDistance
+        }
+        guard consumptionPer100 > 0 else {
+            throw CostCoreError.nonPositiveConsumption
+        }
+        guard realWorldFactor > 0 else {
+            throw CostCoreError.nonPositiveFactor
+        }
+        guard unitPriceMilliEUR.milliEUR > 0 else {
+            throw CostCoreError.nonPositivePrice
+        }
         self.distanceMeters = distanceMeters
         self.consumptionPer100 = consumptionPer100
         self.realWorldFactor = realWorldFactor
@@ -34,9 +44,9 @@ public struct CostBreakdown: Equatable, Sendable {
 }
 
 public enum CostEngine {
-    public static func calculate(_ input: CostInputs) -> CostBreakdown {
+    public static func calculate(_ input: CostInputs) throws -> CostBreakdown {
         makeResult(
-            energyUnits: energy(
+            energyUnits: try energy(
                 for: input.distanceMeters,
                 consumption: input.consumptionPer100,
                 factor: input.realWorldFactor
@@ -51,25 +61,29 @@ public enum CostEngine {
         realWorldFactor: Decimal = Decimal(1),
         unitPriceMilliEUR: UnitPriceMilliEUR,
         manualExpenses: [MoneyCents] = []
-    ) -> CostBreakdown {
-        precondition(segmentDistancesMeters.allSatisfy { $0.isFinite && $0 >= 0 })
-        let input = CostInputs(
+    ) throws -> CostBreakdown {
+        guard segmentDistancesMeters.allSatisfy({ $0.isFinite && $0 >= 0 }) else {
+            throw CostCoreError.invalidDistance
+        }
+        let input = try CostInputs(
             distanceMeters: segmentDistancesMeters.reduce(0, +),
             consumptionPer100: consumptionPer100,
             realWorldFactor: realWorldFactor,
             unitPriceMilliEUR: unitPriceMilliEUR,
             manualExpenses: manualExpenses
         )
-        let units = segmentDistancesMeters.reduce(Decimal.zero) {
-            $0 + energy(for: $1, consumption: consumptionPer100, factor: realWorldFactor)
+        let units = try segmentDistancesMeters.reduce(Decimal.zero) {
+            $0 + (try energy(for: $1, consumption: consumptionPer100, factor: realWorldFactor))
         }
         return makeResult(energyUnits: units, input: input)
     }
 
-    private static func energy(for distanceMeters: Double, consumption: Decimal, factor: Decimal) -> Decimal {
-        precondition(distanceMeters.isFinite && distanceMeters >= 0)
+    private static func energy(for distanceMeters: Double, consumption: Decimal, factor: Decimal) throws -> Decimal {
+        guard distanceMeters.isFinite && distanceMeters >= 0 else {
+            throw CostCoreError.invalidDistance
+        }
         guard let distance = Decimal(string: String(distanceMeters), locale: Locale(identifier: "en_US_POSIX")) else {
-            preconditionFailure("distancia no convertible a Decimal")
+            throw CostCoreError.invalidDistance
         }
         return distance / 100000 * consumption * factor
     }
