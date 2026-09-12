@@ -16,5 +16,6 @@ final class LedgerMathTests: XCTestCase {
         XCTAssertEqual(LedgerMath.pending(entries: entries, person: me, group: work).cents, 0)
         XCTAssertEqual(LedgerMath.credit(entries: entries, person: me, group: work).cents, 300)
         XCTAssertEqual(LedgerMath.pending(entries: entries, person: me, group: university).cents, 800)
+        XCTAssertEqual(LedgerMath.netAcrossGroups(entries: entries, person: me).cents, 500)
     }
 }

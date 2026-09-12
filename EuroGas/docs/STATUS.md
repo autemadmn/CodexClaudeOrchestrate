@@ -59,6 +59,8 @@ Extracto del resumen de la salida real (se omiten sólo tiempos por test):
 ```text
 ✔ PRAGMA foreign_keys está activo
 ✔ control positivo: inserción válida
+✔ control positivo: segundo Trip completed
+✔ control positivo: cargo de otra persona en el mismo viaje
 ✔ Group.createdAt existe y es NOT NULL
 ✔ schema rechaza amountCents = 0
 ✔ schema rechaza debtorID == creditorID
@@ -73,12 +75,12 @@ Extracto del resumen de la salida real (se omiten sólo tiempos por test):
 ✔ schema rechaza endedAt < startedAt
 ✔ schema rechaza FK inexistente
 ✔ borrar Trip con cargos está restringido
-ℹ tests 16
-ℹ pass 16
+ℹ tests 18
+ℹ pass 18
 ℹ fail 0
 ℹ skipped 0
 ```
-El arnés aplicó el texto íntegro de `v1_initial.sql` a una base `:memory:`, comprobó `PRAGMA foreign_keys = 1` y rechazó los doce casos de integridad.
+El arnés aplicó el texto íntegro de `v1_initial.sql` a una base `:memory:`, comprobó `PRAGMA foreign_keys = 1` y rechazó los doce casos de integridad; los dos controles positivos adicionales también pasaron.
 
 ## Entregables
 
@@ -89,7 +91,7 @@ Cada fila tiene exactamente una etiqueta.
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
 | CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Correcciones de TASK-019 escritas; no compiladas ni ejecutadas en este host por falta de toolchain Swift |
 | Ledger y persistencia | **UNVERIFIED-BUILD** | Código Swift y sus tests escritos; no compilados por falta de toolchain Swift |
-| Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 16 pass, 0 fail, código 0 |
+| Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 18 pass, 0 fail, código 0 |
 | Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0 |
 | Xcode | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
 | iPhone | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
@@ -127,7 +129,7 @@ Ticket: TASK-021 / cierre QA de CONTRACTS.md, STATUS.md y FIELD_TESTS.md
 Commit/branch: agent/TASK-021 (commit lo realizará el orquestador)
 Archivos modificados: EuroGas/docs/CONTRACTS.md; EuroGas/docs/STATUS.md; EuroGas/docs/FIELD_TESTS.md
 Contrato consumido o modificado: API real de Money.swift; v1_initial.sql fijado como única fuente canónica
-Build/test ejecutado y resultado: node --test schema_v1.test.mjs — PASS, 16 pass, 0 fail, código 0; npm test — PASS, 35 pass, 0 fail, código 0; swift --version — código 1, salida literal arriba
+Build/test ejecutado y resultado: node --test schema_v1.test.mjs — PASS, 18 pass, 0 fail, código 0; npm test — PASS, 35 pass, 0 fail, código 0; swift --version — código 1, salida literal arriba
 Prueba manual necesaria: procedimientos Xcode, iPhone, tracking de campo, StoreKit real y Live Activity en FIELD_TESTS.md
 Bloqueo o limitación: falta toolchain Swift; Beta parcial, NO completa CORE-7
 Próximo ticket: capa Swift/GRDB de Persistence sobre el DDL canónico

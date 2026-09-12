@@ -18,5 +18,6 @@ final class PaymentAllocationTests: XCTestCase {
         let groups = [GroupPending(groupID: GroupID("g"), pending: MoneyCents(cents: 1), createdAt: Date(), id: "g")]
         XCTAssertThrowsError(try PaymentAllocationProposal.propose(amount: MoneyCents(cents: 2), pendingByGroup: groups)) { XCTAssertEqual($0 as? PaymentAllocationError, .missingCreditGroup) }
         XCTAssertThrowsError(try PaymentAllocationProposal.propose(amount: .zero, pendingByGroup: groups)) { XCTAssertEqual($0 as? PaymentAllocationError, .nonPositiveAmount) }
+        XCTAssertThrowsError(try PaymentAllocationProposal.propose(amount: MoneyCents(cents: 2), pendingByGroup: groups, creditGroupID: GroupID("other"))) { XCTAssertEqual($0 as? PaymentAllocationError, .invalidCreditGroup) }
     }
 }

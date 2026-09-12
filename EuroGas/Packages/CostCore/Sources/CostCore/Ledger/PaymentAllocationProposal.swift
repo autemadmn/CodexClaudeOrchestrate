@@ -18,6 +18,9 @@ public enum PaymentAllocationProposal {
     }
     public static func propose(amount: MoneyCents, pendingByGroup: [GroupPending], creditGroupID: GroupID?) throws -> [(groupID: GroupID, amount: MoneyCents)] {
         guard amount.cents > 0 else { throw PaymentAllocationError.nonPositiveAmount }
+        if let creditGroupID, !pendingByGroup.contains(where: { $0.groupID == creditGroupID }) {
+            throw PaymentAllocationError.invalidCreditGroup
+        }
         let groups = pendingByGroup.filter { $0.pending.cents > 0 }.sorted {
             $0.createdAt == $1.createdAt ? $0.id < $1.id : $0.createdAt < $1.createdAt
         }
@@ -31,10 +34,6 @@ public enum PaymentAllocationProposal {
         if left > 0 {
             guard let id = creditGroupID else { throw PaymentAllocationError.missingCreditGroup }
             out.append((id, MoneyCents(cents: left)))
-        }
-        guard !out.isEmpty else {
-            guard let id = creditGroupID else { throw PaymentAllocationError.missingCreditGroup }
-            out.append((id, amount))
         }
         return out
     }
