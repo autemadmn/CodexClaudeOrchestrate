@@ -15,7 +15,14 @@ const REPO = path.resolve(HERE, "..", "..");
 
 function makeRepo() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agents-e2e-"));
-  for (const item of [".ai", ".claude", "orchestrator", "bin", "package.json"]) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true, filter: (p) => !p.includes("/RUNS/") && !p.includes("/tmp/") });
+  const shouldCopy = (source) => {
+    const relative = path.relative(REPO, source).split(path.sep).join("/");
+    return relative !== ".ai/RUNS"
+      && !relative.startsWith(".ai/RUNS/")
+      && relative !== ".ai/tmp"
+      && !relative.startsWith(".ai/tmp/");
+  };
+  for (const item of [".ai", ".claude", "orchestrator", "bin", "package.json"]) fs.cpSync(path.join(REPO, item), path.join(dir, item), { recursive: true, filter: shouldCopy });
   fs.mkdirSync(path.join(dir, ".ai", "RUNS"), { recursive: true });
   fs.writeFileSync(path.join(dir, ".ai", "TASKS.json"), JSON.stringify({ next_id: 1, tasks: [] }));
   fs.writeFileSync(path.join(dir, ".gitignore"), "node_modules/\n.worktrees/\n.ai/tmp/\n");
