@@ -1,0 +1,28 @@
+✔ PRAGMA foreign_keys está activo (2.1713ms)
+✔ control positivo: inserción válida (1.0693ms)
+✔ control positivo: segundo Trip completed (1.0163ms)
+✔ control positivo: cargo de otra persona en el mismo viaje (0.9332ms)
+✔ Group.createdAt existe y es NOT NULL (1.2278ms)
+✔ schema rechaza amountCents = 0 (2.5216ms)
+✔ schema rechaza debtorID == creditorID (1.6426ms)
+✔ schema rechaza charge con paymentBatchID (1.0449ms)
+✔ schema rechaza payment con tripID (0.9008ms)
+✔ schema rechaza groupID NULL (1.0983ms)
+✔ schema rechaza segundo owner (1.0202ms)
+✔ schema rechaza segundo viaje active/interrupted (0.8777ms)
+✔ schema rechaza cargo duplicado por persona+viaje (1.0283ms)
+✔ schema rechaza precio <= 0 (0.816ms)
+✔ schema rechaza consumo <= 0 (0.8662ms)
+✔ schema rechaza endedAt < startedAt (0.8633ms)
+✔ schema rechaza FK inexistente (1.0621ms)
+✔ borrar Trip con cargos está restringido (1.1209ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.5431
+
+[exit_code=0]

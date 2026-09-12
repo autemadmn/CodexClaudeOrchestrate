@@ -42,7 +42,7 @@ No hay toolchain Swift disponible y no se instalará. No se ejecutaron `swift bu
 Comando: `npm test`
 Código de salida: `0`.
 
-Salida final real:
+La salida íntegra, sin truncar, está archivada en [`evidence-npm-test.txt`](../../.ai/RUNS/20260912-111714/evidence-npm-test.txt). Resumen final real:
 
 ```text
 ℹ tests 35
@@ -54,8 +54,8 @@ Verifica el orquestador, no la compilación de CostCore.
 
 ### Gate G2 — esquema — VERIFIED
 
-Comando ejecutado: `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` (código de salida `0`). No hubo aviso de módulo experimental en este Node.
-Extracto del resumen de la salida real (se omiten sólo tiempos por test):
+Comando ejecutado: `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` (código de salida `0`). La salida íntegra, sin truncar, está archivada en [`evidence-sqlite-harness.txt`](../../.ai/RUNS/20260912-111714/evidence-sqlite-harness.txt). No hubo aviso de módulo experimental en este Node.
+Resumen final de la salida real:
 ```text
 ✔ PRAGMA foreign_keys está activo
 ✔ control positivo: inserción válida
@@ -89,10 +89,10 @@ Cada fila tiene exactamente una etiqueta.
 | Entregable | Etiqueta | Evidencia o limitación |
 |---|---|---|
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
-| CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Correcciones de TASK-019 escritas; no compiladas ni ejecutadas en este host por falta de toolchain Swift |
+| CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Este run añade CostCoreError, validación mediante errores tipados en CostEngine y rechazo de total negativo en SplitEngine; código y tests no compilados ni ejecutados en este host por falta de toolchain Swift |
 | Ledger y persistencia | **UNVERIFIED-BUILD** | Código Swift y sus tests escritos; no compilados por falta de toolchain Swift |
-| Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 18 pass, 0 fail, código 0 |
-| Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0 |
+| Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 18 pass, 0 fail, código 0; salida íntegra en [`evidence-sqlite-harness.txt`](../../.ai/RUNS/20260912-111714/evidence-sqlite-harness.txt) |
+| Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0; salida íntegra en [`evidence-npm-test.txt`](../../.ai/RUNS/20260912-111714/evidence-npm-test.txt) |
 | Xcode | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
 | iPhone | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
 | Tracking de campo | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
@@ -103,9 +103,9 @@ Los cinco elementos EXTERNO no se han probado; sus procedimientos están en `FIE
 
 ## TASK-019 — correcciones QA r2
 
-Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energyCostCents`; los valores Decimal de consumo y factor se construyen desde cadenas; `roundHalfUp` mantiene una única llamada desde Cost; la distancia valida `isFinite` antes de convertir; y la precondición de `passengersOnly` precede el caso de total cero. Estas correcciones tampoco se han compilado ni ejecutado en este host: quedan **UNVERIFIED-BUILD**, no EXTERNO.
+Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energyCostCents`; los valores Decimal de consumo y factor se construyen desde cadenas; `roundHalfUp` mantiene una única llamada desde Cost; y la distancia valida `isFinite` antes de convertir. La validación de `passengersOnly`, del rango de participantes y del total negativo se realiza mediante errores tipados capturables (`CostCoreError`) lanzados antes del caso de total cero, sin `precondition`. CostCoreError, los cambios de CostEngine y SplitEngine y sus tests tampoco se han compilado ni ejecutado en este host: quedan **UNVERIFIED-BUILD**, no EXTERNO.
 
-`CONTRACTS.md` aún NO transcribe `CostInputs`/`CostBreakdown`/`SplitRule`/`SplitResult` (sigue afirmando que no existen), porque está fuera de los allowed_files de esta tarea; la actualización del contrato queda pendiente de ticket propio.
+Los contratos quedan congelados aquí: [`CONTRACTS.md`](CONTRACTS.md) ya transcribe las declaraciones contra el código real, incluidos CostCoreError, CostEngine, SplitEngine, ledger, errores tipados y el DDL v1 canónico. Este estado documental no afirma que el código Swift compile ni que se haya ejecutado.
 
 ## RECORTADO
 
@@ -125,12 +125,12 @@ Asignar el siguiente `TASK-NNN` para la capa Swift/GRDB de Persistence. T02/T03 
 ## Handoff §19.4
 
 ```text
-Ticket: TASK-021 / cierre QA de CONTRACTS.md, STATUS.md y FIELD_TESTS.md
-Commit/branch: agent/TASK-021 (commit lo realizará el orquestador)
-Archivos modificados: EuroGas/docs/CONTRACTS.md; EuroGas/docs/STATUS.md; EuroGas/docs/FIELD_TESTS.md
-Contrato consumido o modificado: API real de Money.swift; v1_initial.sql fijado como única fuente canónica
-Build/test ejecutado y resultado: node --test schema_v1.test.mjs — PASS, 18 pass, 0 fail, código 0; npm test — PASS, 35 pass, 0 fail, código 0; swift --version — código 1, salida literal arriba
+Ticket: TASK-026 / evidencia real y handoff de STATUS.md
+Commit/branch: feature/continua-el-trabajo-integrado-del-run-20-111714 (commit integrado 02fc09c)
+Archivos modificados: EuroGas/docs/STATUS.md; .ai/RUNS/20260912-111714/evidence-npm-test.txt; .ai/RUNS/20260912-111714/evidence-sqlite-harness.txt
+Contrato consumido o modificado: CONTRACTS.md congelado contra el código real; v1_initial.sql fijado como única fuente canónica
+Build/test ejecutado y resultado: `npm test` — VERIFIED, 35 pass, 0 fail, código 0, salida íntegra en evidence-npm-test.txt; arnés SQLite — VERIFIED, 18 pass, 0 fail, código 0, salida íntegra en evidence-sqlite-harness.txt; `swift --version` — código 1, salida literal arriba
 Prueba manual necesaria: procedimientos Xcode, iPhone, tracking de campo, StoreKit real y Live Activity en FIELD_TESTS.md
-Bloqueo o limitación: falta toolchain Swift; Beta parcial, NO completa CORE-7
+Bloqueo o limitación: falta toolchain Swift; el código Swift, incluidos CostCoreError, CostEngine, SplitEngine y sus tests, permanece UNVERIFIED-BUILD; Xcode, iPhone, tracking de campo, StoreKit real y Live Activity permanecen EXTERNO; Beta parcial, NO completa CORE-7
 Próximo ticket: capa Swift/GRDB de Persistence sobre el DDL canónico
 ```
