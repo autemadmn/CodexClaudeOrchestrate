@@ -2,18 +2,18 @@
 > codex-claude-orchestrate@0.1.0 test
 > node --test orchestrator/test/*.test.mjs
 
-✔ normal task stays AUTO_APPROVED (3.1766ms)
-✔ new dependency requires brain approval (escalation test) (1.3186ms)
-✔ billing / production / secrets require human approval (0.478ms)
-✔ category never lowered below manager declaration (0.5607ms)
-✔ changed files outside allowed_files or forbidden are detected (1.5464ms)
-✔ schema validator catches missing/enum/extra (1.0879ms)
-✔ independent tasks run in one wave up to maxParallel (2.3442ms)
-✔ two tasks editing the same file are serialized (conflict test) (0.6286ms)
-✔ glob overlap detection (1.6309ms)
-✔ dependencies order waves (0.5532ms)
-✔ unsatisfiable dependency reported (0.6619ms)
-✔ matchesAny handles globs and directories (1.2231ms)
+✔ normal task stays AUTO_APPROVED (4.5667ms)
+✔ new dependency requires brain approval (escalation test) (1.0322ms)
+✔ billing / production / secrets require human approval (0.3835ms)
+✔ category never lowered below manager declaration (0.3224ms)
+✔ changed files outside allowed_files or forbidden are detected (1.9357ms)
+✔ schema validator catches missing/enum/extra (1.5032ms)
+✔ independent tasks run in one wave up to maxParallel (3.8078ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.4924ms)
+✔ glob overlap detection (0.5978ms)
+✔ dependencies order waves (0.413ms)
+✔ unsatisfiable dependency reported (0.6363ms)
+✔ matchesAny handles globs and directories (0.5995ms)
 warning: unable to access 'C:\Users\mrani/.config/git/ignore': Permission denied
 warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
@@ -42,29 +42,29 @@ warning: unable to access 'C:\Users\mrani/.config/git/ignore': Permission denied
 warning: unable to access 'C:\Users\mrani/.config/git/ignore': Permission denied
 warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
-✔ happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final (5517.7931ms)
-✔ QA can reject: fix tasks are created, executed, and QA re-runs (7164.0142ms)
-✔ review request_changes triggers a worker fix attempt (retry count works) (5819.9961ms)
-✔ repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain (4905.512ms)
-✔ conflict test: overlapping allowed_files are serialized, never in the same wave (6775.8514ms)
-✔ escalation test: dependency change goes to the brain, billing change waits for a human (8158.8154ms)
-✔ guardrail: worker touching a forbidden file is reverted and the task fails (4099.8787ms)
-✔ stop + resume: STOP marker halts the run and resume finishes it (5375.0254ms)
-✔ truncate returns empty string for falsy inputs (2.1115ms)
-✔ truncate returns text unchanged when shorter than max (0.3696ms)
-✔ truncate returns text unchanged at the boundary (length === max) (0.3219ms)
-✔ truncate appends exact suffix when text is longer than max (0.3012ms)
-✔ truncate with max === 0 on non-empty text returns empty prefix plus suffix (0.2515ms)
-✔ truncate slices multi-line text byte-for-byte with no newline handling (0.2429ms)
-✔ slugify lowercases and hyphenates spaces (0.3756ms)
-✔ slugify collapses punctuation runs and trims edge dashes (0.5867ms)
-✔ slugify preserves digits (0.4837ms)
-✔ slugify is idempotent for already-slug input (0.5775ms)
-✔ slugify drops non-ASCII characters instead of transliterating (0.8208ms)
-✔ slugify falls back to 'objective' for empty, punctuation-only or max=0 inputs (0.6404ms)
-✔ slugify default max is 40, explicit max is respected (0.3362ms)
-✔ slugify truncates after edge-dash trim, so result can end with '-' (documents current behavior) (0.3703ms)
-✔ slugify throws TypeError on undefined/null input (documents current behavior, no falsy guard) (1.1044ms)
+✔ happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final (5612.9145ms)
+✔ QA can reject: fix tasks are created, executed, and QA re-runs (7187.1279ms)
+✔ review request_changes triggers a worker fix attempt (retry count works) (5800.6882ms)
+✔ repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain (4965.5081ms)
+✔ conflict test: overlapping allowed_files are serialized, never in the same wave (6952.9924ms)
+✔ escalation test: dependency change goes to the brain, billing change waits for a human (8791.5621ms)
+✔ guardrail: worker touching a forbidden file is reverted and the task fails (4237.9163ms)
+✔ stop + resume: STOP marker halts the run and resume finishes it (5760.6891ms)
+✔ truncate returns empty string for falsy inputs (1.854ms)
+✔ truncate returns text unchanged when shorter than max (0.2968ms)
+✔ truncate returns text unchanged at the boundary (length === max) (0.2971ms)
+✔ truncate appends exact suffix when text is longer than max (0.2167ms)
+✔ truncate with max === 0 on non-empty text returns empty prefix plus suffix (0.2135ms)
+✔ truncate slices multi-line text byte-for-byte with no newline handling (0.2601ms)
+✔ slugify lowercases and hyphenates spaces (0.533ms)
+✔ slugify collapses punctuation runs and trims edge dashes (0.2331ms)
+✔ slugify preserves digits (0.2776ms)
+✔ slugify is idempotent for already-slug input (0.5243ms)
+✔ slugify drops non-ASCII characters instead of transliterating (0.3661ms)
+✔ slugify falls back to 'objective' for empty, punctuation-only or max=0 inputs (0.2665ms)
+✔ slugify default max is 40, explicit max is respected (0.268ms)
+✔ slugify truncates after edge-dash trim, so result can end with '-' (documents current behavior) (0.3544ms)
+✔ slugify throws TypeError on undefined/null input (documents current behavior, no falsy guard) (1.3956ms)
 ℹ tests 35
 ℹ suites 0
 ℹ pass 35
@@ -72,5 +72,6 @@ warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF th
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 47956.0707
-[exit code] 0
+ℹ duration_ms 49473.0259
+
+[exit code: 0]

@@ -89,7 +89,7 @@ Cada fila tiene exactamente una etiqueta.
 | Entregable | Etiqueta | Evidencia o limitación |
 |---|---|---|
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
-| CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Correcciones de TASK-019 escritas; no compiladas ni ejecutadas en este host por falta de toolchain Swift |
+| CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Este run añade CostCoreError, validación mediante errores tipados en CostEngine y rechazo de total negativo en SplitEngine; código y tests no compilados ni ejecutados en este host por falta de toolchain Swift |
 | Ledger y persistencia | **UNVERIFIED-BUILD** | Código Swift y sus tests escritos; no compilados por falta de toolchain Swift |
 | Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 18 pass, 0 fail, código 0; salida íntegra en [`evidence-sqlite-harness.txt`](../../.ai/RUNS/20260912-111714/evidence-sqlite-harness.txt) |
 | Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0; salida íntegra en [`evidence-npm-test.txt`](../../.ai/RUNS/20260912-111714/evidence-npm-test.txt) |
@@ -127,7 +127,7 @@ Asignar el siguiente `TASK-NNN` para la capa Swift/GRDB de Persistence. T02/T03 
 ```text
 Ticket: TASK-026 / evidencia real y handoff de STATUS.md
 Commit/branch: feature/continua-el-trabajo-integrado-del-run-20-111714 (commit integrado 02fc09c)
-Archivos modificados: EuroGas/docs/STATUS.md; .ai/RUNS/20260912-111714/evidence-npm-test.txt; .ai/RUNS/20260912-111714/evidence-sqlite-harness.txt
+Archivos modificados: EuroGas/docs/STATUS.md; .ai/RUNS/20260912-111714/evidence-npm-test.txt; .ai/RUNS/20260912-111714/evidence-sqlite-harness.txt; EuroGas/Packages/CostCore/Sources/CostCore/Models/CostCoreError.swift; EuroGas/Packages/CostCore/Sources/CostCore/Cost/CostEngine.swift; EuroGas/Packages/CostCore/Sources/CostCore/Split/SplitEngine.swift; EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift; EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitEngineTests.swift; EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitPropertyTests.swift; EuroGas/docs/CONTRACTS.md
 Contrato consumido o modificado: CONTRACTS.md congelado contra el código real; v1_initial.sql fijado como única fuente canónica
 Build/test ejecutado y resultado: `npm test` — VERIFIED, 35 pass, 0 fail, código 0, salida íntegra en evidence-npm-test.txt; arnés SQLite — VERIFIED, 18 pass, 0 fail, código 0, salida íntegra en evidence-sqlite-harness.txt; `swift --version` — código 1, salida literal arriba
 Prueba manual necesaria: procedimientos Xcode, iPhone, tracking de campo, StoreKit real y Live Activity en FIELD_TESTS.md
