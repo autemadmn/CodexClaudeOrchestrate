@@ -37,3 +37,10 @@
 - SQLite real: 18/18, exit=0. Swift: UNVERIFIED-BUILD. Suite del orquestador integrada: exit=1, causa pendiente.
 - Prioridad: resolver escalación humana, corregir contratos y evidencia, reparar errores del núcleo y repetir QA.
 - GRDB y extras diferidos; validaciones Apple y de campo EXTERNO. Brain y Worker en Codex sin fallback.
+
+<!-- run 20260912-111714 -->
+## EuroGas CORE-7 — cierre QA bloqueado
+- Continuación: 0/5 tareas integradas; tests y QA no ejecutados. M1 sigue abierto.
+- Brain aprueba errores tipados con throws, rechazo de total negativo y ruta canónica del DDL; ADR pendientes de registro.
+- Prioridad: resolver dependencias y puerta de TASK-025, verificar la base, completar correcciones y obtener evidencia actual y QA aprobada.
+- Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone: EXTERNO. Brain y Worker en Codex sin fallback.

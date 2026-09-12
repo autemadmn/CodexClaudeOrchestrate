@@ -1,0 +1,44 @@
+{
+  "understanding": "Continuar el trabajo integrado del run 20260911-174246 y cerrar exclusivamente sus defectos finales de QA conforme a ARCHITECTURE_BLUEPRINT_rev5.md. La instrucción humana autoriza esta reanudación acotada y PaymentAllocation como matemática local. No implica completar todo CORE-7.",
+  "scope": [
+    "Conservar la implementación correcta de CostCore, CostEngine, SplitEngine, ledger y Persistence; limitar cambios a los defectos identificados y sus efectos necesarios.",
+    "Sustituir las validaciones precondition del núcleo por errores tipados capturables, adaptar sus llamadas afectadas y actualizar las pruebas.",
+    "Rechazar explícitamente total negativo y cubrir el error en pruebas; preservar los invariantes de reparto para entradas válidas.",
+    "Reescribir EuroGas/docs/CONTRACTS.md contrastándolo con las APIs reales entregadas: firmas, comportamiento y errores de Cost, Split y Ledger, además de los restantes contratos existentes.",
+    "Establecer EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql como única ruta canónica del DDL en la documentación afectada.",
+    "Verificar npm test y el arnés SQLite en la rama integrada; actualizar EuroGas/docs/STATUS.md con evidencia actual, buscando confirmar 35/35 y 18/18 respectivamente.",
+    "Obtener revisión final de QA sobre este alcance y devolver el estado actualizado para que lo escriba el orquestador."
+  ],
+  "out_of_scope": [
+    "Ampliar funcionalidades, completar las otras tareas pendientes de CORE-7 o resolver deuda ajena a estos defectos.",
+    "Rediseñar los motores correctos, PaymentAllocation, persistencia o APIs más allá de lo necesario para los errores tipados.",
+    "Añadir GRDB, dependencias, toolchains, migraciones nuevas, proyectos o targets Apple.",
+    "Push, deploy, TestFlight, compras reales, pagos, billing, credenciales, cuentas externas y cambios de producción."
+  ],
+  "priorities": [
+    "Confirmar el estado integrado y obtener resultados completos de las verificaciones; no asumir vigente el fallo histórico de npm test.",
+    "Corregir los abortos del núcleo y el total negativo con cambios mínimos y pruebas pertinentes.",
+    "Alinear CONTRACTS.md con el código resultante y la ruta canónica del DDL.",
+    "Actualizar STATUS.md con resultados verificables y someter el conjunto a QA."
+  ],
+  "managers": [
+    "product-architect-manager",
+    "implementation-manager",
+    "qa-manager"
+  ],
+  "constraints": [
+    "Trabajar sobre feature/implementa-eurogas-usando-architecture-b-174246 conservando el trabajo integrado correcto.",
+    "Brain y Worker deben ejecutarse en Codex sin fallback; si Codex no está disponible, informar bloqueo operativo.",
+    "MAX_TASKS_PER_RUN=10, MAX_PARALLEL_WORKERS=3 y MAX_FIX_ATTEMPTS=3; ante nuevos fallos repetidos, escalar.",
+    "La reanudación autorizada se limita a estos defectos; no concede aprobaciones humanas para acciones excluidas.",
+    "No instalar dependencias ni toolchains, ni modificar secretos, autenticación, CI o infraestructura crítica.",
+    "Todo Swift permanece UNVERIFIED-BUILD; Apple, Xcode e iPhone permanecen EXTERNO.",
+    "Publicar npm test 35/35 y SQLite 18/18 como evidencia actual únicamente si las ejecuciones lo confirman; registrar resultados reales y bloqueos si difieren.",
+    "Si npm test falla, diagnosticar con evidencia completa; no presentar hipótesis como causas ni alterar comportamientos protegidos por DEC-003.",
+    "QA debe verificar conformidad con el blueprint, errores capturables, rechazo del total negativo, contratos fieles y ausencia de regresiones detectables.",
+    "Declarar éxito únicamente para este cierre acotado cuando sus tareas estén integradas, las verificaciones ejecutables pasen, QA apruebe y el estado quede actualizado."
+  ],
+  "proceed": true,
+  "questions_for_human": [],
+  "risk_level": "medium"
+}

@@ -1,0 +1,36 @@
+{
+  "objective": "Continua el trabajo integrado del run 20260911-174246 y cierra exclusivamente sus defectos finales de QA conforme a ARCHITECTURE_BLUEPRINT_rev5.md. Conserva CostCore, CostEngine, SplitEngine, ledger y Persistence ya correctos. Sustituye las validaciones precondition del nucleo por errores tipados capturables, rechaza explicitamente total negativo y actualiza sus pruebas. Reescribe EuroGas/docs/CONTRACTS.md para reflejar literalmente las APIs reales entregadas, incluidos Cost, Split, Ledger y sus errores, y fija como unica ruta canonica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql. Actualiza EuroGas/docs/STATUS.md con evidencia actual: npm test 35/35 y el arnes SQLite 18/18, manteniendo todo Swift como UNVERIFIED-BUILD y Apple/Xcode/iPhone como EXTERNO. La logica PaymentAllocation es matematica local, sin pagos reales, billing, credenciales ni cuentas externas, y esta autorizada dentro de este alcance. No instales toolchains ni dependencias. No hagas push, deploy, TestFlight, compras reales ni cambios de produccion. Brain y Worker deben permanecer en Codex sin fallback.",
+  "created_at": "2026-09-12T09:17:14.577Z",
+  "models": {
+    "brain": {
+      "provider": "codex",
+      "model": "gpt-6-astra",
+      "reasoning": "high",
+      "max_budget_usd": 2,
+      "fallbackNote": null
+    },
+    "manager": {
+      "provider": "claude",
+      "model": "claude-opus-5",
+      "reasoning": "high",
+      "max_budget_usd": 3,
+      "fallbackNote": null
+    },
+    "worker": {
+      "provider": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoning": "medium",
+      "max_budget_usd": 2,
+      "fallbackNote": null
+    }
+  },
+  "limits": {
+    "MAX_PARALLEL_WORKERS": 3,
+    "MAX_FIX_ATTEMPTS": 3,
+    "MAX_TASKS_PER_RUN": 10,
+    "MAX_BUDGET_USD_PER_RUN": 25,
+    "CALL_TIMEOUT_MS": 1200000,
+    "MAX_DIFF_CHARS": 60000,
+    "MAX_CONTEXT_FILE_CHARS": 12000
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "objective": "Continua el trabajo integrado del run 20260911-174246 y cierra exclusivamente sus defectos finales de QA conforme a ARCHITECTURE_BLUEPRINT_rev5.md. Conserva CostCore, CostEngine, SplitEngine, ledger y Persistence ya correctos. Sustituye las validaciones precondition del nucleo por errores tipados capturables, rechaza explicitamente total negativo y actualiza sus pruebas. Reescribe EuroGas/docs/CONTRACTS.md para reflejar literalmente las APIs reales entregadas, incluidos Cost, Split, Ledger y sus errores, y fija como unica ruta canonica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql. Actualiza EuroGas/docs/STATUS.md con evidencia actual: npm test 35/35 y el arnes SQLite 18/18, manteniendo todo Swift como UNVERIFIED-BUILD y Apple/Xcode/iPhone como EXTERNO. La logica PaymentAllocation es matematica local, sin pagos reales, billing, credenciales ni cuentas externas, y esta autorizada dentro de este alcance. No instales toolchains ni dependencias. No hagas push, deploy, TestFlight, compras reales ni cambios de produccion. Brain y Worker deben permanecer en Codex sin fallback.",
+  "status": "BLOCKED",
+  "result": "0/5 tasks merged into feature/continua-el-trabajo-integrado-del-run-20-111714. QA: not run.",
+  "tasks_completed": 0,
+  "tasks_failed": 4,
+  "tests": "not run",
+  "blockers": [
+    "TASK-023 CostEngine y CostInputs: validación por errores tipados en lugar de precondition: unsatisfiable dependencies",
+    "TASK-024 SplitEngine: total negativo rechazado y eliminación de SplitRejection: unsatisfiable dependencies",
+    "TASK-025 CONTRACTS.md: reescritura literal contra el código real y ruta canónica única del DDL: unsatisfiable dependencies",
+    "TASK-026 STATUS.md: evidencia real de esta rama y handoff §19.4 coherente: dependency TASK-025 failed or blocked"
+  ],
+  "risks": [
+    "Convertir el núcleo a `throws` cambia la API pública; si un consumidor futuro (aún inexistente) asumía llamadas no lanzantes, deberá adaptarse. Hoy los únicos llamantes son los tests, verificado por grep.",
+    "Riesgo de regresión numérica al reescribir los tests con `try`: si se altera algún valor esperado, se pierde la protección de §5.3 y §8.2. Los valores deben permanecer idénticos.",
+    "El orden de validación en CostInputs.init y SplitEngine.split es observable por los tests; un orden distinto al especificado hará fallar aserciones de caso concreto.",
+    "`npm test` 35/35 es evidencia condicional: la corrección del filtro de copia en Windows (commit 02fc09c) está en la rama actual, no necesariamente en feature/implementa-eurogas-usando-architecture-b-174246 que cita el plan del Brain. Si se trabaja sobre la rama antigua, `npm test` puede volver a exit=1 y no podrá publicarse 35/35.",
+    "Nada del código Swift se compila en este host: los cambios de errores tipados pueden contener errores de compilación indetectables aquí (p. ej. propagación de `throws` en `energy`/`makeResult`). Deben quedar como UNVERIFIED-BUILD sin afirmar lo contrario."
+  ],
+  "decisions_needed": [
+    "Confirmar la rama de trabajo: el plan del Brain indica feature/implementa-eurogas-usando-architecture-b-174246, pero la corrección del filtro de copia en Windows de los tests e2e de routing (commit 02fc09c, orchestrator/test/routing.test.mjs:18-24) está en la rama actual feature/continua-el-trabajo-integrado-del-run-20-111714. La publicación de `npm test` 35/35 como evidencia depende de trabajar sobre una base que incluya ese commit.",
+    "Confirmar que el cambio de API pública del núcleo a `throws` (CostInputs.init, ambas sobrecargas de CostEngine.calculate, SplitEngine.split) queda cubierto por el mandato de este run y no requiere una aprobación de arquitectura adicional, dado que altera firmas que CONTRACTS.md congela.",
+    "Confirmar la aceptación de los ADR candidatos de esta spec (errores tipados, rechazo de total negativo, eliminación de SplitRejection, ruta canónica del DDL) como DEC-010..DEC-013 o su equivalente, para que CONTRACTS.md pueda referenciar decisiones acreditadas y no inventadas.",
+    "human approval pending for TASK-025"
+  ],
+  "recommendation": "Review blockers; re-run with clarified objective or approve blocked tasks."
+}
