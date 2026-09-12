@@ -8,26 +8,17 @@ public struct SplitResult: Equatable, Sendable {
     public init(shares: [MoneyCents]) { self.shares = shares }
 }
 
-internal enum SplitRejection: Equatable {
-    case passengersOnlyWithoutPassengers
-}
-
 public enum SplitEngine {
-    internal static func rejectionReason(
-        total: MoneyCents,
-        people: Int,
-        rule: SplitRule
-    ) -> SplitRejection? {
-        if rule == .passengersOnly && people == 1 {
-            return .passengersOnlyWithoutPassengers
+    public static func split(total: MoneyCents, people: Int, rule: SplitRule) throws -> SplitResult {
+        guard people >= 1 && people <= 8 else {
+            throw CostCoreError.participantCountOutOfRange(people)
         }
-        return nil
-    }
-
-    public static func split(total: MoneyCents, people: Int, rule: SplitRule) -> SplitResult {
-        precondition(people >= 1 && people <= 8)
-        let rejection = rejectionReason(total: total, people: people, rule: rule)
-        precondition(rejection == nil, "passengersOnly requiere al menos un pasajero")
+        guard rule != .passengersOnly || people != 1 else {
+            throw CostCoreError.passengersOnlyWithoutPassengers
+        }
+        guard total.cents >= 0 else {
+            throw CostCoreError.negativeTotal
+        }
         guard total.cents > 0 else {
             return SplitResult(shares: [])
         }
@@ -36,6 +27,7 @@ public enum SplitEngine {
             let q = total.cents / Int64(people)
             let remainder = total.cents % Int64(people)
             return SplitResult(
+                // Índice 0 = conductor; los índices restantes son pasajeros.
                 shares: [MoneyCents(cents: q + remainder)]
                     + Array(repeating: MoneyCents(cents: q), count: people - 1)
             )
