@@ -51,7 +51,8 @@ final class CostEngineTests: XCTestCase {
     }
 
     func testInvalidDistancesThrowTypedError() {
-        for distance in [-1.0, .infinity, .nan] {
+        let invalidDistances: [Double] = [-1.0, .infinity, .nan]
+        for distance in invalidDistances {
             XCTAssertThrowsError(try CostInputs(distanceMeters: distance, consumptionPer100: 1, unitPriceMilliEUR: UnitPriceMilliEUR(milliEUR: 1))) { error in
                 XCTAssertEqual(error as? CostCoreError, .invalidDistance)
             }
