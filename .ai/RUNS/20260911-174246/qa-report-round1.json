@@ -1,0 +1,152 @@
+{
+  "decision": "request_changes",
+  "acceptance_criteria_met": [
+    "G0 ejecutado primero: STATUS.md transcribe en bloque de código la salida de `swift --version` (CommandNotFoundException, exit 1) antes de cualquier etiquetado.",
+    "Si no hay toolchain: el código Swift queda UNVERIFIED-BUILD, nunca EXTERNO ni VERIFIED, y no se instala ningún toolchain — STATUS.md lo declara explícitamente y no hay rastro de instalación.",
+    "Existe EuroGas/Packages/CostCore/Package.swift con swift-tools 6.0 y CERO dependencias; el único source (CostCore.swift) no importa nada (ni siquiera Foundation), luego no hay imports de UI/CoreLocation/MapKit/GRDB/StoreKit.",
+    "Las decisiones DEC-004..DEC-007 se respetan y no se duplican: no hay EuroGas.xcodeproj ni target App, no hay capa GRDB, la taxonomía de tres estados está escrita tal cual, y no se han creado ADRs equivalentes.",
+    "El orquestador no se modifica: el diff no toca orchestrator/**, bin/**, package.json, .ai/config.json ni .ai/skills/registry.json, y `npm test` sale en verde (exit=0, 12 tests)."
+  ],
+  "acceptance_criteria_unmet": [
+    "MoneyCents y UnitPriceMilliEUR como tipos nominales distintos: NO EXISTEN. El único source Swift del tramo es `public let costModelVersion = 1`.",
+    "Motor de coste (899 / 3895 / 360 / 1149 y energyUnits 25,986 con energyCostEUR 38,953014 sin redondeo intermedio): no implementado, no probado.",
+    "Ausencia de redondeo por fix/segmento con test de N segmentos vs distancia total: no implementado.",
+    "SplitEngine con las cinco pruebas canónicas de §8.2: no implementado.",
+    "Prueba de propiedad de reparto (>=500 combinaciones, generador determinista sembrado): no implementada.",
+    "SplitResult sin campo sumable aparte y total 0 sin asientos: no implementado.",
+    "Parsing localizado es-ES con rechazo tipado de '1.499', '1,4,9', '1,4999', '' y '-1,5': no implementado.",
+    "Ledger con balance/pending/credit derivados y test de dos grupos sin compensación cruzada: no implementado.",
+    "Meses Europe/Madrid con límites [inicio(M), inicio(M+1)), closing = opening + charges - payments y tests DST de marzo/octubre: no implementado.",
+    "Ventana Free de 29 días con test de que el total del mes no disminuye: no implementada.",
+    "Propuesta de distribución de pago determinista y ejemplo de §9.3 (12+8, pago 15 = 12+3): no implementada.",
+    "DDL v1 aplicado sobre SQLite real con los doce rechazos de constraints: el fichero v1_initial.sql NO existe y el comando `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` falla con exit=1 ('Could not find').",
+    "DDL v1 sin PeriodClose/RefuelEvent ni borrado automático: no evaluable, el DDL no existe.",
+    "Verificación del esquema con SQLite real sin añadir dependencias, o etiquetado UNVERIFIED con causa: no se intentó; no hay constancia de si `node:sqlite` está disponible en este host.",
+    "EuroGas/docs/CONTRACTS.md: el fichero NO existe (ni siquiera como esqueleto).",
+    "EuroGas/docs/STATUS.md no declara que el tramo NO completa CORE-7 ni enumera VERIFIED / UNVERIFIED-BUILD / EXTERNO / recortado ni los requisitos pendientes de CORE-7 (cierre previsto en TASK-011, sin ejecutar).",
+    "Xcode, iPhone, campo, StoreKit y Live Activity aparecen en FIELD_TESTS.md como PENDIENTE con procedimiento y no se afirman probados (bien), pero NO están etiquetados como EXTERNO en STATUS.md como exige el criterio."
+  ],
+  "issues": [
+    "BLOQUEO RAÍZ (no es culpa del worker): nueve de las diez tareas del tramo nunca se ejecutaron. TASK-003, 006, 007, 008 y 009 están BLOCKED por la puerta REQUIRES_HUMAN_APPROVAL de .ai/config.json:43, que hace match por palabra clave sobre el texto de la tarea: \"payment\" (vocabulario de dominio del ledger: PaymentBatchID, propuesta de pago), \"migration\" y \"drop table\". TASK-004, 005, 010 y 011 caen en cascada por dependencia. Es una puerta de aprobación, no un fallo técnico: requiere `agents approve TASK-003 006 007 008 009` (o una revisión del keyword-matching, que es cambio de config y necesita su propia aprobación).",
+    "Caso especialmente perverso del matching: TASK-008 dispara \"drop table\" precisamente porque su lista `forbidden` PROHÍBE los DROP/DELETE automáticos, y dispara \"*.sql\" por brain_approval_paths pese a que DEC-009 ya aprobó explícitamente ese SQL. El guardrail está bloqueando el texto que describe la prohibición.",
+    "TEST EN ROJO: `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` sale con exit=1 porque el fichero no existe. La Definition of Done prohíbe aprobar con tests en rojo, con independencia de la causa.",
+    "Package.swift declara el testTarget `CostCoreTests` con path `Tests/CostCoreTests`, directorio que no existe. En un host con toolchain, `swift build`/`swift test` fallarían hoy con 'Source files for target CostCoreTests should be located under Tests/CostCoreTests'. El paquete, tal cual queda en la rama, está roto para cualquiera que lo abra en Xcode — justo el procedimiento que FIELD_TESTS.md describe como pendiente. Debe crearse el directorio (con al menos un test) antes de cerrar el tramo.",
+    "No verificable desde el rol de QA (solo lectura, sin ejecución): la fidelidad literal de la captura de PowerShell en STATUS.md. El comando transcrito es `swift --version 2>&1; if (-not $?) { exit 1 }`, no `swift --version` a secas, y la última línea del bloque no lleva el prefijo '     | ' que sí llevan las anteriores. El hecho sustantivo (no hay Swift en este host) es coherente con DEC-009 y con todo el run; lo dejo como observación, no como bloqueo.",
+    "CostCore.swift no importa Foundation. Cuando se añadan los tipos con Decimal/UUID/Date habrá que importarlo; hoy no es un defecto, pero el criterio de 'ningún import fuera de Foundation/XCTest' aún no tiene nada que verificar.",
+    "Nada VERIFIED en el tramo salvo el propio G0: el gate G2 era la única prueba VERIFIED posible en este host y no se llegó a intentar, así que no sabemos si `node:sqlite` existe en el Node instalado."
+  ],
+  "edge_cases_checked": [
+    "Repositorio real en la rama: sólo 4 ficheros nuevos bajo EuroGas/ (Package.swift, CostCore.swift, STATUS.md, FIELD_TESTS.md); 0 ficheros bajo Packages/Persistence, 0 tests Swift, 0 SQL. El diff no oculta trabajo adicional.",
+    "Grep/lectura de imports en el único source Swift: ninguno. No hay UIKit/SwiftUI/CoreLocation/MapKit/GRDB/StoreKit ni typealias Int64.",
+    "Package.swift: dependencies vacío, swift-tools-version:6.0, XCTest (no swift-testing) — coherente con el gate G0.",
+    "Coherencia declarativa de STATUS.md: distingue correctamente UNVERIFIED-BUILD de EXTERNO y dice de forma explícita que la falta de toolchain NO es EXTERNO.",
+    "FIELD_TESTS.md: los cinco apartados externos están en PENDIENTE con 'se necesita' + 'cómo se comprobará'; ningún resultado afirmado ni inventado en docs, commits ni resúmenes.",
+    "Secretos y comandos peligrosos en el diff y en los docs: ninguno. Sin curl|bash, sin sudo, sin force-push, sin .env.",
+    "Causa exacta de cada BLOCKED en .ai/TASKS.json contrastada con .ai/config.json:40-43 y con DEC-009, para distinguir fallo de worker de puerta de aprobación.",
+    "`npm test` sobre la rama integrada: 12 tests en verde, orquestador intacto — sin regresión introducida por el tramo."
+  ],
+  "regressions_suspected": [
+    "Ninguna regresión funcional: el cambio es puramente aditivo bajo EuroGas/ y la suite del orquestador sigue en verde.",
+    "Riesgo latente (no regresión de comportamiento existente): Package.swift referencia un directorio de tests inexistente, de modo que el paquete no resuelve en un host con toolchain. Se introduce en este tramo y debe cerrarse en él."
+  ],
+  "required_changes": [
+    {
+      "title": "Desbloquear la puerta de aprobación humana de TASK-003, 006, 007, 008 y 009 (acción humana, no de worker)",
+      "description": "Cinco tareas están BLOCKED por coincidencia de palabra clave en .ai/config.json:43 ('payment', 'migration', 'drop table') y por brain_approval_paths ('**/*.sql', '**/migrations/**'), aplicadas sobre el TEXTO de la tarea. En este tramo esas palabras son vocabulario de dominio (PaymentBatchID, propuesta de reparto de pago, migración de esquema local) o aparecen dentro de listas de prohibiciones; no hay pagos reales, ni datos de producción, ni borrado de datos. DEC-009 ya recoge la aprobación del Brain para el SQL v1 contra una base temporal en memoria. Sin esta acción humana el tramo no puede avanzar y cualquier siguiente ronda de QA repetirá este mismo veredicto. Ejecutar `agents approve TASK-003`, `agents approve TASK-006`, `agents approve TASK-007`, `agents approve TASK-008` y `agents approve TASK-009`, o bien decidir explícitamente reducir el alcance del tramo. NO cambiar .ai/config.json para esquivar el guardrail sin una decisión registrada: sería debilitar la puerta, y eso es en sí mismo REQUIRES_HUMAN_APPROVAL.",
+      "allowed_files": [],
+      "acceptance_criteria": [
+        "TASK-003, TASK-006, TASK-007, TASK-008 y TASK-009 dejan de estar BLOCKED y quedan ejecutables, o queda registrada por escrito la decisión de recortarlas del tramo.",
+        "No se relajan los guardrails de .ai/config.json sin un ADR que lo justifique y aprobación humana explícita."
+      ],
+      "test_commands": []
+    },
+    {
+      "title": "TASK-003 + directorio de tests: tipos monetarios nominales, roundHalfUp y parsing localizado (§5.1)",
+      "description": "Ejecutar TASK-003 tal como está descrita en .ai/TASKS.json (structs MoneyCents y UnitPriceMilliEUR, nunca typealias de Int64; PersonID/GroupID/TripID/PaymentBatchID; roundHalfUp documentado sin depender de los empates de NSDecimalRound(.plain); parsing que sólo consulta locale.decimalSeparator, sin NumberFormatter, con MoneyParseError y mensajes corregibles en español). ADEMÁS, y esto es un defecto detectado en QA sobre el trabajo ya integrado: al crear Tests/CostCoreTests se cierra el hueco por el que Package.swift referencia hoy un directorio inexistente; verificar que tras esta tarea el testTarget apunta a un directorio con al menos un fichero de test. Sin toolchain en el host, el entregable se etiqueta UNVERIFIED-BUILD y NO se afirma que los tests pasen.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Support/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/MoneyTypesTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/RoundingTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/ParsingTests.swift"
+      ],
+      "acceptance_criteria": [
+        "MoneyCents y UnitPriceMilliEUR son structs distintos; grep de 'typealias' sobre Support/ no devuelve dinero ni precio; ninguna API pública devuelve Int64 desnudo salvo lectura explícita del valor bruto.",
+        "'1,499' con Locale(identifier: \"es_ES\") da UnitPriceMilliEUR(1499) y '14,99' da MoneyCents(1499).",
+        "'1.499', '1,4,9', '1,4999' (precio), '' y '-1,5' lanzan un caso concreto de MoneyParseError con mensaje corregible; ningún test espera reinterpretación.",
+        "Los sources importan sólo Foundation; los tests sólo Foundation y XCTest.",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/ existe y contiene al menos un fichero, de modo que el testTarget de Package.swift deja de apuntar a un directorio vacío.",
+        "El resumen etiqueta el entregable UNVERIFIED-BUILD y no afirma compilación ni ejecución de tests."
+      ],
+      "test_commands": []
+    },
+    {
+      "title": "TASK-004 y TASK-005: CostEngine con un único redondeo final y SplitEngine con prueba de propiedad",
+      "description": "Ejecutar TASK-004 y TASK-005 según .ai/TASKS.json. Puntos que QA verificará por lectura: un solo roundHalfUp en todo el camino de cálculo (grep en Cost/), energyCostEUR expuesto en Decimal sin redondear, test de acumulación por segmentos idéntico al cálculo sobre la distancia total, y SplitResult sin ningún importe sumable aparte de shares (grep de 'driverExtra' vacío). La prueba de propiedad usa un LCG propio sembrado, sin dependencias. Etiquetado UNVERIFIED-BUILD mientras no haya toolchain.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Models/*",
+        "EuroGas/Packages/CostCore/Sources/CostCore/Cost/*",
+        "EuroGas/Packages/CostCore/Sources/CostCore/Split/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitEngineTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitPropertyTests.swift"
+      ],
+      "acceptance_criteria": [
+        "Los tests fijan 899, 3895 y 360 céntimos para los tres casos de §5.3 y 1149 al añadir un gasto manual de 250.",
+        "El caso de 355 km comprueba energyUnits == 25,986 y energyCostEUR == 38,953014 como Decimal exacto, sin tolerancia de coma flotante.",
+        "Existe un test que compara N segmentos acumulados contra la distancia total y exige igualdad exacta en céntimos y en energyCostEUR; grep muestra una sola llamada a roundHalfUp en Cost/.",
+        "Las cinco pruebas canónicas de §8.2 están escritas con las partes exactas (3420/7 -> 492 + seis de 488; 3420/4 passengersOnly -> 0 + tres de 1140; 1000/4 passengersOnly -> 0 + 334/333/333; 399/4 -> 102 + tres de 99; 400/4 -> 100 cada uno).",
+        "La prueba de propiedad recorre >= 500 combinaciones con generador determinista sembrado y comprueba suma(shares) == total, partes >= 0, determinismo y conductor 0 en passengersOnly; ningún test exige monotonía y hay uno que documenta 399 -> 400.",
+        "Total 0 produce todas las partes 0 y ningún asiento, con test explícito; grep de 'driverExtra' no devuelve nada."
+      ],
+      "test_commands": []
+    },
+    {
+      "title": "TASK-006, TASK-007 y TASK-008: ledger derivado, ventana Free, propuesta de pago y DDL v1 verificado sobre SQLite real",
+      "description": "Ejecutar las tres tareas según .ai/TASKS.json. La pieza crítica para el veredicto de QA es TASK-008: hoy el comando de test de la rama falla con exit=1 porque schema_v1.test.mjs no existe. El arnés debe leer el texto de v1_initial.sql del fichero (sin duplicar SQL en JS), abrir una base EN MEMORIA con node:sqlite dentro de try/catch, activar PRAGMA foreign_keys y comprobar los doce rechazos. Si node:sqlite NO está disponible en el Node instalado, el arnés hace t.skip con la causa exacta, el comando sale con código 0, y el esquema se reporta UNVERIFIED con esa causa registrada: PROHIBIDO instalar nada o tocar package.json. Registrar la salida literal del comando, incluidos los avisos de módulo experimental.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/LedgerMathTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/AccountingPeriodTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/FreeWindowTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/PaymentAllocationTests.swift",
+        "EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql",
+        "EuroGas/Packages/Persistence/Tests/PersistenceTests/*",
+        "EuroGas/Packages/Persistence/README.md"
+      ],
+      "acceptance_criteria": [
+        "`node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` sale con código 0, con su salida literal registrada, y `npm test` sigue en verde.",
+        "Cada uno de estos casos tiene subtest propio y queda RECHAZADO: amountCents = 0, debtorID == creditorID, charge con paymentBatchID, payment con tripID, groupID NULL, segundo owner, segundo viaje activo/interrumpido, cargo duplicado por persona+viaje, precio <= 0, consumo <= 0, endedAt < startedAt y FK inexistente; PRAGMA foreign_keys comprobado activo.",
+        "El DDL no contiene PeriodClose ni RefuelEvent ni ninguna sentencia de borrado automático; no se añaden dependencias ni se modifica package.json; no hay Swift ni GRDB en Persistence.",
+        "balance/pending/credit se derivan en cada consulta, no hay campo ni caché de saldo, groupID no es opcional, y un test con dos grupos demuestra que un crédito en uno no reduce el pendiente del otro.",
+        "bounds(forMonth:in:) implementa [inicio(M), inicio(M+1)), closing = opening + charges - payments, mes sin cargos da closing == opening, y hay tests explícitos en las fronteras DST de marzo y octubre de Europe/Madrid; si Europe/Madrid no está disponible se lanza error tipado, sin fallback a UTC.",
+        "visibleRange va de las 00:00 de hace 29 días en la zona contable hasta now, con test de cruce de cambio de hora y test de que el total del mes NO disminuye cuando un viaje sale de la ventana.",
+        "El ejemplo de §9.3 (1200 Trabajo + 800 Universidad, pago 1500 = 1200 + 300) deja Trabajo 0 y Universidad 500; la suma de partidas es exactamente el importe; sobrepago sin creditGroupID y amount <= 0 lanzan error tipado."
+      ],
+      "test_commands": [
+        "node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs",
+        "npm test"
+      ]
+    },
+    {
+      "title": "TASK-009 y TASK-011: CONTRACTS.md y cierre honesto de STATUS.md",
+      "description": "Ejecutar TASK-009 y TASK-011 según .ai/TASKS.json, una vez exista el código que congelar. CONTRACTS.md transcribe firmas REALES leídas del código (no inventadas) y declara v1_initial.sql como única definición del esquema v1, con tabla de propietario de archivo. STATUS.md añade el cierre: comandos ejecutados con su salida y código de salida, una sola etiqueta por entregable, sección de RECORTADO (incluido S3/TASK-010 si se recorta), declaración destacada de que el tramo NO completa CORE-7 ('Beta parcial', §20.2), requisitos pendientes de CORE-7, siguiente ticket y handoff §19.4. Xcode, iPhone, campo, StoreKit real y Live Activity deben quedar etiquetados EXTERNO remitiendo a FIELD_TESTS.md — hoy STATUS.md define la taxonomía pero no etiqueta esos cinco. Si la verificación del esquema quedó saltada por falta de node:sqlite, STATUS.md lo dice como UNVERIFIED con la causa, no como VERIFIED ni como EXTERNO.",
+      "allowed_files": [
+        "EuroGas/docs/CONTRACTS.md",
+        "EuroGas/docs/STATUS.md"
+      ],
+      "acceptance_criteria": [
+        "CONTRACTS.md existe y sus firmas coinciden literalmente con el código de CostCore; enumera todos los errores tipados con sus casos; declara v1_initial.sql como única definición del esquema; incluye tabla de propietario de archivo; marca PENDIENTE LocationProvider, RoutingService, PurchaseAccess y ActiveTripState; no afirma builds ni pruebas y remite a STATUS.md.",
+        "STATUS.md declara explícitamente que este tramo NO completa CORE-7 y lo llama Beta parcial, con la lista de requisitos de CORE-7 pendientes y el siguiente ticket.",
+        "Cada entregable lleva exactamente una etiqueta VERIFIED / UNVERIFIED-BUILD / EXTERNO y existe sección de recortados; ningún VERIFIED sin salida de comando registrada en el mismo documento.",
+        "Xcode, instalación en iPhone, tracking de campo, StoreKit real y Live Activity aparecen etiquetados EXTERNO con remisión a FIELD_TESTS.md y sin afirmarse probados.",
+        "La ausencia de toolchain Swift aparece como UNVERIFIED-BUILD, nunca como EXTERNO.",
+        "Incluye el handoff en el formato de §19.4 y registra `npm test` en verde; no se modifica .ai/PROJECT_STATE.md ni nada del orquestador."
+      ],
+      "test_commands": [
+        "npm test"
+      ]
+    }
+  ],
+  "definition_of_done_met": false,
+  "summary": "No apruebo. El tramo está al ~5%: de las diez tareas planificadas sólo se ejecutó TASK-002 (gate G0). La rama contiene cuatro ficheros —Package.swift, un CostCore.swift con `public let costModelVersion = 1`, STATUS.md y FIELD_TESTS.md— y ni una sola línea del núcleo económico. De los 21 criterios de aceptación, 5 se cumplen y 17 no; entre los incumplidos están TODOS los sustantivos: tipos monetarios, motor de coste, reparto, parsing, ledger, periodos Europe/Madrid, ventana Free, propuesta de pago, DDL v1 y CONTRACTS.md (este último ni existe como fichero).\n\nAdemás hay un test en rojo en la rama integrada: `node --test .../schema_v1.test.mjs` sale con exit=1 porque el fichero no existe. La Definition of Done prohíbe aprobar con tests en rojo.\n\nLo que SÍ está hecho está bien hecho y lo separo del resto con claridad: TASK-002 cumple sus cinco criterios, G0 se ejecutó primero y su salida está transcrita en bloque de código, la taxonomía de DEC-006 está escrita correctamente —incluida la frase explícita de que la falta de toolchain NO es EXTERNO—, FIELD_TESTS.md deja los cinco procedimientos externos en PENDIENTE sin afirmar ningún resultado, y el orquestador queda intacto con `npm test` en verde. No hay secretos, ni dependencias nuevas, ni instalación de toolchain, ni comandos peligrosos.\n\nLa causa del parón no es un fallo de implementación: TASK-003, 006, 007, 008 y 009 están BLOCKED por la puerta REQUIRES_HUMAN_APPROVAL de .ai/config.json:43, que hace match por palabra clave sobre el texto de la tarea — 'payment' (vocabulario de dominio del ledger), 'migration' y 'drop table'. TASK-008 dispara 'drop table' precisamente porque su lista de prohibiciones prohíbe los DROP automáticos, y dispara '**/*.sql' pese a que DEC-009 ya aprobó ese SQL. TASK-004, 005, 010 y 011 caen en cascada. Es una puerta de aprobación funcionando como está diseñada sobre un texto que no describe riesgo real; se levanta con `agents approve`, no con código, y no debe esquivarse relajando el guardrail sin un ADR.\n\nDefecto propio que sí exige arreglo dentro del tramo: Package.swift declara el testTarget CostCoreTests con path Tests/CostCoreTests, un directorio que no existe. Hoy el paquete no resolvería en un host con toolchain — justo el procedimiento que FIELD_TESTS.md lista como pendiente. Lo he plegado en la primera required_change de código.\n\nObservación no bloqueante y que no puedo cerrar desde un rol de solo lectura: STATUS.md transcribe la salida de `swift --version 2>&1; if (-not $?) { exit 1 }`, no del comando a secas, y la última línea del bloque no lleva el prefijo de continuación que sí llevan las anteriores. El hecho de fondo (no hay Swift en este host) es coherente con todo el run; la fidelidad literal exacta queda sin verificar.\n\nDecido request_changes y no reject: el enfoque es correcto y las decisiones DEC-004..007 se respetan; lo que falta es ejecutar, y para ejecutar hace falta primero una aprobación humana que el orquestador debe escalar."
+}

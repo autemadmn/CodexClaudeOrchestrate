@@ -1,0 +1,33 @@
+{
+  "objective": "Implementar EuroGas conforme a ARCHITECTURE_BLUEPRINT_rev5.md, completando el mayor tramo seguro e integrado de CORE-7 verificable en este entorno.",
+  "result": "PARTIAL",
+  "completed": [
+    "Según los resúmenes, 3/20 tareas integradas en feature/implementa-eurogas-usando-architecture-b-174246.",
+    "Paquete CostCore y tipos monetarios con parsing y redondeo; revisión estática favorable, ejecución Swift sin verificar.",
+    "npm test: 35/35 pruebas del orquestador aprobadas; no acredita el funcionamiento de EuroGas."
+  ],
+  "failed": [
+    "QA solicita cambios: faltan CostEngine, SplitEngine, ledger, ventana Free, distribución de pagos y persistencia.",
+    "El test del esquema SQLite termina con exit=1 porque el arnés no existe; G2 no ejecutado.",
+    "Contratos incompletos y ruta canónica del DDL inconsistente.",
+    "Reintentos agotados y cambios fuera del alcance permitido impidieron integrar trabajo adicional."
+  ],
+  "blockers": [
+    "Puertas REQUIRES_HUMAN_APPROVAL pendientes; Brain no puede levantarlas.",
+    "Fallos repetidos requieren escalación humana antes de nuevos intentos sobre el mismo alcance.",
+    "swift --version terminó con exit=1: compilación y pruebas Swift permanecen UNVERIFIED-BUILD.",
+    "Autenticación actual de Codex desconocida; debe verificarse antes de reanudar sin fallback."
+  ],
+  "decisions": [
+    "No declarar SUCCESS: faltan entregables obligatorios, hay un test fallido y QA no aprueba.",
+    "Conservar el trabajo integrado correcto y mantener rev5 como especificación vigente.",
+    "Priorizar contratos, CostEngine, SplitEngine, ledger, persistencia y pruebas críticas; diferir extras y la dependencia GRDB.",
+    "Adoptar EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql como ruta canónica; pendiente reflejarla en los contratos.",
+    "La revisión estática no sustituye compilación ni pruebas ejecutadas; no confundir UNVERIFIED-BUILD de Swift con EXTERNO.",
+    "Registrar como EXTERNO la validación Xcode, iPhone, tracking de campo, StoreKit real y Live Activity.",
+    "Mantener Brain y Worker en Codex sin fallback; no realizar deploy, TestFlight, compras reales, push ni cambios de producción."
+  ],
+  "next_recommended_action": "Escalar al humano una resolución consolidada de las puertas pendientes y los intentos agotados, con alcance local explícito y permisos de archivos coherentes, antes de reanudar CORE-7.",
+  "project_state_md": "# PROJECT STATE\n\n## Current status\nEuroGas CORE-7 parcialmente integrado en `feature/implementa-eurogas-usando-architecture-b-174246`: 3/20 tareas. QA solicita cambios. Especificación vigente: `ARCHITECTURE_BLUEPRINT_rev5.md`.\n\n## Features done\n- Orquestador operativo; `npm test` pasa 35/35.\n- Paquete CostCore y tipos monetarios, parsing y redondeo revisados estáticamente. Swift: UNVERIFIED-BUILD.\n\n## In progress\n- Contratos completos, CostEngine, SplitEngine, ledger, ventana Free, distribución de pagos y persistencia SQLite con pruebas críticas.\n\n## Blockers\n- Aprobaciones humanas pendientes e intentos agotados; no repetir automáticamente.\n- Test SQLite falla por arnés inexistente; G2 no ejecutado.\n- Swift no verificado en este host; autenticación actual de Codex desconocida. Brain y Worker requieren Codex sin fallback.\n- Validación Xcode, iPhone, tracking de campo, StoreKit real y Live Activity: EXTERNO.\n\n## Important debt\n- Completar contratos y unificar la ruta del DDL en `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`.\n- Corregir alcances de archivos y derivar constantes esperadas antes de fijar pruebas.\n- Deuda previa de `slugify`/`truncate` documentada en DEC-003.\n\n## Pending decisions\n- Resolución humana de puertas de aprobación y fallos repetidos.\n- Condiciones de integración adicional de Swift sin compilación verificada.\n\n## Next priority\nResolver la escalación consolidada y reanudar el núcleo económico y la persistencia, conservando lo correcto y aportando evidencia ejecutada. Sin deploy, TestFlight, compras reales, push ni producción.\n",
+  "roadmap_update": "\n## EuroGas — CORE-7\n- Producto elegido: EuroGas; especificación vigente `ARCHITECTURE_BLUEPRINT_rev5.md`.\n- Avance parcial: paquete y tipos monetarios integrados; Swift UNVERIFIED-BUILD. QA pendiente de aprobación.\n- Prioridad: resolver aprobaciones y fallos repetidos; completar contratos, coste, reparto, ledger y SQLite con pruebas críticas.\n- Validaciones Apple y de campo: EXTERNO. Brain y Worker en Codex sin fallback.\n"
+}

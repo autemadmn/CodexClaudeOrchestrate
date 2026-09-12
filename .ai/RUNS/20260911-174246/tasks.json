@@ -1,0 +1,544 @@
+[
+  {
+    "id": "TASK-002",
+    "title": "G0: registrar swift --version y crear el paquete CostCore vacío",
+    "description": "Primera acción del tramo, bloqueante para el etiquetado de todo lo demás.\n\n1) Ejecutar `swift --version` en este host (Windows 11) y capturar la salida LITERAL, sea éxito o error (incluido el mensaje de 'command not found' de PowerShell). No instalar nada bajo ningún concepto: DEC-009 registra que el humano aceptó continuar SIN instalar toolchain.\n\n2) Crear `EuroGas/Packages/CostCore/Package.swift` con `// swift-tools-version:6.0`, nombre `CostCore`, CERO dependencias de paquete, un target `CostCore` (Sources/CostCore) y un testTarget `CostCoreTests` (Tests/CostCoreTests) que depende de `CostCore`. Las pruebas usarán **XCTest** (no swift-testing) para no depender de la disponibilidad del paquete de testing.\n\n3) Crear `EuroGas/Packages/CostCore/Sources/CostCore/CostCore.swift` con sólo la documentación del módulo y una constante `public let costModelVersion = 1`. Este fichero es el único source que crea esta tarea; el resto de carpetas las crean otras tareas.\n\n4) Crear `EuroGas/docs/STATUS.md` inicial con: la salida literal de `swift --version`, la taxonomía de DEC-006 (VERIFIED = comando ejecutado aquí con salida real; UNVERIFIED-BUILD = código escrito sin compilar aquí por falta de toolchain; EXTERNO = depende de Apple/hardware/credenciales) y la consecuencia elegida del gate G0 para este host. Si no hay Swift, escribir explícitamente que todo el código Swift del tramo queda UNVERIFIED-BUILD y que eso NO es EXTERNO.\n\n5) Crear `EuroGas/docs/FIELD_TESTS.md` con SÓLO procedimientos pendientes para lo EXTERNO (apertura en Xcode, instalación en iPhone, tracking de campo, StoreKit real, Live Activity). Cada apartado dice qué se necesita y cómo se comprobará; queda PENDIENTE. Prohibido inventar resultados o dar por probado nada.\n\nNo escribir todavía el cierre del tramo en STATUS.md: otra tarea lo completa al final.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P0",
+    "dependencies": [],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Package.swift",
+      "EuroGas/Packages/CostCore/Sources/CostCore/CostCore.swift",
+      "EuroGas/docs/STATUS.md",
+      "EuroGas/docs/FIELD_TESTS.md"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      ".ai/DECISIONS/DEC-004-no-crear-eurogas-xcodeproj-ni-el-target-app-en-est.md",
+      ".ai/DECISIONS/DEC-006-taxonom-a-obligatoria-de-tres-estados-verified-unv.md",
+      ".ai/DECISIONS/DEC-009-brain-approved-sql-and-unverified-build.md"
+    ],
+    "acceptance_criteria": [
+      "La salida literal de `swift --version` (éxito o error) aparece transcrita en EuroGas/docs/STATUS.md, en bloque de código, sin reescribirla ni resumirla.",
+      "Package.swift declara swift-tools-version:6.0, cero dependencias de paquete y los targets CostCore y CostCoreTests.",
+      "STATUS.md define la taxonomía de tres estados y, si no hay toolchain, declara que el código Swift queda UNVERIFIED-BUILD y que eso no es EXTERNO.",
+      "FIELD_TESTS.md sólo contiene procedimientos pendientes para Xcode, iPhone, campo, StoreKit y Live Activity, sin ningún resultado afirmado.",
+      "No se ha instalado ningún toolchain ni se ha modificado nada fuera de allowed_files."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Instalar Swift, Xcode, sqlite u otro software en el host",
+      "Crear EuroGas.xcodeproj, un target App o cualquier fichero de Xcode (DEC-004)",
+      "Declarar dependencias de paquete en Package.swift",
+      "Etiquetar como VERIFIED cualquier cosa sin salida de comando, o como EXTERNO la ausencia de toolchain local",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/config.json, .ai/skills/registry.json",
+      "Crear ADRs nuevos"
+    ],
+    "approval_category": "AUTO_APPROVED",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.124Z",
+    "updated_at": "2026-09-11T18:45:48.142Z"
+  },
+  {
+    "id": "TASK-003",
+    "title": "Tipos monetarios, redondeo half-up y parsing localizado (§5.1)",
+    "description": "Crear el cimiento del contrato monetario en `EuroGas/Packages/CostCore/Sources/CostCore/Support/`. Sólo `import Foundation`.\n\nTipos nominales DISTINTOS (DEC-007), structs, NUNCA typealias de Int64:\n- `MoneyCents`: importe final en céntimos EUR. Almacenamiento interno Int64 privado o de lectura explícita (`rawCents`), inicializador `init(_ cents: Int64)`, `+`, `-`, suma de colecciones, `Comparable`, `Hashable`, `Sendable`, `zero`. NO conforma a `ExpressibleByIntegerLiteral` ni ofrece conversión implícita a/desde Int64 ni a/desde UnitPriceMilliEUR.\n- `UnitPriceMilliEUR`: precio por litro o kWh en milésimas de euro (`1,499 €/L -> 1499`; `0,200 €/kWh -> 200`). Sin aritmética monetaria con MoneyCents; expone su valor como `Decimal` para el motor de coste.\n\nIdentificadores de dominio (los usarán reparto y ledger): `PersonID`, `GroupID`, `TripID`, `PaymentBatchID` como structs envoltorio de `UUID`, `Hashable`, `Sendable`.\n\n`roundHalfUp(_ value: Decimal) -> Decimal` (escala 0, half-up para valores no negativos) y `MoneyCents(roundingHalfUp eurCents: Decimal)`. IMPORTANTE: implementarlo de forma explícita y documentada; si se usa `NSDecimalRound`, usar `.down` para el suelo y componer `floor(x + 0.5)` para no depender del comportamiento de empates de `.plain` en corelibs-foundation (Windows). Documentar en comentario por qué.\n\nParsing localizado explícito, sin `NumberFormatter` (su comportamiento difiere entre Darwin y corelibs):\n- `MoneyCents.parse(_ text: String, locale: Locale) throws -> MoneyCents` (máx. 2 decimales).\n- `UnitPriceMilliEUR.parse(_ text: String, locale: Locale) throws -> UnitPriceMilliEUR` (máx. 3 decimales).\n- Se usa ÚNICAMENTE `locale.decimalSeparator` (es-ES: coma). Cualquier carácter que no sea dígito o ese separador se RECHAZA; no se normaliza, no se sustituye, no se ignora.\n- Se rechaza con error tipado: separador de millares ('1.499' en es-ES), más de un separador ('1,4,9'), demasiados decimales ('1,4999' como precio), cadena vacía, signo negativo ('-1,5'), espacios internos, símbolos de moneda, y valor fuera de rango de Int64.\n- `enum MoneyParseError: Error, Equatable` con casos distinguibles y `correctableMessage: String` en español que diga al usuario cómo corregir (ej. 'Usa la coma como separador decimal y no escribas separador de miles').\n\nTests en `Tests/CostCoreTests/` (XCTest): `MoneyTypesTests.swift`, `RoundingTests.swift`, `ParsingTests.swift`. Cubrir: 1,499 -> UnitPriceMilliEUR(1499); 14,99 -> MoneyCents(1499); 0,200 -> 200; todos los rechazos anteriores comprobando el caso de error concreto; empates de redondeo 0,5 -> 1, 1,5 -> 2, 2,5 -> 3 y 3895,3014 -> 3895.\n\nSi no hay toolchain Swift, el código NO se compila aquí: declararlo UNVERIFIED-BUILD en el resumen y no afirmar que los tests pasan (DEC-009).",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "BLOCKED",
+    "priority": "P0",
+    "dependencies": [
+      "TASK-002"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/*",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/MoneyTypesTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/RoundingTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/ParsingTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      ".ai/DECISIONS/DEC-007-tipos-monetarios-nominales-distintos-en-lugar-de-i.md",
+      "EuroGas/Packages/CostCore/Package.swift"
+    ],
+    "acceptance_criteria": [
+      "MoneyCents y UnitPriceMilliEUR son structs distintos, no typealias, y ninguna API pública acepta ni devuelve Int64 desnudo para dinero o precio salvo el inicializador explícito y la lectura explícita del valor bruto.",
+      "Ningún fichero de la tarea importa nada fuera de Foundation (sources) y Foundation/XCTest (tests).",
+      "'1,499' con Locale(identifier: \"es_ES\") produce UnitPriceMilliEUR(1499) y '14,99' produce MoneyCents(1499).",
+      "'1.499', '1,4,9', '1,4999' (precio), '' y '-1,5' lanzan un caso concreto de MoneyParseError con mensaje corregible en español; ningún test espera que se reinterpreten.",
+      "roundHalfUp está implementado sin depender del comportamiento de empates de NSDecimalRound(.plain), con comentario que lo justifica, y hay tests de empate 0,5/1,5/2,5.",
+      "El parsing no usa NumberFormatter y sólo consulta locale.decimalSeparator.",
+      "El resumen del worker etiqueta el entregable como UNVERIFIED-BUILD si `swift build` no se pudo ejecutar en este host."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Usar typealias Int64 para dinero o precio",
+      "Usar NumberFormatter, replacingOccurrences o cualquier 'arreglo' de entradas ambiguas",
+      "Añadir conformidad ExpressibleByIntegerLiteral a los tipos monetarios",
+      "Importar UIKit, SwiftUI, CoreLocation, MapKit, GRDB o StoreKit",
+      "Instalar toolchains o añadir dependencias",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "REQUIRES_HUMAN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [
+      "REQUIRES_HUMAN_APPROVAL: keyword \"payment\". Approve with: agents approve TASK-003"
+    ],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.127Z",
+    "updated_at": "2026-09-11T18:45:48.143Z"
+  },
+  {
+    "id": "TASK-004",
+    "title": "Modelos de snapshot y CostEngine (§5.2, §5.3)",
+    "description": "Crear en `Sources/CostCore/Models/` los modelos de snapshot y en `Sources/CostCore/Cost/` el motor de coste. Sólo Foundation; reutilizar los tipos de Support (MoneyCents, UnitPriceMilliEUR, roundHalfUp) sin redefinirlos.\n\nModels: `enum EnergyKind { case fuel, electric }` (o los casos de la beta con unidad L/kWh asociada), `ConsumptionProfileSnapshot { consumptionPer100: Decimal, realWorldFactor: Decimal, source, unit }`, `FuelPriceSnapshot { energyKind, unitPrice: UnitPriceMilliEUR, effectiveFrom: Date }`. Son SNAPSHOTS inmutables: el motor recibe los valores del viaje, de modo que cambiar precio o consumo en Ajustes no altera viajes existentes.\n\nCost:\n- `struct CostInputs { acceptedDistanceMeters: Double; consumptionPer100: Decimal; realWorldFactor: Decimal; unitPrice: UnitPriceMilliEUR; energyKind: EnergyKind; manualExpenses: [MoneyCents] }`.\n- `struct CostBreakdown { effectiveConsumption: Decimal; energyUnits: Decimal; energyCostEUR: Decimal (SIN redondear); energyCostCents: MoneyCents; extrasCents: MoneyCents; totalCents: MoneyCents }`.\n- `CostEngine.breakdown(for: CostInputs) throws -> CostBreakdown` aplicando exactamente:\n  effectiveConsumption = consumptionPer100 * realWorldFactor;\n  energyUnits = Decimal(acceptedDistanceMeters) / 100000 * effectiveConsumption;\n  energyCostEUR = energyUnits * Decimal(unitPrice milésimas) / 1000;\n  energyCostCents = roundHalfUp(energyCostEUR * 100);\n  totalCents = energyCostCents + suma de manualExpenses.\n  TODO en Decimal, con UN ÚNICO redondeo final half-up. Prohibido redondear por fix, por segmento o antes de multiplicar por el precio.\n- `enum CostError: Error, Equatable` con mensaje corregible para: precio <= 0, consumo <= 0, factor <= 0, distancia negativa, distancia no finita (NaN/infinito). Nada de valores por defecto silenciosos.\n\nTests en `Tests/CostCoreTests/CostEngineTests.swift`:\n- 100 km, 6 L/100, f=1, 1,499 €/L -> energyUnits == 6, energyCostCents == 899.\n- 355 km, 6,1 L/100, f=1,20, 1,499 €/L -> effectiveConsumption == 7,32; energyUnits == 25,986; energyCostEUR == 38,953014 exacto (comparación de Decimal, sin tolerancia de coma flotante); energyCostCents == 3895.\n- 100 km, 18 kWh/100, f=1, 0,200 €/kWh -> energyUnits == 18, energyCostCents == 360.\n- 899 de energía + gasto manual de 250 -> totalCents == 1149.\n- Test anti-redondeo-intermedio: acumular N segmentos (p. ej. 12 tramos irregulares que sumen 355000 m) y comprobar que el breakdown sobre la suma de distancias es IDÉNTICO en céntimos y en energyCostEUR al cálculo con la distancia total de una vez.\n- Bordes: precio 0, consumo 0, distancia -1, distancia .nan -> el CostError concreto.\n\nSi no hay toolchain, etiquetar UNVERIFIED-BUILD y no afirmar que los tests pasan.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P0",
+    "dependencies": [
+      "TASK-003"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/Models/*",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Cost/*",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/",
+      "EuroGas/Packages/CostCore/Package.swift"
+    ],
+    "acceptance_criteria": [
+      "CostBreakdown expone energyCostEUR como Decimal sin redondear y energyCostCents/extrasCents/totalCents como MoneyCents; ninguna firma pública usa Int64 ni Double para dinero.",
+      "Los tests fijan 899, 3895 y 360 céntimos para los tres casos de §5.3 y 1149 al sumar un gasto manual de 250.",
+      "El caso de 355 km comprueba energyUnits == 25,986 y energyCostEUR == 38,953014 como Decimal exacto, sin redondeo intermedio.",
+      "Existe un test que compara la acumulación por segmentos con el cálculo sobre la distancia total y exige igualdad exacta.",
+      "Hay un único roundHalfUp en todo el camino de cálculo (verificable por grep: una sola llamada en Cost/).",
+      "Precio, consumo o factor <= 0 y distancia negativa o no finita lanzan un caso concreto de CostError con mensaje corregible.",
+      "No se redefinen MoneyCents, UnitPriceMilliEUR ni roundHalfUp; se reutilizan los de Support."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Redondear a céntimos en cualquier punto intermedio",
+      "Usar Double para dinero, consumo o coste",
+      "Importar UIKit, SwiftUI, CoreLocation, MapKit, GRDB o StoreKit",
+      "Modificar ficheros de Support/",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "AUTO_APPROVED",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.128Z",
+    "updated_at": "2026-09-11T18:45:48.144Z"
+  },
+  {
+    "id": "TASK-005",
+    "title": "SplitEngine y SplitResult (§8) con prueba de propiedad",
+    "description": "Crear `Sources/CostCore/Split/` con el motor de reparto. Sólo Foundation; reutilizar MoneyCents y PersonID de Support.\n\nContrato (§8.2): `SplitResult` contiene SÓLO las partes finales, incluido el conductor, y su suma YA es el total. Prohibido cualquier campo que haya que sumar aparte (nada de `driverExtra`). Se permite una nota informativa opcional sobre el redondeo (texto o enum), que no participa en la suma.\n\n- `enum SplitRule { case everyone, passengersOnly }`.\n- `struct Participant { id: PersonID; role: Role (driver|passenger); sortOrder: Int }`.\n- `struct SplitResult { shares: [(participantID: PersonID, amount: MoneyCents)] (o un struct Share equivalente, orden estable por sortOrder); roundingNote: String? }`.\n- `SplitEngine.split(total: MoneyCents, participants: [Participant], rule: SplitRule) throws -> SplitResult`.\n\nReglas exactas:\n- everyone: q = total / n (entera), r = total % n; cada pasajero q; el conductor q + r.\n- passengersOnly: exige >= 1 pasajero; q = total / passengerCount, r = total % passengerCount; los primeros r pasajeros por sortOrder ascendente reciben +1 céntimo; el conductor 0.\n- Total 0 -> todas las partes 0 y NINGÚN asiento (la semántica de 'ningún asiento' se expresa en el resultado, p. ej. shares vacío o una propiedad `createsEntries == false`; documentarlo y probarlo, sin inventar cargos de 0).\n- `enum SplitError: Error, Equatable`: passengersOnly con 0 pasajeros, menos de 1 o más de 8 participantes, conductor ausente, conductor duplicado, total negativo.\n\nTests en `Tests/CostCoreTests/SplitEngineTests.swift` y `SplitPropertyTests.swift`:\n- Las cinco pruebas canónicas de §8.2 con partes exactas: 3420/7 everyone -> conductor 492 y seis de 488; 3420/4 passengersOnly -> conductor 0 y tres de 1140; 1000/4 passengersOnly -> conductor 0 y 334, 333, 333; 399/4 everyone -> conductor 102 y tres de 99; 400/4 everyone -> 100 cada uno.\n- Prueba de propiedad sobre AL MENOS 500 combinaciones generadas con un generador pseudoaleatorio DETERMINISTA y sembrado escrito a mano (LCG propio; cero dependencias): total 0..100000, n 1..8, ambas reglas (saltando passengersOnly con n == 1, que debe lanzar error). Invariantes: suma(shares) == total exacto; todas las partes >= 0; dos llamadas idénticas dan resultado idéntico; en passengersOnly la parte del conductor es 0. NO exigir monotonía de la parte del conductor (399->400 es contraejemplo legítimo; añadir un test que documente ese caso).\n- Bordes: 0 pasajeros con passengersOnly, 9 participantes, 0 participantes, dos conductores, ningún conductor.\n\nSi no hay toolchain, etiquetar UNVERIFIED-BUILD y no afirmar que los tests pasan.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P0",
+    "dependencies": [
+      "TASK-003"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/Split/*",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitEngineTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitPropertyTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/",
+      "EuroGas/Packages/CostCore/Package.swift"
+    ],
+    "acceptance_criteria": [
+      "SplitResult no expone ningún campo monetario que deba sumarse aparte de shares; grep de 'driverExtra' no devuelve nada.",
+      "Las cinco pruebas canónicas de §8.2 están escritas con las partes exactas indicadas, incluida la asignación por sortOrder en passengersOnly.",
+      "La prueba de propiedad recorre >= 500 combinaciones con generador determinista sembrado y comprueba suma == total, partes >= 0, determinismo y conductor 0 en passengersOnly.",
+      "Ningún test exige monotonía de la parte del conductor; existe un test que documenta 399 -> 400.",
+      "Total 0 produce todas las partes 0 y ningún asiento, con test explícito.",
+      "passengersOnly sin pasajeros, <1 o >8 participantes y conductor ausente o duplicado lanzan el caso concreto de SplitError."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Introducir driverExtra o cualquier importe sumable fuera de shares",
+      "Usar aleatoriedad no sembrada en los tests",
+      "Añadir dependencias de propiedad (SwiftCheck u otras)",
+      "Importar frameworks de UI o de sistema",
+      "Modificar Support/, Cost/ o Models/",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "AUTO_APPROVED",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.130Z",
+    "updated_at": "2026-09-11T18:45:48.144Z"
+  },
+  {
+    "id": "TASK-006",
+    "title": "Ledger derivado y periodos Europe/Madrid (§7.2, §9.4)",
+    "description": "Crear en `Sources/CostCore/Ledger/` los saldos derivados y los periodos contables. Sólo Foundation; reutilizar MoneyCents, PersonID, GroupID, TripID, PaymentBatchID de Support.\n\nFicheros de esta tarea: `LedgerEntry.swift`, `LedgerMath.swift`, `AccountingPeriod.swift`, `MonthlyStatement.swift`.\n\n- `LedgerEntry` (valor puro, sin persistencia): id, kind (charge|payment), debtorID, creditorID, amountCents: MoneyCents, groupID: GroupID (OBLIGATORIO, nunca opcional: 'Sin grupo' sustituye a NULL), tripID: TripID?, paymentBatchID: PaymentBatchID?, occurredAt: Date.\n- `LedgerMath`: `balance(entries:person:group:) -> MoneyCents` firmado = Σcargos − Σpagos; `pending(...) = max(balance, 0)`; `credit(...) = max(−balance, 0)`; y la variante global por persona = suma de los saldos por grupo. TODO derivado en cada consulta: prohibido cualquier campo o caché de saldo. Un crédito en un grupo NO reduce el pendiente de otro.\n- `AccountingPeriod`: `bounds(forMonth:in tz: TimeZone) -> (start: Date, end: Date)` con semántica [inicio(M), inicio(M+1)) y `accountingMonth(of date: Date, in tz: TimeZone) -> String` (etiqueta persistible 'YYYY-MM') coherente con esos límites. La zona contable es Europe/Madrid; si `TimeZone(identifier: \"Europe/Madrid\")` devuelve nil (posible en corelibs sin tzdata), lanzar un error tipado explícito; PROHIBIDO caer en UTC o en la zona del sistema en silencio. Un viaje pertenece al mes de su INICIO.\n- `MonthlyStatement { opening, charges, payments, closing: MoneyCents }` con `closing = opening + charges − payments`; opening = movimientos anteriores a inicio(M); charges/payments = los del intervalo. Mismos límites que usará la SQL.\n\nTests en `Tests/CostCoreTests/LedgerMathTests.swift` y `AccountingPeriodTests.swift`:\n- Saldos derivados: cargos y pagos mezclados, pending y credit correctos; test con DOS grupos que demuestra que un crédito en 'Universidad' no reduce el pendiente de 'Trabajo' y que el saldo global es la suma.\n- Mes sin cargos -> closing == opening.\n- Viaje que cruza medianoche y cambio de mes -> se asigna al mes de inicio.\n- Fronteras DST de Europe/Madrid EXPLÍCITAS: marzo (último domingo, 02:00 -> 03:00) y octubre (último domingo, 03:00 -> 02:00); comprobar que start y end de los meses afectados son instantes correctos y que los eventos en la hora repetida/inexistente caen en el mes esperado. Si el runtime no tiene la base de zonas, el test debe fallar de forma legible en lugar de pasar con UTC.\n- accountingMonth(of:) coincide con bounds() en los instantes frontera (inicio exacto pertenece a M, inicio(M+1) no).\n\nSi no hay toolchain, etiquetar UNVERIFIED-BUILD y no afirmar que los tests pasan.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "BLOCKED",
+    "priority": "P1",
+    "dependencies": [
+      "TASK-003"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/LedgerEntry.swift",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/LedgerMath.swift",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/AccountingPeriod.swift",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/MonthlyStatement.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/LedgerMathTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/AccountingPeriodTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/",
+      "EuroGas/Packages/CostCore/Package.swift"
+    ],
+    "acceptance_criteria": [
+      "No existe ningún campo ni caché de saldo almacenado: balance/pending/credit se calculan a partir de las entradas en cada llamada.",
+      "groupID de LedgerEntry no es opcional.",
+      "Test con dos grupos demuestra que un crédito en uno no reduce el pendiente del otro y que el saldo global es la suma de los saldos por grupo.",
+      "bounds(forMonth:in:) implementa [inicio(M), inicio(M+1)) y closing = opening + charges - payments; mes sin cargos devuelve closing == opening.",
+      "Existen tests explícitos en las fronteras DST de marzo y octubre de Europe/Madrid.",
+      "Si Europe/Madrid no está disponible en el runtime se lanza un error tipado; no hay fallback silencioso a UTC ni a la zona del sistema.",
+      "accountingMonth(of:) es coherente con bounds() en los instantes frontera, con test."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Almacenar o cachear saldos",
+      "Compensar créditos entre grupos",
+      "Usar TimeZone.current o UTC como sustituto de Europe/Madrid",
+      "Importar frameworks de UI o de sistema; escribir código GRDB o SQL en esta tarea",
+      "Modificar Support/, Cost/, Models/ o Split/",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "REQUIRES_HUMAN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [
+      "REQUIRES_HUMAN_APPROVAL: keyword \"payment\". Approve with: agents approve TASK-006"
+    ],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.131Z",
+    "updated_at": "2026-09-11T18:45:48.144Z"
+  },
+  {
+    "id": "TASK-007",
+    "title": "Ventana Free de 30 días y propuesta de reparto de pago (§9.3, §10.1)",
+    "description": "Completar `Sources/CostCore/Ledger/` con dos piezas puras. Ficheros de esta tarea: `FreeWindow.swift` y `PaymentAllocationProposal.swift`. Reutilizar MoneyCents y GroupID de Support y los límites de AccountingPeriod; NO redefinir LedgerEntry, LedgerMath, AccountingPeriod ni MonthlyStatement.\n\n- `FreeWindow.visibleRange(now: Date, in tz: TimeZone) throws -> (start: Date, end: Date)`: start = las 00:00 en la zona contable del día de hace 29 días (30 días naturales contando hoy), end = now. Es la ventana de DETALLE, independiente del rango de agregación mensual. Documentar en el propio tipo que ninguna ruta borra datos por límite Free (§10.2) y que las estadísticas del mes consultan el periodo completo.\n- `PaymentAllocationProposal.propose(amount: MoneyCents, pendingByGroup: [GroupPending]) throws -> [(groupID: GroupID, amount: MoneyCents)]`, con `GroupPending { groupID, pending: MoneyCents, createdAt: Date, id }`. Determinista: sólo grupos con pendiente > 0, ordenados por createdAt y, en empate, por id; se asigna min(restante, pendiente) a cada grupo hasta agotar el importe. La suma de partidas es EXACTAMENTE amount. Si el importe supera el total pendiente, el excedente debe imputarse a un grupo elegido explícitamente (parámetro `creditGroupID` obligatorio en ese caso) y, si no se indica, lanzar error tipado: PROHIBIDO dejar una partida sin grupo o descartar el excedente. Error tipado también para amount <= 0 y para lista vacía sin creditGroupID.\n\nTests en `Tests/CostCoreTests/FreeWindowTests.swift` y `PaymentAllocationTests.swift`:\n- Ventana Free: con `now` fijo en Europe/Madrid, start es 00:00 de hace 29 días y end es now; test que demuestra que el total agregado del mes NO disminuye cuando un viaje sale de la ventana visible (la agregación usa los límites del mes, no la ventana).\n- Ventana Free cruzando un cambio de hora: start sigue siendo medianoche local.\n- Ejemplo de §9.3: Trabajo 12 € (1200) creado antes y Universidad 8 € (800); pago de 15 € (1500) -> partidas 1200 a Trabajo y 300 a Universidad; tras aplicarlo Trabajo queda 0 y Universidad 500 pendiente.\n- Determinismo con createdAt idénticos (desempate por id) y suma == amount en varios casos, incluido sobrepago con creditGroupID.\n- Sobrepago sin creditGroupID -> error tipado.\n\nSi no hay toolchain, etiquetar UNVERIFIED-BUILD y no afirmar que los tests pasan.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "BLOCKED",
+    "priority": "P1",
+    "dependencies": [
+      "TASK-006"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/FreeWindow.swift",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/PaymentAllocationProposal.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/FreeWindowTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/PaymentAllocationTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/"
+    ],
+    "acceptance_criteria": [
+      "visibleRange devuelve desde las 00:00 de hace 29 días en la zona contable hasta now, con test de valores exactos y un caso que cruza el cambio de hora.",
+      "Existe un test que demuestra que el total del mes no disminuye cuando un viaje sale de la ventana visible.",
+      "La propuesta de pago es determinista por createdAt y luego id, la suma de partidas es exactamente el importe recibido y ninguna partida queda sin grupo.",
+      "El ejemplo de §9.3 (1200 Trabajo + 800 Universidad, pago 1500 = 1200 + 300) deja Trabajo en 0 y Universidad en 500, con test.",
+      "Sobrepago sin grupo de crédito explícito lanza error tipado; amount <= 0 también.",
+      "No se redefinen tipos ya creados en la tarea de ledger y no se modifica ninguno de sus ficheros."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Cualquier ruta que borre datos por límite Free o por revocación",
+      "Confundir la ventana de detalle con el rango de agregación mensual",
+      "Dejar partidas de pago sin grupo o descartar excedentes",
+      "Importar frameworks de UI o de sistema",
+      "Modificar LedgerEntry.swift, LedgerMath.swift, AccountingPeriod.swift, MonthlyStatement.swift",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "REQUIRES_HUMAN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [
+      "REQUIRES_HUMAN_APPROVAL: keyword \"payment\". Approve with: agents approve TASK-007"
+    ],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.133Z",
+    "updated_at": "2026-09-11T18:45:48.144Z"
+  },
+  {
+    "id": "TASK-008",
+    "title": "DDL v1 canónico y arnés de verificación sobre SQLite real",
+    "description": "Aprobada por el Brain en DEC-009 (sigue marcada REQUIRES_BRAIN_APPROVAL para que el orquestador aplique su puerta formal antes de ejecutar). Implementa DEC-005 (el DDL SQL es la única definición de esquema; nada de GRDB en este tramo) y DEC-008 (verificación con el módulo integrado `node:sqlite`, base temporal aislada, sin añadir dependencias y sin tocar package.json).\n\n1) `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`: DDL v1 con SÓLO las tablas usadas en este tramo (Vehicle, ConsumptionProfile, FuelPrice, Trip, Person, Group, GroupMember, TripParticipant, ManualExpense, LedgerEntry, PaymentBatch, ActiveTripState). SIN PeriodClose y SIN RefuelEvent. Ninguna sentencia de borrado automático de base ante cambio de esquema (nada de DROP TABLE / DELETE de arranque).\nRestricciones obligatorias (§7.3), expresadas como CHECK, FK o índices únicos parciales:\n- foreign keys declaradas en todas las referencias;\n- amountCents > 0 en asientos del ledger;\n- debtorID <> creditorID;\n- kind 'charge' => tripID NOT NULL AND paymentBatchID IS NULL;\n- kind 'payment' => paymentBatchID NOT NULL AND tripID IS NULL;\n- groupID NOT NULL con FK ('Sin grupo' sustituye a NULL);\n- índice único parcial que permite como máximo un owner en Person;\n- índice único parcial que permite como máximo un viaje con status active/interrupted;\n- índice único que permite un solo cargo por persona y viaje;\n- precio positivo y consumo positivo;\n- endedAt IS NULL OR endedAt >= startedAt;\n- índices de Trip por startedAt y por status; de LedgerEntry por (persona, grupo, occurredAt) y por tripID.\nDinero en enteros (céntimos) y precio en milésimas, con nombres de columna que distingan las escalas, coherentes con MoneyCents/UnitPriceMilliEUR.\n\n2) `EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs`: arnés con `node:test` que hace `import { DatabaseSync } from 'node:sqlite'` dentro de un try/catch, abre una base EN MEMORIA (aislada, nunca datos reales), ejecuta `PRAGMA foreign_keys = ON` y aplica el texto íntegro de v1_initial.sql (leído del fichero, sin duplicar el SQL en JS). Después inserta filas mínimas válidas y comprueba que se RECHAZA cada uno de estos casos, cada uno con su propio subtest: amountCents = 0; debtorID == creditorID; charge con paymentBatchID; payment con tripID; groupID NULL; segundo owner; segundo viaje active/interrupted; cargo duplicado por persona+viaje; precio <= 0; consumo <= 0; endedAt < startedAt; FK inexistente. Comprobar además que `PRAGMA foreign_keys` está realmente activo.\nSi `node:sqlite` no está disponible en el Node instalado, el arnés debe SALTAR los tests con `t.skip` y un mensaje con la causa exacta (y el comando debe seguir saliendo con código 0), y el worker debe reportar el esquema como UNVERIFIED con esa causa. PROHIBIDO instalar better-sqlite3, el CLI de sqlite3 o cualquier otra cosa, y prohibido modificar package.json.\nRegistrar en el resumen la salida literal del comando, incluidos los avisos de módulo experimental.\n\n3) Añadir un `README.md` corto en `EuroGas/Packages/Persistence/` que diga que el .sql es la definición autoritativa y que no hay capa Swift/GRDB en este tramo (DEC-005). No crear Package.swift para Persistence.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "BLOCKED",
+    "priority": "P1",
+    "dependencies": [
+      "TASK-002"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql",
+      "EuroGas/Packages/Persistence/Tests/PersistenceTests/*",
+      "EuroGas/Packages/Persistence/README.md"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      ".ai/DECISIONS/DEC-005-esquema-v1-como-ddl-sql-can-nico-sin-capa-grdb-tod.md",
+      ".ai/DECISIONS/DEC-008-verificar-el-ddl-v1-con-el-sqlite-integrado-de-nod.md",
+      ".ai/DECISIONS/DEC-009-brain-approved-sql-and-unverified-build.md"
+    ],
+    "acceptance_criteria": [
+      "El DDL se aplica sin errores sobre SQLite real y el comando de test se ejecuta con su salida registrada literalmente (incluidos avisos de node:sqlite experimental).",
+      "Cada uno de estos casos tiene su subtest y queda RECHAZADO: amountCents = 0, debtorID == creditorID, charge con paymentBatchID, payment con tripID, groupID NULL, segundo owner, segundo viaje activo/interrumpido, cargo duplicado por persona+viaje, precio <= 0, consumo <= 0, endedAt < startedAt y FK inexistente.",
+      "El arnés lee el texto de v1_initial.sql desde el fichero y no duplica el SQL en JavaScript.",
+      "PRAGMA foreign_keys activo comprobado en el propio test.",
+      "El DDL no contiene PeriodClose ni RefuelEvent ni ninguna sentencia de borrado automático de base.",
+      "No se han añadido dependencias ni se ha modificado package.json; si node:sqlite falta, los tests se saltan con la causa registrada y el esquema se reporta UNVERIFIED.",
+      "No se ha escrito código Swift ni GRDB en Persistence y no existe Package.swift en ese paquete."
+    ],
+    "test_commands": [
+      "node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs"
+    ],
+    "forbidden": [
+      "Instalar better-sqlite3, sqlite3 CLI o cualquier paquete; modificar package.json o package-lock.json",
+      "Escribir código Swift o GRDB en Persistence",
+      "Incluir PeriodClose, RefuelEvent u otras tablas no usadas",
+      "Cualquier DROP/DELETE automático ante cambio de esquema",
+      "Abrir o modificar cualquier base de datos que no sea la temporal en memoria del test",
+      "Simular o inventar la salida del test",
+      "Tocar orchestrator/**, bin/**, .ai/**"
+    ],
+    "approval_category": "REQUIRES_HUMAN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [
+      "REQUIRES_HUMAN_APPROVAL: path EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql matches brain-approval list; keyword \"payment\"; keyword \"drop table\"; keyword \"migration\". Approve with: agents approve TASK-008"
+    ],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.135Z",
+    "updated_at": "2026-09-11T18:45:48.145Z"
+  },
+  {
+    "id": "TASK-009",
+    "title": "CONTRACTS.md: congelar los contratos del tramo (§19.3)",
+    "description": "Crear `EuroGas/docs/CONTRACTS.md` transcribiendo las firmas REALES ya implementadas (leerlas del código, no inventarlas). Contenido mínimo:\n\n- MoneyCents y UnitPriceMilliEUR: firma pública, escalas, prohibición de Int64 desnudo y de conversión implícita (DEC-007), y las funciones de parsing con su lista de rechazos.\n- roundHalfUp: firma, escala y nota sobre el comportamiento de empates elegido.\n- Identificadores de dominio (PersonID, GroupID, TripID, PaymentBatchID).\n- Snapshots: ConsumptionProfileSnapshot, FuelPriceSnapshot, EnergyKind.\n- CostInputs / CostBreakdown y CostEngine.breakdown, con la fórmula de §5.2 y la regla de un único redondeo final.\n- SplitRule / SplitResult y SplitEngine.split, declarando que la suma de shares YA es el total y que no existe ningún importe sumable aparte.\n- LedgerMath, AccountingPeriod, MonthlyStatement, FreeWindow, PaymentAllocationProposal con sus firmas y la regla de saldos siempre derivados.\n- Todos los errores tipados (MoneyParseError, CostError, SplitError y los del ledger) con sus casos.\n- Declaración explícita de que `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql` es la ÚNICA definición del esquema v1 (DEC-005): cualquier capa de datos futura ejecuta ese mismo texto y no redefine tablas.\n- Tabla de PROPIETARIO DE ARCHIVO por cada contrato y fichero compartido (§19.2), y la regla de que un contrato sólo cambia acordándolo aquí antes de tocar dos implementaciones.\n- Estado de cada contrato: congelado en este tramo o pendiente (LocationProvider, RoutingService, PurchaseAccess, esquema de ActiveTripState: PENDIENTE / fuera de alcance).\n\nSin afirmar que nada se ha compilado o probado si no consta: remitir a STATUS.md para las etiquetas de verificación.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "BLOCKED",
+    "priority": "P1",
+    "dependencies": [
+      "TASK-004",
+      "TASK-005",
+      "TASK-007",
+      "TASK-008"
+    ],
+    "allowed_files": [
+      "EuroGas/docs/CONTRACTS.md"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/",
+      "EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql",
+      ".ai/DECISIONS/DEC-005-esquema-v1-como-ddl-sql-can-nico-sin-capa-grdb-tod.md",
+      ".ai/DECISIONS/DEC-007-tipos-monetarios-nominales-distintos-en-lugar-de-i.md"
+    ],
+    "acceptance_criteria": [
+      "CONTRACTS.md transcribe las firmas reales de MoneyCents, UnitPriceMilliEUR, CostInputs/CostBreakdown, SplitRule/SplitResult y las APIs del ledger, coincidiendo con el código existente.",
+      "Enumera todos los errores tipados con sus casos.",
+      "Declara v1_initial.sql como única definición del esquema v1 y prohíbe redefinir tablas en otra capa.",
+      "Incluye tabla de propietario de archivo por cada contrato y fichero compartido.",
+      "Marca como PENDIENTE lo que no se ha congelado en este tramo (LocationProvider, RoutingService, PurchaseAccess, ActiveTripState).",
+      "No afirma builds ni pruebas: remite a STATUS.md."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Inventar firmas que no existan en el código",
+      "Afirmar que el código compila o que los tests pasan",
+      "Modificar código fuente o el DDL desde esta tarea",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "REQUIRES_HUMAN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [
+      "REQUIRES_HUMAN_APPROVAL: keyword \"payment\"; keyword \"migration\". Approve with: agents approve TASK-009"
+    ],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.136Z",
+    "updated_at": "2026-09-11T18:45:48.145Z"
+  },
+  {
+    "id": "TASK-010",
+    "title": "S3 (recortable): filtro puro de fixes GPS y máquina de estados (§11.3, §11.4)",
+    "description": "NIVEL S3: es lo primero que se recorta. Ejecutar sólo si quedan tareas disponibles en el run; si se recorta, debe quedar registrado como 'recortado' en STATUS.md.\n\nCrear `Sources/CostCore/GPS/` y `Sources/CostCore/State/` con lógica PURA, sin CoreLocation ni ningún framework de sistema.\n\nGPS (§11.3):\n- `struct LocationFix { latitude, longitude: Double; horizontalAccuracy: Double; timestamp: Date; speed: Double? }` (tipo propio, no CLLocation).\n- `FixFilter` que procesa por separado validez temporal, posición, distancia y detección de parada: rechaza fixes inválidos, timestamps duplicados o regresivos y saltos con velocidad implícita > 62 m/s; rechaza hAcc > 65 m; mantiene un ANCLA aceptada y no desplaza el ancla con muestras descartadas; acumula distancia en metros (Double) sobre el acumulado aceptado, sin convertir a céntimos ni redondear nada; clasifica segmentos en normal / gap estimado (límite 90 s y 3 km) / no medido; cuenta fixes descartados, distancia estimada en gaps e interrupciones. Los umbrales son constantes nombradas y documentadas como parámetros de beta.\n- Tras una interrupción/reapertura: empezar desde un ancla nueva y marcar la interrupción; PROHIBIDO sumar una recta larga como recorrido.\n\nState (§11.4):\n- `enum TripState` y una máquina de transiciones pura con las transiciones permitidas: idle -> planning -> ready -> starting -> tracking; idle -> starting; tracking -> paused(user|stationary|signalLost); paused -> tracking; tracking/paused -> finishing -> completed -> idle; launch con estado persistido activo -> interrupted -> resume|finish|discard. Transición no permitida devuelve error tipado, no un estado arbitrario.\n- Reglas puras probables: Start repetido no crea un segundo viaje activo; parada de 3 minutos produce pausa automática distinguible de la manual; pausa automática de 45 minutos puede terminar el viaje con fin en la última observación de movimiento.\n\nTests en `Tests/CostCoreTests/FixFilterTests.swift` y `TripStateMachineTests.swift` con fixtures deterministas: fix cacheado inicial, timestamp regresivo, salto imposible, hAcc mala, túnel de 60 s / 2 km aceptado como gap estimado, hueco de 10 min marcado como no medido, ancla que no se mueve con descartes, y la tabla de transiciones válidas e inválidas.\n\nSi no hay toolchain, etiquetar UNVERIFIED-BUILD y no afirmar que los tests pasan.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P3",
+    "dependencies": [
+      "TASK-003"
+    ],
+    "allowed_files": [
+      "EuroGas/Packages/CostCore/Sources/CostCore/GPS/*",
+      "EuroGas/Packages/CostCore/Sources/CostCore/State/*",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/FixFilterTests.swift",
+      "EuroGas/Packages/CostCore/Tests/CostCoreTests/TripStateMachineTests.swift"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      "EuroGas/Packages/CostCore/Sources/CostCore/Support/"
+    ],
+    "acceptance_criteria": [
+      "Ningún fichero importa CoreLocation, MapKit ni ningún framework de sistema; LocationFix es un tipo propio.",
+      "El filtro mantiene un ancla aceptada que no se desplaza con muestras descartadas, con test explícito.",
+      "Los umbrales 65 m de hAcc, 62 m/s, 90 s y 3 km son constantes nombradas y documentadas como parámetros de beta.",
+      "El filtro no redondea a céntimos ni calcula dinero: sólo acumula metros y contadores de calidad.",
+      "Tras una interrupción se empieza con ancla nueva y se marca la interrupción, sin sumar la recta intermedia, con test.",
+      "La máquina de estados acepta exactamente las transiciones de §11.4 y devuelve error tipado en las no permitidas, con tabla de tests.",
+      "Start repetido no crea un segundo viaje activo, con test."
+    ],
+    "test_commands": [],
+    "forbidden": [
+      "Importar CoreLocation, MapKit, ActivityKit o cualquier framework de sistema",
+      "Calcular dinero o redondear céntimos en el filtro",
+      "Persistir estado o escribir SQL",
+      "Modificar Support/, Cost/, Models/, Split/ o Ledger/",
+      "Tocar orchestrator/**, bin/**, package.json, .ai/**"
+    ],
+    "approval_category": "REQUIRES_BRAIN_APPROVAL",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.137Z",
+    "brain_approved": true,
+    "updated_at": "2026-09-11T18:46:04.831Z"
+  },
+  {
+    "id": "TASK-011",
+    "title": "Cierre honesto de STATUS.md",
+    "description": "Completar `EuroGas/docs/STATUS.md` (ya creado en la tarea G0) con el cierre del tramo. Sin adornos y sin declarar nada que no se haya ejecutado.\n\nContenido obligatorio:\n1) Comandos EJECUTADOS en este host con su salida resumida pero literal en lo esencial: `swift --version` (de G0), `node --test ...schema_v1.test.mjs` y `npm test`. Indicar código de salida.\n2) Tabla de entregables con exactamente una etiqueta cada uno (DEC-006): VERIFIED sólo lo que tiene salida de comando real; UNVERIFIED-BUILD todo el código Swift si no hay toolchain aquí; EXTERNO sólo lo que depende de Apple/hardware/credenciales (Xcode, instalación en iPhone, tracking de campo, StoreKit real, Live Activity), cada uno con su procedimiento pendiente remitido a FIELD_TESTS.md; y una sección RECORTADO con lo que no se hizo (incluido S3 si se recortó, y VehicleDB, UI, CoreLocation, MapKit, StoreKit, Widgets, CSV, inglés, EXTRA-7, NEXT).\n3) Declaración explícita y destacada de que este tramo NO completa CORE-7: es una fracción de §2.1, 'Beta parcial' (§20.2).\n4) Lista de requisitos de CORE-7 PENDIENTES (proyecto Xcode y target App, capa de datos GRDB sobre el DDL v1, LocationProvider real, RoutingService, ViewModels y UI, compra/paywall, Live Activity, widgets, pruebas en dispositivo).\n5) Siguiente ticket concreto (§19.2) y bloqueos conocidos (ausencia de toolchain Swift en el host; lo que no se pudo verificar).\n6) Handoff en el formato de §19.4 (ticket, rama, archivos, contrato consumido/modificado, build/test ejecutado y resultado, prueba manual necesaria, bloqueo, próximo ticket).\n\nEjecutar `npm test` para confirmar que el orquestador sigue en verde y registrar el resultado. No modificar `.ai/PROJECT_STATE.md`: su actualización queda fuera del alcance de los workers.",
+    "parent_task": null,
+    "assigned_manager": "implementation-manager",
+    "assigned_worker": null,
+    "status": "READY",
+    "priority": "P0",
+    "dependencies": [
+      "TASK-003",
+      "TASK-004",
+      "TASK-005",
+      "TASK-006",
+      "TASK-007",
+      "TASK-008",
+      "TASK-009"
+    ],
+    "allowed_files": [
+      "EuroGas/docs/STATUS.md"
+    ],
+    "context_files": [
+      "ARCHITECTURE_BLUEPRINT_rev5.md",
+      ".ai/DECISIONS/DEC-006-taxonom-a-obligatoria-de-tres-estados-verified-unv.md",
+      "EuroGas/docs/CONTRACTS.md",
+      "EuroGas/docs/FIELD_TESTS.md"
+    ],
+    "acceptance_criteria": [
+      "STATUS.md declara explícitamente que este tramo NO completa CORE-7 y lo llama Beta parcial.",
+      "Cada entregable lleva exactamente una etiqueta VERIFIED / UNVERIFIED-BUILD / EXTERNO, y existe una sección de recortados.",
+      "Ningún entregable aparece VERIFIED sin una salida de comando registrada en el mismo documento.",
+      "La falta de toolchain Swift está etiquetada como UNVERIFIED-BUILD, nunca como EXTERNO.",
+      "Xcode, instalación en iPhone, tracking de campo, StoreKit real y Live Activity aparecen como EXTERNO con procedimiento pendiente y sin afirmarse probados.",
+      "Se listan los comandos ejecutados con su resultado, incluido `npm test` en verde, y los requisitos de CORE-7 pendientes con el siguiente ticket.",
+      "Incluye el handoff en el formato de §19.4.",
+      "No se ha modificado .ai/PROJECT_STATE.md ni ningún fichero del orquestador."
+    ],
+    "test_commands": [
+      "npm test"
+    ],
+    "forbidden": [
+      "Declarar CORE-7 completado o insinuarlo",
+      "Etiquetar VERIFIED sin salida de comando",
+      "Llamar EXTERNO a la ausencia de toolchain local",
+      "Afirmar pruebas en Xcode, iPhone, campo, StoreKit o Live Activity",
+      "Modificar .ai/PROJECT_STATE.md, orchestrator/**, bin/**, package.json, .ai/config.json, .ai/skills/registry.json",
+      "Crear ADRs nuevos que dupliquen DEC-004..DEC-009"
+    ],
+    "approval_category": "AUTO_APPROVED",
+    "branch": null,
+    "worktree": null,
+    "attempts": 0,
+    "result": null,
+    "review_status": null,
+    "qa_status": null,
+    "blockers": [],
+    "run_id": "20260911-174246",
+    "created_at": "2026-09-11T18:45:48.138Z",
+    "updated_at": "2026-09-11T18:45:48.145Z"
+  }
+]

@@ -1,0 +1,163 @@
+{
+  "decision": "request_changes",
+  "acceptance_criteria_met": [
+    "G0 ejecutado primero: EuroGas/docs/STATUS.md registra la salida literal de `swift --version` (comando no reconocido, exit 1) antes de cualquier etiquetado.",
+    "Existe EuroGas/Packages/CostCore/Package.swift con swift-tools-version:6.0 y `dependencies: []`; el único fuente (CostCore.swift) no importa nada (ni UI, CoreLocation, MapKit, GRDB ni StoreKit).",
+    "Sin toolchain Swift: STATUS.md etiqueta todo el código Swift como UNVERIFIED-BUILD, nunca EXTERNO ni VERIFIED, y no se instaló ningún toolchain.",
+    "Las decisiones DEC-004..DEC-007 se respetan y no se duplican: los ADR nuevos (DEC-008, DEC-009) cubren temas distintos (verificación con node:sqlite y aprobación de SQL/UNVERIFIED-BUILD).",
+    "El orquestador no se modifica: el diff no toca orchestrator/**, bin/**, package.json, .ai/config.json ni .ai/skills/registry.json, y `npm test` sigue en verde (exit=0)."
+  ],
+  "acceptance_criteria_unmet": [
+    "MoneyCents y UnitPriceMilliEUR como tipos nominales distintos: NO existen en la rama integrada (no hay Models/, no hay Money.swift).",
+    "Motor de coste con 899 / 3895 / 360 y 1149, y energyUnits 25,986 / energyCostEUR 38,953014 sin redondeo intermedio: NO existe CostEngine en la rama.",
+    "Ausencia de redondeo por fix o segmento con un único roundHalfUp final y test de acumulación: NO existe.",
+    "SplitEngine con las cinco pruebas canónicas de §8.2: NO existe.",
+    "Prueba de propiedad de reparto sobre >= 500 combinaciones: NO existe.",
+    "SplitResult sin campos sumables aparte (sin driverExtra) y total 0 sin asientos: NO existe el tipo.",
+    "Parsing localizado es-ES con rechazos tipados ('1.499', '1,4,9', '1,4999', '', '-1,5'): NO existe.",
+    "Ledger derivado (balance/pending/credit) y aislamiento de crédito entre grupos: NO existe.",
+    "Meses Europe/Madrid con fronteras DST y closing = opening + charges - payments: NO existe.",
+    "Ventana Free de 29 días y test de que el total del mes no disminuye: NO existe.",
+    "Propuesta de distribución de pago determinista (ejemplo §9.3): NO existe.",
+    "DDL v1 aplicado sobre SQLite real con los doce rechazos: NO existe v1_initial.sql ni el paquete Persistence; el comando `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` FALLA con exit=1 (fichero inexistente).",
+    "DDL v1 sin PeriodClose/RefuelEvent ni borrado automático: no evaluable, no hay DDL.",
+    "Verificación del esquema con SQLite real del host o etiquetado UNVERIFIED con causa: no se hizo ni se registró la causa en STATUS.md.",
+    "EuroGas/docs/CONTRACTS.md: NO existe en la rama integrada.",
+    "STATUS.md NO declara que el tramo no completa CORE-7, ni enumera VERIFIED/UNVERIFIED-BUILD/EXTERNO/recortado, ni lista los requisitos pendientes de CORE-7.",
+    "Xcode, iPhone, campo, StoreKit real y Live Activity: aparecen en FIELD_TESTS.md como 'PENDIENTE', no etiquetados EXTERNO, y STATUS.md no los etiqueta ni remite a FIELD_TESTS.md."
+  ],
+  "issues": [
+    "BLOQUEANTE: la rama integrada sólo contiene el resultado de TASK-002 (Package.swift, un stub CostCore.swift, STATUS.md, FIELD_TESTS.md). Verificado con glob sobre EuroGas/**: 4 ficheros, ninguno con lógica. S1 completo (tipos monetarios, CostEngine, SplitEngine) y S2 (ledger, DDL) están ausentes.",
+    "BLOQUEANTE: un comando de test de la rama falla (exit=1): `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` → 'Could not find'. Con un test rojo la DoD no puede darse por cumplida.",
+    "BLOQUEANTE de proceso: TASK-003, 006, 007, 008, 009, 013 y 015 siguen BLOCKED por REQUIRES_HUMAN_APPROVAL / REQUIRES_BRAIN_APPROVAL pese a que DEC-009 documenta la aprobación humana para continuar. La puerta no se ha levantado con `agents approve TASK-0xx`, así que ningún worker puede ejecutar el núcleo del tramo. Es acción humana, no de worker.",
+    "TASK-014 quedó FAILED tras 2 intentos por un guardrail: el worker necesitaba tocar EuroGas/docs/STATUS.md para mantener el etiquetado UNVERIFIED-BUILD exigido por la propia revisión, pero ese fichero no estaba en allowed_files. El defecto es de definición de tarea y se repetirá si no se corrige allowed_files.",
+    "Defectos duros ya identificados en r1 sobre el código de TASK-014 (hoy no presente en la rama, pero pendientes de corregir cuando se re-ejecute): aserción falsa 3895 para 165 km (valor correcto 1810), roundHalfUp que no compila por pasar &value sobre un parámetro inmutable, test de segmentos que no compara céntimos, Decimal construidos desde literales de coma flotante, force unwrap de Decimal(string:) sin isFinite, y orden del guard de passengersOnly frente a total 0.",
+    "TASK-016 quedó FAILED tras 3 intentos (máximo). Su trabajo (CONTRACTS.md, cierre de STATUS.md) no está en la rama. Además CONTRACTS.md no puede escribirse honestamente mientras no exista el código cuyas firmas debe congelar: el orden correcto es código primero, congelación después.",
+    "FIELD_TESTS.md usa la etiqueta 'PENDIENTE' en lugar de EXTERNO y no está referenciado desde STATUS.md, de modo que la taxonomía obligatoria de DEC-006 no se aplica a los cinco elementos externos.",
+    "Honestidad del etiquetado: correcta en lo que existe. STATUS.md no reclama nada falso (no afirma builds ni pruebas Swift). No hay secretos, ni comandos peligrosos, ni dependencias nuevas en el diff."
+  ],
+  "edge_cases_checked": [
+    "Contenido real de EuroGas/** en la rama integrada (glob): sólo 4 ficheros, sin Sources de lógica ni Tests.",
+    "Grep de imports en CostCore: el único fuente no importa nada, luego no hay violación de la restricción de dependencias (pero tampoco hay superficie que verificar).",
+    "Existencia de EuroGas/docs/CONTRACTS.md: ausente.",
+    "Existencia de EuroGas/Packages/Persistence/** y de v1_initial.sql: ausentes; explica el exit=1 del comando de esquema.",
+    "Estado de aprobación por tarea en .ai/TASKS.json: 7 tareas bloqueadas por puertas de aprobación no levantadas.",
+    "DEC-009 leído íntegro: autoriza SQL en base temporal aislada y UNVERIFIED-BUILD sin instalar toolchain; NO autoriza instalar software ni afirmar verificación externa. El diff lo respeta.",
+    "Diff revisado en busca de cambios en orchestrator/**, bin/**, package.json, .ai/config.json y registry.json: ninguno.",
+    "Salida de npm test: 12 tests en verde, exit=0 (los 'warning: LF will be replaced by CRLF' son ruido de Git en Windows, no fallos)."
+  ],
+  "regressions_suspected": [
+    "Ninguna regresión sobre el orquestador: `npm test` en verde y sin ficheros del orquestador en el diff.",
+    "El test_command de esquema declarado en TASK-015 apunta a un fichero inexistente y deja la suite del proyecto en rojo mientras Persistence no exista; cualquier ejecución del gate de la rama fallará hasta entonces."
+  ],
+  "required_changes": [
+    {
+      "title": "[HUMANO] Levantar las puertas de aprobación de TASK-003, 006, 007, 008, 009, 013 y 015",
+      "description": "Acción humana, no ejecutable por un worker. DEC-009 registra que el humano aprobó continuar (SQL sobre base temporal aislada, sin instalar toolchain, UNVERIFIED-BUILD), pero las tareas siguen BLOCKED por REQUIRES_HUMAN_APPROVAL / REQUIRES_BRAIN_APPROVAL. Sin levantar la puerta (`agents approve TASK-0xx`) ningún worker puede implementar S1 ni S2 y el tramo no puede avanzar. Si el humano NO quiere aprobar el alcance de pagos (TASK-015/TASK-007), debe decirse y recortarse explícitamente en STATUS.md en lugar de dejarlo bloqueado en silencio.",
+      "allowed_files": [
+        ".ai/TASKS.json"
+      ],
+      "acceptance_criteria": [
+        "Cada una de las tareas citadas queda en PENDING (aprobada) o explícitamente CANCELADA con motivo registrado; ninguna queda BLOCKED sin decisión.",
+        "Si se cancela alguna, el recorte aparece en la sección de RECORTADO de EuroGas/docs/STATUS.md."
+      ],
+      "test_commands": [
+        "npm test"
+      ]
+    },
+    {
+      "title": "Tipos monetarios nominales, roundHalfUp y parsing localizado (§5.1)",
+      "description": "Implementar en CostCore los tipos nominales MoneyCents y UnitPriceMilliEUR (structs, NO typealias de Int64), el redondeo half-up sobre Decimal y el parsing localizado por Locale, más su suite de tests. Ninguna API pública debe aceptar ni devolver Int64 desnudo para dinero o precio. El parsing usa SÓLO el separador decimal del Locale dado y RECHAZA con error tipado y mensaje corregible: separador de millares, más de un separador, >3 decimales en precio, >2 en importe, signo negativo, vacío y caracteres no numéricos. Todo error declarado debe poder lanzarse (no dejar casos muertos como outOfRange). Sin toolchain Swift el resultado se etiqueta UNVERIFIED-BUILD; no se instala nada.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Models/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/MoneyTests.swift",
+        "EuroGas/docs/STATUS.md"
+      ],
+      "acceptance_criteria": [
+        "MoneyCents y UnitPriceMilliEUR son structs distintos; grep sobre firmas públicas no muestra Int64 desnudo para dinero o precio.",
+        "'1,499' en es-ES da UnitPriceMilliEUR(1499) y '14,99' da MoneyCents(1499).",
+        "'1.499', '1,4,9', '1,4999', '' y '-1,5' lanzan error tipado con mensaje corregible; ningún caso se reinterpreta.",
+        "Cada caso del enum de errores tiene al menos un test que lo provoca.",
+        "STATUS.md etiqueta estos ficheros como UNVERIFIED-BUILD con la causa (sin toolchain)."
+      ],
+      "test_commands": [
+        "npm test"
+      ]
+    },
+    {
+      "title": "CostEngine y SplitEngine: corregir los defectos de la ronda 1",
+      "description": "Re-ejecutar TASK-014 corrigiendo los defectos ya identificados: (1) el test de acumulación por segmentos afirmaba 3895 céntimos para 165000 m, cuando el valor correcto es 1810 (3895 es el caso de 355 km) — usar segmentos que sumen 355000 m o corregir el valor esperado; (2) roundHalfUp no compila por pasar &value sobre un parámetro inmutable — copiar a var local antes de NSDecimalRound, manteniendo UNA sola llamada a roundHalfUp en Cost/; (3) añadir al test de segmentos las comparaciones de energyCostCents y energyUnits, no sólo energyCostEUR; (4) construir los Decimal de consumo y factor con Decimal(string:) o fracciones enteras, nunca literales de coma flotante; (5) eliminar el force unwrap de Decimal(string: String(distanceMeters)) validando isFinite; (6) mover la precondición 'passengersOnly exige >= 1 pasajero' ANTES del guard de total 0 y fijar el comportamiento con people == 1 y total 0 en un test. STATUS.md está en allowed_files precisamente para poder mantener el etiquetado UNVERIFIED-BUILD, que fue lo que hizo fallar el intento anterior por guardrail.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Cost/*",
+        "EuroGas/Packages/CostCore/Sources/CostCore/Split/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitEngineTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitPropertyTests.swift",
+        "EuroGas/docs/STATUS.md"
+      ],
+      "acceptance_criteria": [
+        "Los tests fijan 899, 3895 y 360 céntimos para §5.3 y 1149 con un gasto manual de 250; el caso de 355 km comprueba energyUnits == 25,986 y energyCostEUR == 38,953014 como Decimal exacto.",
+        "El test de segmentos compara energyUnits, energyCostEUR Y energyCostCents contra el cálculo sobre la distancia total, con igualdad exacta; grep muestra una sola llamada a roundHalfUp en Cost/.",
+        "Ningún valor esperado del test contradice la aritmética del blueprint (revisar a mano cada constante).",
+        "roundHalfUp usa una var local antes de NSDecimalRound; no queda ningún &parámetro-inmutable en el diff.",
+        "Las cinco pruebas canónicas de §8.2 con partes exactas y prueba de propiedad >= 500 combinaciones con LCG sembrado, sin dependencias y sin exigir monotonía.",
+        "grep de 'driverExtra' no devuelve nada; total 0 produce partes 0 y ningún asiento.",
+        "split(total: 0, people: 1, rule: .passengersOnly) falla la precondición, con test que lo fija.",
+        "STATUS.md indica explícitamente que estas correcciones tampoco se han compilado ni ejecutado en este host."
+      ],
+      "test_commands": [
+        "npm test"
+      ]
+    },
+    {
+      "title": "Ledger derivado, ventana Free, propuesta de pago y DDL v1 verificado sobre SQLite real",
+      "description": "Ejecutar TASK-015 una vez levantada su puerta de aprobación. La pieza crítica es el arnés de esquema: hoy `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` sale con exit=1 porque el fichero no existe y deja la rama en rojo. El arnés lee el texto de v1_initial.sql del fichero (sin duplicar SQL en JS), abre una base EN MEMORIA con node:sqlite dentro de try/catch, activa PRAGMA foreign_keys y comprueba los doce rechazos. Si node:sqlite no está disponible, hace t.skip con la causa exacta, el comando sale con código 0 y el esquema se reporta UNVERIFIED con esa causa en STATUS.md: PROHIBIDO instalar nada o tocar package.json.",
+      "allowed_files": [
+        "EuroGas/Packages/CostCore/Sources/CostCore/Ledger/*",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/LedgerMathTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/AccountingPeriodTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/FreeWindowTests.swift",
+        "EuroGas/Packages/CostCore/Tests/CostCoreTests/PaymentAllocationTests.swift",
+        "EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql",
+        "EuroGas/Packages/Persistence/Tests/PersistenceTests/*",
+        "EuroGas/Packages/Persistence/README.md",
+        "EuroGas/docs/STATUS.md"
+      ],
+      "acceptance_criteria": [
+        "El comando del arnés sale con código 0 (verificado o saltado con causa) y `npm test` sigue en verde; la salida literal queda registrada en STATUS.md.",
+        "Subtest propio para cada rechazo: amountCents = 0, debtorID == creditorID, charge con paymentBatchID, payment con tripID, groupID NULL, segundo owner, segundo viaje activo/interrumpido, cargo duplicado por persona+viaje, precio <= 0, consumo <= 0, endedAt < startedAt y FK inexistente; PRAGMA foreign_keys comprobado activo.",
+        "El DDL no contiene PeriodClose ni RefuelEvent ni sentencia alguna de borrado automático; no se añaden dependencias ni se modifica package.json.",
+        "balance/pending/credit derivados en cada consulta, sin campo ni caché de saldo; test con dos grupos demuestra que un crédito en uno no reduce el pendiente del otro.",
+        "bounds(forMonth:in:) con [inicio(M), inicio(M+1)), closing = opening + charges - payments, mes sin cargos con closing == opening y tests en las fronteras DST de marzo y octubre; sin fallback a UTC.",
+        "visibleRange desde las 00:00 de hace 29 días en la zona contable hasta now, con test de que el total del mes NO disminuye cuando un viaje sale de la ventana.",
+        "Ejemplo §9.3: 1200 Trabajo + 800 Universidad con pago 1500 = 1200 + 300 deja Trabajo 0 y Universidad 500; suma de partidas == importe; ninguna partida sin grupo; sobrepago sin creditGroupID y amount <= 0 lanzan error tipado."
+      ],
+      "test_commands": [
+        "node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs",
+        "npm test"
+      ]
+    },
+    {
+      "title": "CONTRACTS.md y cierre honesto de STATUS.md (última tarea del tramo)",
+      "description": "Ejecutar SÓLO cuando exista el código que congelar; si se ejecuta antes, CONTRACTS.md transcribirá firmas inventadas. CONTRACTS.md transcribe firmas REALES leídas del código (MoneyCents, UnitPriceMilliEUR, CostInputs/CostBreakdown, SplitRule/SplitResult, errores tipados) y declara v1_initial.sql como única definición del esquema v1, con tabla de propietario de archivo y PENDIENTE para LocationProvider, RoutingService, PurchaseAccess y ActiveTripState. STATUS.md añade el cierre: comandos con su salida y código de salida, UNA sola etiqueta por entregable, sección de RECORTADO, declaración destacada de que el tramo NO completa CORE-7 ('Beta parcial', §20.2), requisitos pendientes de CORE-7, siguiente ticket y handoff §19.4. Los cinco elementos externos deben quedar etiquetados EXTERNO (no 'PENDIENTE') remitiendo a FIELD_TESTS.md. Si la verificación del esquema quedó saltada, se dice UNVERIFIED con la causa, jamás VERIFIED ni EXTERNO.",
+      "allowed_files": [
+        "EuroGas/docs/CONTRACTS.md",
+        "EuroGas/docs/STATUS.md",
+        "EuroGas/docs/FIELD_TESTS.md"
+      ],
+      "acceptance_criteria": [
+        "Cada firma de CONTRACTS.md coincide literalmente con el código presente en la rama (verificable por grep); no hay firmas de tipos inexistentes.",
+        "STATUS.md declara que el tramo NO completa CORE-7, lo llama Beta parcial, y lista requisitos pendientes y siguiente ticket.",
+        "Cada entregable lleva exactamente una etiqueta; ningún VERIFIED sin salida de comando registrada en el mismo documento; existe sección de RECORTADO.",
+        "Xcode, iPhone, tracking de campo, StoreKit real y Live Activity etiquetados EXTERNO en STATUS.md y en FIELD_TESTS.md, con remisión cruzada y sin afirmarse probados.",
+        "La ausencia de toolchain Swift aparece como UNVERIFIED-BUILD, nunca EXTERNO.",
+        "Handoff en formato §19.4 y `npm test` en verde registrado; no se modifica .ai/PROJECT_STATE.md ni nada del orquestador."
+      ],
+      "test_commands": [
+        "npm test"
+      ]
+    }
+  ],
+  "definition_of_done_met": false,
+  "summary": "La rama integrada no contiene el tramo. Verificado por inspección directa de EuroGas/**: sólo existen cuatro ficheros, todos de TASK-002 — Package.swift (swift-tools 6.0, cero dependencias, correcto), un stub CostCore.swift de dos líneas, STATUS.md con el G0 registrado honestamente, y FIELD_TESTS.md. No hay Money.swift, ni CostEngine, ni SplitEngine, ni Ledger, ni CONTRACTS.md, ni v1_initial.sql, ni un solo test. De los 22 criterios de aceptación, 5 se cumplen (G0, Package.swift sin dependencias, etiquetado UNVERIFIED-BUILD sin instalar toolchain, ADR no duplicados, orquestador intacto con npm test en verde) y 17 no se cumplen por ausencia de código. Además un comando de test de la rama sale en rojo: el arnés de esquema apunta a un fichero que no existe (exit=1), de modo que la DoD no puede darse por cumplida ni aunque el resto estuviera.\\n\\nLa causa raíz no es negligencia del worker sino dos atascos de proceso. Primero, siete tareas (003, 006, 007, 008, 009, 013, 015) siguen BLOCKED por puertas de aprobación que nunca se levantaron, pese a que DEC-009 documenta la aprobación humana para continuar: sin `agents approve` nadie puede implementar S1 ni S2. Segundo, TASK-014 murió por un guardrail evitable — la propia revisión le exigía mantener el etiquetado en STATUS.md, pero ese fichero no estaba en sus allowed_files; el cambio se revirtió y la tarea quedó FAILED. TASK-016 agotó sus tres intentos y su trabajo tampoco está en la rama.\\n\\nLo que sí existe está etiquetado con honestidad: STATUS.md no afirma ninguna compilación ni prueba Swift, registra la salida literal del `swift --version` fallido y aplica DEC-006 sin llamar EXTERNO a lo que sólo es UNVERIFIED-BUILD. No hay secretos, dependencias nuevas ni cambios en el orquestador. Los defectos duros detectados en la ronda 1 sobre el código de TASK-014 (aserción de 3895 céntimos para 165 km cuando el valor correcto es 1810, y un roundHalfUp que no compila por tomar la dirección de un parámetro inmutable) siguen sin corregir y deben arreglarse cuando ese código se rehaga. Se piden cambios, no rechazo: el diseño es fiel al blueprint y lo que falta es ejecutar, con allowed_files corregidos y las puertas levantadas."
+}

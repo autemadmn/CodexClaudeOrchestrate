@@ -1,0 +1,44 @@
+{
+  "understanding": "Implementar el mayor tramo seguro e integrado de CORE-7 de EuroGas conforme a ARCHITECTURE_BLUEPRINT_rev5.md, conservando trabajo correcto y priorizando el núcleo económico verificable. El blueprint no está incluido en este contexto: los managers deben leerlo antes de definir contratos y aceptación. El estado histórico y la autenticación actual de Codex requieren verificación.",
+  "scope": [
+    "Contrastar blueprint, código existente y decisiones; identificar requisitos de CORE-7 y trabajo reutilizable.",
+    "Establecer contratos y estructura real del proyecto exigidos por rev5.",
+    "Implementar un tramo integrado de CostCore, cálculo monetario, reparto y persistencia, con límites definidos por la especificación y las capacidades comprobadas del entorno.",
+    "Ejecutar pruebas críticas disponibles y documentar trazabilidad entre requisitos, implementación y evidencias.",
+    "Registrar verificaciones dependientes de Apple o dispositivos como EXTERNO, con procedimiento y resultado pendiente."
+  ],
+  "out_of_scope": [
+    "Extras ajenos al tramo prioritario de CORE-7.",
+    "Deploy, TestFlight, compras reales, push y cambios de producción.",
+    "Reparaciones no relacionadas del orquestador o de util.mjs.",
+    "Afirmar verificaciones de Xcode, iPhone, tracking de campo, StoreKit real o Live Activity sin evidencia efectiva."
+  ],
+  "priorities": [
+    "P0: product-architect-manager debe localizar rev5, resolver el alcance exacto de CORE-7 y producir criterios de aceptación trazables sin inventar requisitos.",
+    "P0: verificar ejecución de Brain y Workers exclusivamente en Codex; desactivar cualquier fallback para este trabajo. Si Codex no está disponible, registrar bloqueo operativo.",
+    "P1: fijar contratos, invariantes monetarias y estructura del proyecto antes de ampliar funcionalidades.",
+    "P1: integrar CostCore, cálculo, reparto y persistencia conforme a las reglas de precisión, redondeo, conservación de totales y errores que establezca rev5.",
+    "P2: QA debe verificar casos normales, límites y fallos relevantes, incluyendo consistencia del reparto y recuperación de datos persistidos.",
+    "P3: cerrar con un tramo coherente, cambios integrados y un inventario explícito de requisitos completados, pendientes, bloqueados y EXTERNO."
+  ],
+  "managers": [
+    "product-architect-manager",
+    "implementation-manager",
+    "qa-manager"
+  ],
+  "constraints": [
+    "ARCHITECTURE_BLUEPRINT_rev5.md es la especificación vigente; si falta o presenta una contradicción material irresoluble, escalar el punto afectado sin improvisar.",
+    "Máximo 10 tareas por ejecución, 3 Workers simultáneos y 3 intentos de corrección.",
+    "Brain y Workers permanecen en Codex sin fallback; no asumir vigente el bloqueo de autenticación del estado histórico.",
+    "Preservar trabajo previo correcto y evitar modificaciones ajenas al objetivo.",
+    "Respetar permisos efectivos del entorno; no eludir restricciones de escritura ni confundirlas con verificaciones EXTERNO de Apple.",
+    "No introducir dependencias, migraciones o desviaciones arquitectónicas sujetas a aprobación sin la autorización correspondiente.",
+    "Probar el código productivo con herramientas disponibles; mocks o implementaciones alternativas no acreditan integraciones reales.",
+    "Las limitaciones de Apple no deben detener trabajo independiente implementable en Windows.",
+    "No declarar SUCCESS global de CORE-7 si quedan criterios obligatorios pendientes; el cierre debe distinguir el tramo completado del alcance restante.",
+    "Exigir QA aprobado, pruebas aplicables satisfactorias e integración limpia para declarar completado el tramo; devolver actualización breve de PROJECT_STATE mediante el formato de cierre."
+  ],
+  "proceed": true,
+  "questions_for_human": [],
+  "risk_level": "high"
+}

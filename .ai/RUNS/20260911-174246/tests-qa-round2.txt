@@ -1,0 +1,44 @@
+$ node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
+exit=1
+Could not find 'EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs'
+
+$ npm test
+exit=0
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+✔ normal task stays AUTO_APPROVED (5.1604ms)
+✔ new dependency requires brain approval (escalation test) (1.3787ms)
+✔ billing / production / secrets require human approval (0.8478ms)
+✔ category never lowered below manager declaration (0.6871ms)
+✔ changed files outside allowed_files or forbidden are detected (2.392ms)
+✔ schema validator catches missing/enum/extra (2.2957ms)
+✔ independent tasks run in one wave up to maxParallel (8.0108ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.5355ms)
+✔ glob overlap detection (0.7759ms)
+✔ dependencies order waves (0.699ms)
+✔ unsatisfiable dependency reported (0.3966ms)
+✔ matchesAny handles globs and directories (0.6417ms)
+warning: in the working copy of '.ai/DECISIONS/DEC-004-no-crear-eurogas-xcodeproj-ni-el-target-app-en-est.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-005-esquema-v1-como-ddl-sql-can-nico-sin-capa-grdb-tod.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-006-taxonom-a-obligatoria-de-tres-estados-verified-unv.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-007-tipos-monetarios-nominales-distintos-en-lugar-de-i.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-008-verificar-el-ddl-v1-con-el-sqlite-integrado-de-nod.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-009-brain-approved-sql-and-unverified-build.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/calls/001-brain-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/calls/002-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/events.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/input.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/run.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/001-brain-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/002-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/003-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/004-brain-approval-spec-level-decisions-requested.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/005-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/006-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/007-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/008-brain-approval-tasks.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/009-worker-TASK-002-a1.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of
+... [truncated 62100 chars]
