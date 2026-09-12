@@ -52,9 +52,17 @@ Salida final real:
 
 Verifica el orquestador, no la compilación de CostCore.
 
-### Gate G2 — esquema — UNVERIFIED
+### Gate G2 — esquema — VERIFIED
 
-La verificación se saltó porque `EuroGas/Packages/CostCore/v1_initial.sql` no existe todavía. No se pudo aplicar el DDL ni ejecutar los rechazos de constraints contra SQLite; no se afirma VERIFIED ni EXTERNO.
+Comando ejecutado: `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` (código de salida `0`). No hubo aviso de módulo experimental en este Node.
+Salida literal:
+```text
+ℹ tests 13
+ℹ pass 13
+ℹ fail 0
+ℹ skipped 0
+```
+El arnés aplicó el texto íntegro de `v1_initial.sql` a una base `:memory:`, comprobó `PRAGMA foreign_keys = 1` y rechazó los doce casos de integridad.
 
 ## Entregables
 
@@ -64,8 +72,8 @@ Cada fila tiene exactamente una etiqueta.
 |---|---|---|
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
 | CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Correcciones de TASK-019 escritas; no compiladas ni ejecutadas en este host por falta de toolchain Swift |
-| Ledger y persistencia | **NO ENTREGADO** | Fuera de este ticket |
-| Esquema v1 / G2 | **UNVERIFIED** | Falta `v1_initial.sql`; causa indicada arriba |
+| Ledger y persistencia | **UNVERIFIED-BUILD** | Código Swift escrito; no compilado por falta de toolchain Swift |
+| Esquema v1 / G2 | **VERIFIED** | Arnés SQLite real: 13 pass, código 0 |
 | Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0 |
 | Xcode | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
 | iPhone | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
@@ -83,13 +91,11 @@ Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energy
 
 ## RECORTADO
 
-- Ledger, `v1_initial.sql`/G2 y la persistencia quedan recortados DEL TRAMO.
 - S3 (GPS y máquina de estados): recortado.
 
 ## Requisitos pendientes de CORE-7
 
-- Implementar ledger y persistencia.
-- Entregar `v1_initial.sql` y ejecutar G2 con constraints contra SQLite real.
+- Integrar la capa de persistencia Swift/GRDB sobre el DDL v1.
 - Implementar snapshots, viaje, `ActiveTripState`, app, routing y recuperación.
 - Implementar cuentas/grupos, pagos, StoreKit 2/ProGate, Live Activity y pruebas de campo.
 - Completar build integrada y matriz de aceptación de §20.2.
@@ -104,9 +110,9 @@ Asignar el siguiente `TASK-NNN` para núcleo económico y pruebas; después, per
 Ticket: TASK-021 / cierre QA de CONTRACTS.md, STATUS.md y FIELD_TESTS.md
 Commit/branch: agent/TASK-021 (commit lo realizará el orquestador)
 Archivos modificados: EuroGas/docs/CONTRACTS.md; EuroGas/docs/STATUS.md; EuroGas/docs/FIELD_TESTS.md
-Contrato consumido o modificado: API real de Money.swift; v1_initial.sql fijado como única fuente canónica, no entregado
-Build/test ejecutado y resultado: npm test — PASS, 35 pass, 0 fail, código 0; swift --version — código 1, salida literal arriba
+Contrato consumido o modificado: API real de Money.swift; v1_initial.sql fijado como única fuente canónica
+Build/test ejecutado y resultado: node --test schema_v1.test.mjs — PASS, 13 pass, 0 fail, código 0; npm test — PASS, código 0; swift --version — código 1, salida literal arriba
 Prueba manual necesaria: procedimientos Xcode, iPhone, tracking de campo, StoreKit real y Live Activity en FIELD_TESTS.md
-Bloqueo o limitación: falta toolchain Swift y v1_initial.sql; Beta parcial, NO completa CORE-7
-Próximo ticket: asignar TASK-NNN para núcleo económico y pruebas; luego persistencia y G2
+Bloqueo o limitación: falta toolchain Swift; Beta parcial, NO completa CORE-7
+Próximo ticket: capa Swift/GRDB de Persistence sobre el DDL canónico
 ```
