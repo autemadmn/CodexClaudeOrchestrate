@@ -2,7 +2,7 @@
 
 ## Declaración de alcance
 
-**Beta parcial: este tramo NO completa CORE-7 (§20.2).** Faltan persistencia, app y validación en dispositivo/campo.
+**Beta parcial: este tramo NO completa CORE-7 (§20.2).** El ledger, `v1_initial.sql`/G2 y la persistencia quedan recortados DEL TRAMO; también faltan app y validación en dispositivo/campo. El centro económico sigue incompleto porque faltan ledger y esquema.
 
 ## Taxonomía de etiquetas (DEC-006)
 
@@ -79,10 +79,11 @@ Los cinco elementos EXTERNO no se han probado; sus procedimientos están en `FIE
 
 Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energyCostCents`; los valores Decimal de consumo y factor se construyen desde cadenas; `roundHalfUp` mantiene una única llamada desde Cost; la distancia valida `isFinite` antes de convertir; y la precondición de `passengersOnly` precede el caso de total cero. Estas correcciones tampoco se han compilado ni ejecutado en este host: quedan **UNVERIFIED-BUILD**, no EXTERNO.
 
+`CONTRACTS.md` aún NO transcribe `CostInputs`/`CostBreakdown`/`SplitRule`/`SplitResult` (sigue afirmando que no existen), porque está fuera de los allowed_files de esta tarea; la actualización del contrato queda pendiente de ticket propio.
+
 ## RECORTADO
 
-- Ledger y persistencia quedan fuera de este ticket.
-- `v1_initial.sql` y G2: recortados/no entregados.
+- Ledger, `v1_initial.sql`/G2 y la persistencia quedan recortados DEL TRAMO.
 - S3 (GPS y máquina de estados): recortado.
 
 ## Requisitos pendientes de CORE-7

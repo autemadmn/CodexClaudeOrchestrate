@@ -4,7 +4,10 @@ import XCTest
 final class SplitPropertyTests: XCTestCase {
     func testDeterministicSplitProperties() {
         var state: UInt64 = 0xC0DEC0DE
-        func next(_ upper: Int) -> Int { state = state &* 6364136223846793005 &+ 1442695040888963407; return Int((state >> 32) % UInt64(upper)) }
+        func next(_ upper: Int) -> Int {
+            state = state &* 6364136223846793005 &+ 1442695040888963407
+            return Int((state >> 32) % UInt64(upper))
+        }
         for _ in 0..<1000 {
             let total = Int64(next(100001)), people = next(8) + 1
             for rule in [SplitRule.everyone, .passengersOnly] {

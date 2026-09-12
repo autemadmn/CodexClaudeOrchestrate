@@ -15,7 +15,12 @@ final class SplitEngineTests: XCTestCase {
     }
 
     func testPassengersOnlyOnePersonZeroTotalIsRejectedByPrecondition() {
-        // The precondition is checked before the zero-total branch (verified by source review on this host).
-        XCTAssertTrue(true)
+        XCTAssertEqual(
+            SplitEngine.rejectionReason(total: .zero, people: 1, rule: .passengersOnly),
+            .passengersOnlyWithoutPassengers
+        )
+        XCTAssertNil(
+            SplitEngine.rejectionReason(total: .zero, people: 2, rule: .passengersOnly)
+        )
     }
 }
