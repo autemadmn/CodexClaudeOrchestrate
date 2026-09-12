@@ -1,0 +1,18 @@
+{
+  "identifier" : "8C3B7D5A-3C25-4E84-9D26-A1B2C3D4E5F6",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : true,
+      "internalID" : "E5E7A07B-ED6D-4F72-8D56-B1C2D3E4F5A6",
+      "localizations" : [{"description" : "Personas, grupos y saldos mes a mes.", "displayName" : "EuroGas Pro", "locale" : "es_ES"}],
+      "productID" : "com.example.EuroGas.pro",
+      "referenceName" : "EuroGas Pro (prueba local)",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {"_failTransactionsEnabled" : false, "_locale" : "es_ES", "_storefront" : "ESP"},
+  "subscriptionGroups" : [],
+  "version" : {"major" : 4, "minor" : 0}
+}

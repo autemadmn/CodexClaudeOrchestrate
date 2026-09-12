@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "minimumXcode": "16.0",
+  "deploymentTarget": "18.0",
+  "swiftVersion": "6.0",
+  "configuration": "Config/Project.xcconfig",
+  "targets": [
+    {"name":"EuroGas","type":"application","sources":["App"],"packages":["CostCore","Persistence","EuroGasShared"]},
+    {"name":"EuroGasWidgets","type":"app-extension","sources":["Widgets"],"packages":["EuroGasShared"]},
+    {"name":"EuroGasTests","type":"unit-test","sources":["Tests"],"host":"EuroGas"}
+  ],
+  "localPackages": {
+    "CostCore":"Packages/CostCore",
+    "Persistence":"Packages/Persistence",
+    "EuroGasShared":"Packages/EuroGasShared"
+  }
+}

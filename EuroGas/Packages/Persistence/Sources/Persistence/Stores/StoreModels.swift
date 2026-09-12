@@ -14,6 +14,15 @@ public struct VehicleSetup: Equatable, Sendable {
     }
 }
 
+public struct DrivingConfiguration: Equatable, Sendable {
+    public let consumptionPer100: Decimal
+    public let realWorldFactor: Decimal
+    public let unitPrice: UnitPriceMilliEUR
+    public init(consumptionPer100: Decimal, realWorldFactor: Decimal, unitPrice: UnitPriceMilliEUR) {
+        self.consumptionPer100 = consumptionPer100; self.realWorldFactor = realWorldFactor; self.unitPrice = unitPrice
+    }
+}
+
 public struct TripStartRequest: Equatable, Sendable {
     public let vehicleID: String
     public let consumptionPer100: Decimal

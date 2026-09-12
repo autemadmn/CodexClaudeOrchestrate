@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "es",
+  "strings" : {
+    "Ajustes" : {},
+    "Conducir" : {},
+    "Cuentas" : {},
+    "Empezar sin destino" : {},
+    "Energía estimada" : {},
+    "EuroGas Pro" : {},
+    "Pausar" : {},
+    "Reanudar" : {},
+    "Terminar" : {},
+    "Viajes" : {}
+  },
+  "version" : "1.0"
+}

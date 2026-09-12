@@ -9,7 +9,8 @@
   "scripts": {
     "agents": "node bin/agents.mjs",
     "test": "node --test orchestrator/test/*.test.mjs",
-    "doctor": "node bin/agents.mjs doctor"
+    "doctor": "node bin/agents.mjs doctor",
+    "test:eurogas:static": "node --test EuroGas/Tests/StaticValidation/validate.test.mjs"
   },
   "devDependencies": {
     "@openai/codex": "0.154.0"

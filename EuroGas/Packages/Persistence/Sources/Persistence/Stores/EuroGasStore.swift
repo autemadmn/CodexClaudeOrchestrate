@@ -26,6 +26,19 @@ public final class EuroGasStore: @unchecked Sendable {
     }
 
     public func vehicles() throws -> [VehicleRecord] { try database.writer.read { try VehicleRecord.order(Column("createdAt")).fetchAll($0) } }
+    public func drivingConfiguration(vehicleID: String) throws -> DrivingConfiguration {
+        try database.writer.read { db in
+            guard let row = try Row.fetchOne(db, sql: """
+                SELECT cp.consumptionPer100, cp.realWorldFactor, fp.unitPriceMilliEUR
+                FROM Vehicle v JOIN ConsumptionProfile cp ON cp.id=v.activeProfileID
+                JOIN FuelPrice fp ON fp.energyKind=v.energyKind
+                WHERE v.id=? ORDER BY fp.effectiveFrom DESC LIMIT 1
+                """, arguments: [vehicleID]),
+                  let consumption = Decimal(string: row["consumptionPer100"] as String),
+                  let factor = Decimal(string: row["realWorldFactor"] as String) else { throw PersistenceError.invalidState("Falta la configuración de consumo o precio del vehículo.") }
+            return DrivingConfiguration(consumptionPer100: consumption, realWorldFactor: factor, unitPrice: UnitPriceMilliEUR(milliEUR: row["unitPriceMilliEUR"]))
+        }
+    }
     public func people(includeArchived: Bool = false) throws -> [PersonRecord] { try database.writer.read { db in try PersonRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isOwner").desc, Column("createdAt")).fetchAll(db) } }
     public func groups(includeArchived: Bool = false) throws -> [GroupRecord] { try database.writer.read { db in try GroupRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isUngrouped").desc, Column("createdAt")).fetchAll(db) } }
     public func completedTrips() throws -> [TripRecord] { try database.writer.read { try TripRecord.filter(Column("status") == "completed").order(Column("startedAt").desc).fetchAll($0) } }
@@ -158,6 +171,16 @@ public final class EuroGasStore: @unchecked Sendable {
                 GROUP BY e.debtorID,e.groupID ORDER BY p.name,g.createdAt,g.id
                 """)
             return rows.map { BalanceSummary(personID: $0["debtorID"], personName: $0["personName"], groupID: $0["groupID"], groupName: $0["groupName"], balanceCents: $0["balanceCents"]) }
+        }
+    }
+
+    public func monthlyStatement(personID: String, month: String) throws -> MonthlyStatement {
+        try database.writer.read { db in
+            let records = try LedgerEntryRecord.filter(Column("debtorID") == personID || Column("creditorID") == personID).fetchAll(db)
+            let entries = try records.map { record in
+                LedgerEntry(id: record.id, kind: record.kind == "charge" ? .charge : .payment, debtorID: PersonID(record.debtorID), creditorID: PersonID(record.creditorID), amountCents: MoneyCents(cents: record.amountCents), groupID: GroupID(record.groupID), tripID: record.tripID.map(TripID.init), paymentBatchID: record.paymentBatchID.map(PaymentBatchID.init), occurredAt: try Self.date(record.occurredAt))
+            }
+            return try MonthlyStatement.build(entries: entries, person: PersonID(personID), forMonth: month, in: accountingTimeZone)
         }
     }
 

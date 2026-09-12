@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDisplayName</key><string>EuroGas</string>
+    <key>UILaunchScreen</key><dict/>
+    <key>NSLocationWhenInUseUsageDescription</key><string>EuroGas usa tu ubicación durante el viaje para registrar kilómetros y estimar combustible o energía.</string>
+    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
+    <dict><key>TripPreciseLocation</key><string>La precisión completa permite registrar la distancia del viaje sin inventar tramos.</string></dict>
+    <key>UIBackgroundModes</key><array><string>location</string></array>
+    <key>NSSupportsLiveActivities</key><true/>
+    <key>LSApplicationQueriesSchemes</key><array><string>comgooglemaps</string><string>waze</string></array>
+</dict>
+</plist>
