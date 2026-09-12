@@ -1,7 +1,7 @@
 {
   "id": "20260912-111714",
   "objective": "Continua el trabajo integrado del run 20260911-174246 y cierra exclusivamente sus defectos finales de QA conforme a ARCHITECTURE_BLUEPRINT_rev5.md. Conserva CostCore, CostEngine, SplitEngine, ledger y Persistence ya correctos. Sustituye las validaciones precondition del nucleo por errores tipados capturables, rechaza explicitamente total negativo y actualiza sus pruebas. Reescribe EuroGas/docs/CONTRACTS.md para reflejar literalmente las APIs reales entregadas, incluidos Cost, Split, Ledger y sus errores, y fija como unica ruta canonica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql. Actualiza EuroGas/docs/STATUS.md con evidencia actual: npm test 35/35 y el arnes SQLite 18/18, manteniendo todo Swift como UNVERIFIED-BUILD y Apple/Xcode/iPhone como EXTERNO. La logica PaymentAllocation es matematica local, sin pagos reales, billing, credenciales ni cuentas externas, y esta autorizada dentro de este alcance. No instales toolchains ni dependencias. No hagas push, deploy, TestFlight, compras reales ni cambios de produccion. Brain y Worker deben permanecer en Codex sin fallback.",
-  "status": "PAUSED",
+  "status": "DONE",
   "phase": "done",
   "created_at": "2026-09-12T09:17:14.577Z",
   "base_branch": "feature/implementa-eurogas-usando-architecture-b-174246",
@@ -117,12 +117,12 @@
     "MAX_DIFF_CHARS": 60000,
     "MAX_CONTEXT_FILE_CHARS": 12000
   },
-  "cost_usd": 1.6798,
-  "qa_round": 0,
+  "cost_usd": 6.1044,
+  "qa_round": 1,
   "human_approved": false,
-  "pause_reason": "Tasks waiting for HUMAN approval: TASK-025. Approve with: agents approve TASK-025  then: agents resume 20260912-111714",
-  "pid": 1040,
-  "updated_at": "2026-09-12T13:24:28.670Z",
+  "pause_reason": null,
+  "pid": 14212,
+  "updated_at": "2026-09-12T14:08:09.497Z",
   "base_commit": "02fc09ca021264801749df221165d2119525aadb",
   "plan": {
     "understanding": "Continuar el trabajo integrado del run 20260911-174246 y cerrar exclusivamente sus defectos finales de QA conforme a ARCHITECTURE_BLUEPRINT_rev5.md. La instrucción humana autoriza esta reanudación acotada y PaymentAllocation como matemática local. No implica completar todo CORE-7.",
@@ -324,9 +324,7 @@
       ]
     }
   ],
-  "human_pending": [
-    "TASK-025"
-  ],
+  "human_pending": [],
   "task_ids": [
     "TASK-022",
     "TASK-023",
@@ -335,30 +333,85 @@
     "TASK-026"
   ],
   "final": {
-    "objective": "Cerrar exclusivamente los defectos finales de QA de EuroGas del run 20260911-174246 conforme a ARCHITECTURE_BLUEPRINT_rev5.md.",
-    "result": "BLOCKED",
-    "completed": [],
-    "failed": [
-      "0/5 tareas integradas; TASK-023, TASK-024 y TASK-025 bloqueadas por dependencias insatisfacibles; TASK-026 bloqueada por TASK-025.",
-      "Tests y QA no ejecutados; no existe evidencia actual para declarar el cierre."
+    "objective": "Cerrar los defectos finales de QA de EuroGas CORE-7 conforme a ARCHITECTURE_BLUEPRINT_rev5.md.",
+    "result": "SUCCESS",
+    "completed": [
+      "5/5 tareas integradas en feature/continua-el-trabajo-integrado-del-run-20-111714 según el manager; QA aprobada con 22 criterios satisfechos.",
+      "Validaciones del núcleo mediante errores tipados capturables, rechazo explícito de total negativo y pruebas actualizadas; fórmulas y valores canónicos conservados.",
+      "CONTRACTS.md contrastado por QA con las APIs reales de Cost, Split y Ledger, incluidos sus errores y la ruta canónica de Persistence.",
+      "Evidencia actual respaldada por QA: npm test 35/35 y arnés SQLite 18/18, ambos exit=0.",
+      "Contenido de PROJECT_STATE.md actualizado en este JSON para escritura por el orquestador."
     ],
-    "blockers": [
-      "Grafo de dependencias sin resolución.",
-      "Puerta humana de TASK-025 sin acción ni motivo identificados.",
-      "Presencia del trabajo previo y del commit 02fc09c en la base de trabajo pendiente de verificación."
-    ],
+    "failed": [],
+    "blockers": [],
     "decisions": [
-      "Usar feature/continua-el-trabajo-integrado-del-run-20-111714 como rama de continuación, verificando que contiene el trabajo integrado previo y 02fc09c antes de ejecutar tareas.",
-      "Aprobar expresamente la conversión a throws de CostInputs.init, ambas sobrecargas de CostEngine.calculate y SplitEngine.split: está comprendida en el mandato de errores tipados capturables. Conservar cálculos y valores esperados.",
-      "Aprobar el rechazo explícito de total negativo y la eliminación de SplitRejection asociada a la transición a errores lanzados.",
-      "Aprobar como única ruta canónica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql.",
-      "Registrar estas decisiones en ADR con identificadores disponibles; DEC-010..DEC-013 no se consideran existentes ni acreditados.",
-      "La documentación de APIs y PaymentAllocation como matemática local están autorizadas. Si TASK-025 implica otra acción que requiere aprobación humana, identificarla y escalarla; Brain no concede esa aprobación.",
-      "Publicar npm test 35/35 y SQLite 18/18 como evidencia actual únicamente tras ejecutarlos y confirmar esos resultados en la rama de continuación.",
-      "Conservar los componentes correctos. Swift permanece UNVERIFIED-BUILD; Apple/Xcode/iPhone, EXTERNO. Brain y Worker permanecen en Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy ni operaciones externas."
+      "Aceptar el cierre del alcance autorizado con QA aprobada; los defectos documentales menores restantes no bloquean este resultado.",
+      "Reconocer como rama de cierre feature/continua-el-trabajo-integrado-del-run-20-111714. La evidencia actual corresponde a esta rama y no se atribuye a la anterior; la presencia concreta de 02fc09c no está verificada independientemente.",
+      "Ratificar como autorizados los cambios a throws, el rechazo de total negativo y la eliminación de SplitRejection/rejectionReason.",
+      "Ratificar como única ruta canónica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql.",
+      "Aprobar el contenido de los ADR candidatos; su registro e identificadores siguen sin confirmar. No presumir DEC-010..DEC-013.",
+      "PaymentAllocation es matemática local autorizada. Mantener Swift como UNVERIFIED-BUILD y Apple/Xcode/iPhone como EXTERNO.",
+      "Mantener Brain y Worker en Codex sin fallback; sin instalaciones, dependencias nuevas, push, deploy, TestFlight ni operaciones reales de pagos o producción."
     ],
-    "next_recommended_action": "Encargar al manager resolver las dependencias y clasificar la puerta de TASK-025 con estas decisiones, verificar la base y completar el alcance autorizado con tests y nueva QA.",
-    "project_state_md": "# PROJECT STATE\n\n## Current status\nEuroGas CORE-7: cierre de QA BLOCKED. Continuación en `feature/continua-el-trabajo-integrado-del-run-20-111714`, pendiente de verificar su base. Especificación: `ARCHITECTURE_BLUEPRINT_rev5.md`. Este intento integró 0/5 tareas; tests y QA no ejecutados.\n\n## Features done\nTrabajo previo de CostCore, CostEngine, SplitEngine, ledger y Persistence conservable según los informes recibidos. SQLite previo: 18/18 según QA anterior; no revalidado en este intento. Todo Swift: UNVERIFIED-BUILD.\n\n## In progress\nErrores tipados capturables, rechazo de total negativo, actualización de pruebas, contratos literales y evidencia de STATUS.md.\n\n## Blockers\nDependencias insatisfacibles en TASK-023..025; TASK-026 depende de TASK-025. Puerta humana de TASK-025 sin fundamento especificado. Sin QA actual.\n\n## Important debt\nVerificar integración previa y commit `02fc09c`; ejecutar npm test y arnés SQLite. Acreditar ADR y usar exclusivamente `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`. No presentar resultados históricos como evidencia actual.\n\n## Pending decisions\nBrain aprueba las firmas throws, rechazo de total negativo, eliminación asociada de SplitRejection y ruta canónica. Registrar ADR sin presumir identificadores. Identificar cualquier acción humana real detrás de TASK-025.\n\n## Next priority\nResolver bloqueos del manager, completar únicamente los defectos finales y obtener QA aprobada. Apple/Xcode/iPhone: EXTERNO. Brain y Worker: Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy, TestFlight, compras reales ni producción.\n",
-    "roadmap_update": "\n## EuroGas CORE-7 — cierre QA bloqueado\n- Continuación: 0/5 tareas integradas; tests y QA no ejecutados. M1 sigue abierto.\n- Brain aprueba errores tipados con throws, rechazo de total negativo y ruta canónica del DDL; ADR pendientes de registro.\n- Prioridad: resolver dependencias y puerta de TASK-025, verificar la base, completar correcciones y obtener evidencia actual y QA aprobada.\n- Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone: EXTERNO. Brain y Worker en Codex sin fallback.\n"
+    "next_recommended_action": "Corregir en el próximo cambio de STATUS.md el recuento a 13 rechazos y 3 controles positivos y el encabezado TASK-019 desfasado.",
+    "project_state_md": "# PROJECT STATE\n\n## Current status\nEuroGas CORE-7: cierre del alcance QA SUCCESS conforme a ARCHITECTURE_BLUEPRINT_rev5.md. 5/5 tareas integradas en `feature/continua-el-trabajo-integrado-del-run-20-111714` según manager; QA aprobada, 22 criterios satisfechos.\n\n## Features done\nCostCore, CostEngine, SplitEngine, ledger y Persistence conservados. Errores tipados capturables, rechazo de total negativo, pruebas y contratos actualizados. Ruta DDL única: `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`. Evidencia actual validada por QA: npm test 35/35 y SQLite 18/18, ambos exit=0.\n\n## In progress\nNinguna tarea pendiente del alcance cerrado. Todo Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone y validaciones de campo: EXTERNO.\n\n## Blockers\nSin bloqueos críticos para este cierre. La compilación Swift y la validación Apple siguen pendientes externamente.\n\n## Important debt\nCorregir en STATUS.md el recuento a 13 rechazos y 3 controles positivos y el encabezado TASK-019 desfasado. Mejorar diagnósticos de tests que usan try!. Confirmar registro de ADR. QA no verificó independientemente por Git la ausencia de cambios fuera de alcance.\n\n## Pending decisions\nNinguna decisión bloqueante. Brain ratifica throws, rechazo de total negativo, eliminación de SplitRejection y ruta DDL canónica; identificadores ADR sin confirmar.\n\n## Next priority\nCorregir la deuda documental menor de STATUS.md. Brain y Worker: Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy, TestFlight, pagos reales ni producción.\n",
+    "roadmap_update": "## EuroGas CORE-7 — cierre QA aprobado\n- Este estado sustituye las entradas anteriores de cierre parcial o bloqueado: 5/5 tareas de continuación integradas; QA aprobada con 22 criterios satisfechos.\n- Evidencia actual: npm test 35/35 y SQLite 18/18, ambos exit=0. Errores tipados, rechazo de total negativo y contratos completados.\n- Cierre del alcance QA: SUCCESS. Swift permanece UNVERIFIED-BUILD; Apple/Xcode/iPhone y campo: EXTERNO. No implica validación completa del MVP.\n- Próximo paso: corregir dos detalles menores de STATUS.md. ADR aprobados en contenido, registro pendiente de confirmar.\n- Brain y Worker en Codex sin fallback; se mantienen las restricciones operativas del objetivo."
+  },
+  "qa": {
+    "decision": "approve",
+    "acceptance_criteria_met": [
+      "CostCoreError.swift existe en Models/ con enum público Error, Equatable, LocalizedError y exactamente los 7 casos exigidos, cada uno con errorDescription no nulo y corregible en español (verificado línea a línea, CostCoreError.swift:4-31)",
+      "Cero coincidencias de precondition/preconditionFailure/fatalError en CostEngine.swift y SplitEngine.swift (grep sobre EuroGas/Packages/** sólo devuelve try! en tests)",
+      "CostInputs.init es throws y lanza invalidDistance / nonPositiveConsumption / nonPositiveFactor / nonPositivePrice en el orden especificado; distanceMeters == 0 sigue válido (CostEngine.swift:16-28; CostEngineTests.swift:68-72)",
+      "Ambas sobrecargas de CostEngine.calculate son throws; la de segmentos valida isFinite && >= 0 antes de construir CostInputs (CostEngine.swift:65-67) y la conversión a Decimal lanza invalidDistance en lugar de abortar (CostEngine.swift:85-87)",
+      "SplitEngine.split es throws y valida en el orden exigido: participantCountOutOfRange, passengersOnlyWithoutPassengers, negativeTotal; total.cents == 0 sigue devolviendo SplitResult(shares: []) (SplitEngine.swift:12-24)",
+      "SplitRejection y rejectionReason no existen y ninguna prueba los referencia (grep en todo EuroGas/)",
+      "Valores canónicos §8.2 y §5.3 idénticos tras la conversión a throws (SplitEngineTests.swift:6-10; CostEngineTests.swift:6-23)",
+      "La equivalencia N segmentos vs distancia total se mantiene en energyUnits, energyCostEUR y energyCostCents con un único roundHalfUp final (CostEngineTests.swift:26-33; CostEngine.swift:94)",
+      "Los tres ficheros de test cubren con XCTAssertThrowsError y comprobación del caso concreto: precio, consumo, factor, distancia negativa, infinity, nan, segmento negativo, people = 0, people = 9, passengersOnly con 1 y total negativo",
+      "SplitPropertyTests conserva 1000 x 2 combinaciones deterministas con suma(shares) == total, vacío para total 0, partes >= 0, determinismo y conductor 0 en passengersOnly, más el caso de total negativo",
+      "CONTRACTS.md transcribe literalmente las firmas públicas de los 18 símbolos exigidos; comparadas a mano contra los 11 ficheros fuente sin encontrar divergencias",
+      "CONTRACTS.md documenta los cinco tipos de error con sus casos reales (CONTRACTS.md:204-231)",
+      "CONTRACTS.md no niega la existencia de CostInputs/CostBreakdown/SplitRule/SplitResult y documenta suma(shares) == total sin driverExtra más índice 0 = conductor (CONTRACTS.md:99)",
+      "CONTRACTS.md fija Persistence/.../Migrations/v1_initial.sql como única ruta canónica y no menciona ninguna otra ruta de DDL (CONTRACTS.md:239; grep confirma ausencia de CostCore/v1_initial.sql)",
+      "CONTRACTS.md advierte que netAcrossGroups es sólo diagnóstico (§7.2) y que PaymentAllocationProposal es matemática local sin pagos ni billing (CONTRACTS.md:153, 202)",
+      "La tabla de propiedad cubre Models/, Cost/, Split/, Ledger/, Tests/, Persistence/Migrations/ y Persistence/Tests/ (CONTRACTS.md:241-252)",
+      "STATUS.md publica npm test 35 pass / 0 fail / exit 0 como VERIFIED y la salida íntegra está archivada en .ai/RUNS/20260912-111714/evidence-npm-test.txt (tests 35, pass 35, fail 0, [exit_code=0])",
+      "STATUS.md publica el arnés SQLite como VERIFIED con 18 pass / 0 fail / exit 0, salida íntegra en evidence-sqlite-harness.txt",
+      "STATUS.md mantiene todo el Swift, incluidos los cambios de este run, como UNVERIFIED-BUILD, y los cinco elementos Apple/campo como EXTERNO con remisión a FIELD_TESTS.md",
+      "STATUS.md ya no declara CONTRACTS.md incompleto ni difiere su congelación, y el handoff §19.4 coincide con la sección de evidencias (STATUS.md:108, 127-136)",
+      "STATUS.md no atribuye causas no verificadas: registra swift --version exit 1 con salida literal y no especula sobre el fallo histórico de npm test",
+      "El DDL v1, LedgerMath, MonthlyStatement, AccountingPeriod, FreeWindow, PaymentAllocationProposal y Money.swift permanecen sin cambios funcionales (leídos íntegros; coinciden con lo congelado en CONTRACTS.md)"
+    ],
+    "acceptance_criteria_unmet": [],
+    "issues": [
+      "STATUS.md:83 afirma que el arnés 'rechazó los doce casos de integridad; los dos controles positivos adicionales también pasaron', pero la salida transcrita 20 líneas antes en el mismo documento contiene 13 pruebas de rechazo y 3 etiquetadas 'control positivo'. Es una contradicción interna del documento; no infla la verificación (la subestima) y la salida íntegra está archivada, por lo que no incumple ningún criterio, pero debe corregirse en el próximo cambio de STATUS.md.",
+      "STATUS.md conserva el encabezado '## TASK-019 — correcciones QA r2' sobre un párrafo que ahora describe el trabajo de TASK-022..024 de este run: la etiqueta de sección quedó desfasada respecto a su contenido.",
+      "Los tests usan try! en las rutas canónicas (SplitEngineTests.swift:6-14, SplitPropertyTests.swift:15-16) en lugar de funciones throws con try. Funciona y el fallo sería visible como crash del test, pero da peor diagnóstico que un fallo de aserción.",
+      "No pude verificar de forma independiente que orchestrator/**, bin/**, package.json, .ai/config.json, .ai/skills/registry.json y .gitignore no se hayan modificado: el diff llegó truncado y sólo dispongo de herramientas de lectura, sin acceso a git. Nada de lo leído sugiere tales cambios y la suite del orquestador pasa 35/35."
+    ],
+    "edge_cases_checked": [
+      "distanceMeters == 0 → coste 0, sigue siendo entrada válida (test presente)",
+      "distanceMeters negativa, .infinity y .nan → invalidDistance (las tres cubiertas en un bucle)",
+      "Array de segmentos con un valor negativo → invalidDistance antes de construir CostInputs",
+      "Array de segmentos vacío → distancia 0 → entrada válida, coste 0 (no cubierto por test, comportamiento correcto por construcción)",
+      "people = 0 y people = 9 → participantCountOutOfRange(people) con el valor real dentro del error",
+      "passengersOnly con people == 1 y total 0 → passengersOnlyWithoutPassengers; la validación de participantes precede al caso de total cero, como exige la spec",
+      "total.cents == -1 → negativeTotal (cubierto en SplitEngineTests y en SplitPropertyTests)",
+      "total.cents == 0 → shares vacío, sin asientos",
+      "Reparto con resto: 3420/7 everyone y 1000/4 passengersOnly mantienen suma(shares) == total con el resto al conductor y al primer pasajero respectivamente",
+      "Precio, consumo y factor exactamente 0 (frontera <= 0) → error tipado correspondiente",
+      "Orden determinista de validación en CostInputs: comprobado que un input con distancia inválida y precio inválido a la vez lanza invalidDistance",
+      "Propagación de throws: energy es throws y la ruta calculate(_:) la invoca con try; reduce es rethrows, por lo que el cierre lanzador es admisible",
+      "Ningún otro llamante del núcleo en el repo: grep de CostEngine.calculate / SplitEngine.split / CostInputs( sólo devuelve los tres ficheros de test y CostEngine.swift, así que la ruptura de API no deja código de producción sin adaptar"
+    ],
+    "regressions_suspected": [
+      ".ai/PROJECT_STATE.md y .ai/ROADMAP.md en la rama declaran 'cierre QA bloqueado', '0/5 tareas integradas', 'tests y QA no ejecutados' y 'dependencias insatisfacibles en TASK-023..025'. Contradicen el resultado real (5/5 tareas DONE, npm test 35/35, arnés 18/18). Son ficheros de estado que escribe el orquestador al cerrar el run, no el worker, así que no lo trato como defecto de las tareas; pero si el paso brain-final no los reescribe, el repo queda con estado falso.",
+      "No hay regresión detectable en el núcleo: fórmulas, algoritmo de reparto y valores canónicos permanecen idénticos; los únicos cambios de comportamiento son los exigidos (validación por errores tipados y rechazo de total negativo).",
+      "Riesgo de compilación no verificable: sin toolchain Swift no puedo confirmar que la propagación de throws y las inferencias de XCTAssertEqual con Optional<CostCoreError> compilen. STATUS.md lo declara honestamente como UNVERIFIED-BUILD, que es la etiqueta correcta."
+    ],
+    "required_changes": [],
+    "definition_of_done_met": true,
+    "summary": "Apruebo. Verifiqué los 22 criterios de aceptación leyendo los ficheros reales de la rama (el diff llegó truncado): CostCoreError con los 7 casos exactos y mensajes corregibles, cero precondition/preconditionFailure/fatalError en todo EuroGas/Packages/**, CostInputs.init y ambas sobrecargas de CostEngine.calculate como throws con el orden de validación especificado, SplitEngine.split rechazando total negativo antes del caso de total cero, SplitRejection/rejectionReason eliminados sin referencias residuales, y los valores canónicos §8.2 y §5.3 intactos con un único roundHalfUp final. Comparé a mano las firmas de CONTRACTS.md contra los 11 ficheros fuente sin encontrar divergencias, con una sola ruta canónica de DDL. Las dos ejecuciones que STATUS.md etiqueta VERIFIED están respaldadas por salida real archivada y sin truncar (35 pass/0 fail/exit 0 y 18 pass/0 fail/exit 0), coincidentes con los resultados que me entregó el orquestador; el Swift sigue correctamente como UNVERIFIED-BUILD y los cinco elementos Apple/campo como EXTERNO. Encontré un defecto documental menor y no bloqueante: STATUS.md:83 dice 'doce casos de integridad' y 'dos controles positivos' cuando la salida transcrita en el mismo documento muestra 13 rechazos y 3 controles positivos; subestima la verificación en lugar de inflarla y la evidencia íntegra está adjunta, así que no incumple ningún criterio, pero debe corregirse junto con el encabezado desfasado 'TASK-019 — correcciones QA r2' en el próximo cambio de ese fichero. Advertencia para el cierre del run: .ai/PROJECT_STATE.md y .ai/ROADMAP.md en la rama siguen afirmando '0/5 tareas integradas' y 'QA no ejecutada', lo que contradice el resultado; el paso brain-final debe reescribirlos. No pude comprobar con git que orchestrator/**, bin/**, package.json y .ai/config.json queden intactos, pero nada de lo leído lo sugiere y la suite del orquestador pasa completa."
   }
 }

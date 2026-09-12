@@ -44,3 +44,11 @@
 - Brain aprueba errores tipados con throws, rechazo de total negativo y ruta canónica del DDL; ADR pendientes de registro.
 - Prioridad: resolver dependencias y puerta de TASK-025, verificar la base, completar correcciones y obtener evidencia actual y QA aprobada.
 - Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone: EXTERNO. Brain y Worker en Codex sin fallback.
+
+<!-- run 20260912-111714 -->
+## EuroGas CORE-7 — cierre QA aprobado
+- Este estado sustituye las entradas anteriores de cierre parcial o bloqueado: 5/5 tareas de continuación integradas; QA aprobada con 22 criterios satisfechos.
+- Evidencia actual: npm test 35/35 y SQLite 18/18, ambos exit=0. Errores tipados, rechazo de total negativo y contratos completados.
+- Cierre del alcance QA: SUCCESS. Swift permanece UNVERIFIED-BUILD; Apple/Xcode/iPhone y campo: EXTERNO. No implica validación completa del MVP.
+- Próximo paso: corregir dos detalles menores de STATUS.md. ADR aprobados en contenido, registro pendiente de confirmar.
+- Brain y Worker en Codex sin fallback; se mantienen las restricciones operativas del objetivo.

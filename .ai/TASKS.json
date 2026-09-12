@@ -1331,7 +1331,7 @@
       "parent_task": null,
       "assigned_manager": "implementation-manager",
       "assigned_worker": "codex/gpt-5.6-luna",
-      "status": "REVIEW",
+      "status": "DONE",
       "priority": "P0",
       "dependencies": [],
       "allowed_files": [
@@ -1362,31 +1362,41 @@
       ],
       "approval_category": "AUTO_APPROVED",
       "branch": "agent/TASK-022",
-      "worktree": ".worktrees\\TASK-022",
-      "attempts": 1,
+      "worktree": null,
+      "attempts": 3,
       "result": {
         "task_id": "TASK-022",
         "status": "completed",
-        "files_changed": [
-          "EuroGas/Packages/CostCore/Sources/CostCore/Models/CostCoreError.swift"
-        ],
+        "files_changed": [],
         "tests_run": [
           "npm test"
         ],
         "tests_passed": true,
         "issues": [
-          "Swift no se compiló: no hay toolchain Swift disponible en el host."
+          "CostCoreError.swift ya estaba implementado y versionado en HEAD; no hubo cambios locales."
         ],
-        "summary": "Creado CostCoreError con exactamente los siete casos requeridos, conformidades públicas y mensajes LocalizedError en español. Sólo se modificó el fichero permitido; Money.swift permanece intacto.",
+        "summary": "La implementación existente cumple los casos, el protocolo y los mensajes requeridos. npm test pasó 35 pruebas. No se ejecutó ni se afirma compilación Swift.",
         "needs_escalation": false,
         "escalation_reason": ""
       },
-      "review_status": "pending",
-      "qa_status": null,
+      "review_status": "approve",
+      "qa_status": "approve",
       "blockers": [],
       "run_id": "20260912-111714",
       "created_at": "2026-09-12T09:25:18.927Z",
-      "updated_at": "2026-09-12T09:28:58.909Z"
+      "updated_at": "2026-09-12T13:32:56.584Z",
+      "review": {
+        "task_id": "TASK-022",
+        "decision": "approve",
+        "issues": [
+          "Worker result reports files_changed: [] and 'no hubo cambios locales'; the branch diff vs main does add the new file (it was committed in attempt 1, 5cbdfb8). Reporting discrepancy only, the artifact is correct.",
+          "Message for nonPositiveFactor says 'El factor de consumo'; the blueprint field is realWorldFactor (factor de mundo real). Wording nit, does not affect the contract or acceptance criteria.",
+          "Style differs slightly from Money.swift (multi-line case bodies vs single-line 'case .x: return \"...\"'), justified by longer messages. Cosmetic.",
+          "No Swift toolchain on this host: the type has NOT been compiled or type-checked. npm test (35 passing) is orchestrator-only non-regression and proves nothing about this file."
+        ],
+        "required_changes": [],
+        "summary": "Approved. New file EuroGas/Packages/CostCore/Sources/CostCore/Models/CostCoreError.swift declares `public enum CostCoreError: Error, Equatable, LocalizedError` with exactly the seven required cases (nonPositivePrice, nonPositiveConsumption, nonPositiveFactor, invalidDistance, participantCountOutOfRange(Int), passengersOnlyWithoutPassengers, negativeTotal) — no extras, no helpers. Every case returns a non-nil Spanish errorDescription phrased as a corrective instruction per §5.1/§6.3; participantCountOutOfRange interpolates the received value and states the 1..8 range. Only `import Foundation`; no new dependencies. Verified by reading the working tree, not just the diff: grep finds a single CostCoreError definition, Money.swift and MoneyParsingError are unmodified and coexist, and the diff touches only the allowed file. Correctly scoped as the base for tasks 2 and 3 with no premature call-site changes. Caveat carried forward: no Swift toolchain exists on this host, so the file was never compiled or type-checked; the passing npm test run (35 tests) is orchestrator non-regression only. The worker made no compilation claim, which is correct. Swift verification remains outstanding for the objective as a whole."
+      }
     },
     {
       "id": "TASK-023",
@@ -1394,8 +1404,8 @@
       "description": "Convertir la validación de entrada de EuroGas/Packages/CostCore/Sources/CostCore/Cost/CostEngine.swift a `throws` usando `CostCoreError` (creado en la tarea 1), sin alterar ninguna fórmula ni valor. Cambios exigidos:\n(a) `CostInputs.init` pasa a `throws` y sustituye los dos `precondition` de las líneas 17-18 por lanzamientos en ESTE orden determinista y observable por los tests: 1) `distanceMeters` no finita (`nan`/`infinity`) o `< 0` → `invalidDistance`; 2) `consumptionPer100 <= 0` → `nonPositiveConsumption`; 3) `realWorldFactor <= 0` → `nonPositiveFactor`; 4) `unitPriceMilliEUR.milliEUR <= 0` → `nonPositivePrice`. `distanceMeters == 0` sigue siendo entrada VÁLIDA (coste 0).\n(b) Ambas sobrecargas de `CostEngine.calculate` pasan a `throws`. La sobrecarga de segmentos sustituye el `precondition` de la línea 55 por `throw CostCoreError.invalidDistance` si algún segmento es no finito o negativo, comprobado ANTES de construir `CostInputs`.\n(c) `energy(for:consumption:factor:)` pasa a `throws`: el `precondition` (línea 70) y el `preconditionFailure(\"distancia no convertible a Decimal\")` (línea 72) se convierten en `throw CostCoreError.invalidDistance`; propaga `try` en los llamantes (`reduce` es `rethrows`, así que `try segmentDistancesMeters.reduce(...)` funciona). `makeResult` no valida nada y puede seguir sin `throws`.\nInvariantes que NO pueden cambiar: una sola llamada a `roundHalfUp` al final, acumulación en `Decimal` sin redondeo por segmento, y equivalencia exacta entre N segmentos y la distancia total.\n(d) Actualizar EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift: añadir `try` a todos los llamantes existentes (marca los métodos de test como `throws`) SIN cambiar ni un valor esperado —899; effectiveConsumption 7.32; energyUnits 25.986; energyCostEUR 38.953014; energyCostCents 3895; 360; y 899 + 250 = 1149— y conservar la prueba de equivalencia segmentos/total. Añadir pruebas nuevas con `XCTAssertThrowsError` que comprueben el caso concreto vía `as? CostCoreError` para: precio <= 0, consumo <= 0, factor <= 0, distancia negativa, distancia `.infinity`, distancia `.nan`, y segmento negativo en la sobrecarga de segmentos. Añadir también una prueba de que `distanceMeters: 0` sigue siendo válido.\nNO hay toolchain Swift en este host: `npm test` no compila nada de esto. No afirmes compilación ni ejecución en ningún comentario, commit o resumen; estos cambios quedan UNVERIFIED-BUILD (DEC-006). Extrema el cuidado con la propagación de `throws`, porque aquí no hay compilador que te avise.",
       "parent_task": null,
       "assigned_manager": "implementation-manager",
-      "assigned_worker": null,
-      "status": "BLOCKED",
+      "assigned_worker": "codex/gpt-5.6-luna",
+      "status": "DONE",
       "priority": "P0",
       "dependencies": [
         "TASK-022"
@@ -1431,18 +1441,46 @@
         "Tocar orchestrator/**, bin/**, package.json, .ai/config.json, .ai/skills/registry.json o .gitignore"
       ],
       "approval_category": "AUTO_APPROVED",
-      "branch": null,
+      "branch": "agent/TASK-023",
       "worktree": null,
-      "attempts": 0,
-      "result": null,
-      "review_status": null,
-      "qa_status": null,
-      "blockers": [
-        "unsatisfiable dependencies"
-      ],
+      "attempts": 2,
+      "result": {
+        "task_id": "TASK-023",
+        "status": "partial",
+        "files_changed": [
+          "EuroGas/Packages/CostCore/Tests/CostCoreTests/CostEngineTests.swift"
+        ],
+        "tests_run": [
+          "rg forbidden-token check",
+          "git diff --check",
+          "npm test (interrupted after hanging over 30 seconds)"
+        ],
+        "tests_passed": false,
+        "issues": [
+          "Swift build/tests are UNVERIFIED-BUILD per DEC-006. npm test did not complete due git permission warnings and hang."
+        ],
+        "summary": "Applied the required explicit [Double] annotation for invalidDistances. CostEngine.swift was already compliant and unchanged; diff is limited to the permitted test file.",
+        "needs_escalation": false,
+        "escalation_reason": ""
+      },
+      "review_status": "approve",
+      "qa_status": "approve",
+      "blockers": [],
       "run_id": "20260912-111714",
       "created_at": "2026-09-12T09:25:18.927Z",
-      "updated_at": "2026-09-12T13:23:45.430Z"
+      "updated_at": "2026-09-12T13:42:25.213Z",
+      "review": {
+        "task_id": "TASK-023",
+        "decision": "approve",
+        "issues": [
+          "No hay toolchain Swift en el host: el diff queda UNVERIFIED-BUILD (DEC-006). `npm test` (pasado por el orquestador) no compila nada de CostCore; ningún resumen posterior debe afirmar compilación ni ejecución de los tests Swift.",
+          "El worker reportó status=partial y tests_passed=false, pero eso refleja sólo la imposibilidad de compilar Swift y un `npm test` interrumpido por él; el orquestador ejecutó `npm test` con exit=0. El contenido del diff sí cumple la tarea.",
+          "Gap menor de cobertura: ninguna prueba observa la PRECEDENCIA entre validaciones (p. ej. distancia -1 + consumo 0 a la vez debería dar `invalidDistance`). El orden está bien implementado en la cadena de `guard`, y los 8 casos exigidos por el criterio de aceptación sí están cubiertos, pero el orden en sí no queda verificado por test. Recomendado para QA o ticket de seguimiento, no bloqueante.",
+          "Estilo inconsistente (inocuo): unas llamadas usan `try` sólo en la expresión externa (líneas 6, 7, 12) y otras añaden un `try` interno redundante ya cubierto por el externo (líneas 14, 29, 69). Compila igual; no requiere cambio."
+        ],
+        "required_changes": [],
+        "summary": "Verificado leyendo los ficheros finales. (1) Grep de `precondition`/`preconditionFailure`/`fatalError` en Cost/CostEngine.swift: cero coincidencias. (2) `CostInputs.init` es `throws` con guards en el orden exacto exigido — distancia (no finita o <0 → invalidDistance), consumo, factor, precio; `distanceMeters == 0` sigue siendo válido y hay test que lo cubre. (3) Ambas sobrecargas de `calculate` son `throws`; la de segmentos valida `allSatisfy { isFinite && >= 0 }` y lanza invalidDistance ANTES de construir `CostInputs`. (4) `energy(for:consumption:factor:)` es `throws` y ambos caminos (no finita/negativa y Decimal no convertible) lanzan invalidDistance; ningún camino aborta. (5) Invariantes intactas: `makeResult` sin cambios, un único `roundHalfUp` final, acumulación en Decimal sin redondeo por segmento, y la prueba de equivalencia 6 segmentos vs. total sigue comparando energyUnits, energyCostEUR y energyCostCents. (6) Valores canónicos §5.3 idénticos: 899, 7.32, 25.986, 38.953014, 3895, 360 y 1149 con extra 250 — ningún valor esperado alterado. (7) Tests nuevos con `XCTAssertThrowsError` + `as? CostCoreError` para precio<=0, consumo<=0, factor<=0, distancia negativa, .infinity, .nan y segmento negativo. (8) Diff limitado a CostEngine.swift y CostEngineTests.swift; Money.swift, Ledger/ y Split/ intactos. Revisada la propagación de `throws` manualmente al no haber compilador: `try` en posición de argumento dentro del return implícito, `try` parentizado a la derecha del operador `+` dentro del closure y `reduce` como `rethrows` son todos válidos; `UnitPriceMilliEUR.zero` y `MoneyCents.zero` existen en Money.swift; `CostCoreError` es `Equatable`; no hay otros llamantes Swift de `CostInputs`/`CostEngine.calculate` en el repo que quedaran rotos. Coherente con DEC-010."
+      }
     },
     {
       "id": "TASK-024",
@@ -1450,8 +1488,8 @@
       "description": "Convertir EuroGas/Packages/CostCore/Sources/CostCore/Split/SplitEngine.swift a validación por `CostCoreError` (tarea 1) y cerrar el defecto de la invariante §8.2 («la suma de shares ya es el total»), que hoy se rompe porque un total negativo devuelve `shares` vacío.\nFirma nueva: `public static func split(total: MoneyCents, people: Int, rule: SplitRule) throws -> SplitResult`, con este orden exacto (observable por los tests):\n1. `people < 1 || people > 8` → `throw CostCoreError.participantCountOutOfRange(people)`.\n2. `rule == .passengersOnly && people == 1` → `throw CostCoreError.passengersOnlyWithoutPassengers` (se lanza también con total 0: la validación de participantes precede al caso de total cero).\n3. `total.cents < 0` → `throw CostCoreError.negativeTotal`.\n4. `total.cents == 0` → `SplitResult(shares: [])` (sin asientos).\n5. Resto: algoritmo actual SIN cambios (everyone: conductor `q + remainder` y `people - 1` partes de `q`; passengersOnly: conductor `.zero` y los primeros `remainder` pasajeros con +1 céntimo).\nEliminar por completo `internal enum SplitRejection` y `internal static func rejectionReason(total:people:rule:)`: su única función era hacer testeable un `precondition` y el error tipado los sustituye (DEC-012). Documentar con un comentario la convención posicional «índice 0 = conductor».\nTests (mismos ficheros):\n- SplitEngineTests.swift: añadir `try` a los llamantes, conservando EXACTAMENTE los cinco valores canónicos §8.2 (3420/7 everyone → [492,488,488,488,488,488,488]; 3420/4 passengersOnly → [0,1140,1140,1140]; 1000/4 passengersOnly → [0,334,333,333]; 399/4 everyone → [102,99,99,99]; 400/4 everyone → [100,100,100,100]) y la prueba de total cero → shares vacío. Sustituir `testPassengersOnlyOnePersonZeroTotalIsRejectedByPrecondition` (que referencia `rejectionReason`, ya inexistente) por pruebas con `XCTAssertThrowsError` + `as? CostCoreError` para: people = 0, people = 9, passengersOnly con people == 1 (incluido total 0) y total negativo → `negativeTotal`.\n- SplitPropertyTests.swift: mantener el mismo generador determinista (estado inicial 0xC0DEC0DE, LCG idéntico) y al menos 500 combinaciones (hoy 1000 × 2 reglas; no bajes de 500), con `try` donde corresponda, conservando: determinismo (a == b), suma(shares) == total para total > 0, shares vacío para total == 0, todas las partes >= 0 y conductor `.zero` en passengersOnly. Añadir al menos un caso de total negativo que espere `negativeTotal`.\nNO hay toolchain Swift en este host: `npm test` no compila esto. No afirmes compilación ni ejecución; queda UNVERIFIED-BUILD (DEC-006).",
       "parent_task": null,
       "assigned_manager": "implementation-manager",
-      "assigned_worker": null,
-      "status": "BLOCKED",
+      "assigned_worker": "codex/gpt-5.6-luna",
+      "status": "DONE",
       "priority": "P0",
       "dependencies": [
         "TASK-022"
@@ -1490,18 +1528,48 @@
         "Afirmar que el código Swift compila o que los tests Swift se han ejecutado"
       ],
       "approval_category": "AUTO_APPROVED",
-      "branch": null,
+      "branch": "agent/TASK-024",
       "worktree": null,
-      "attempts": 0,
-      "result": null,
-      "review_status": null,
-      "qa_status": null,
-      "blockers": [
-        "unsatisfiable dependencies"
-      ],
+      "attempts": 1,
+      "result": {
+        "task_id": "TASK-024",
+        "status": "partial",
+        "files_changed": [
+          "EuroGas/Packages/CostCore/Sources/CostCore/Split/SplitEngine.swift",
+          "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitEngineTests.swift",
+          "EuroGas/Packages/CostCore/Tests/CostCoreTests/SplitPropertyTests.swift"
+        ],
+        "tests_run": [
+          "rg static checks: passed",
+          "git diff --check: passed",
+          "npm test: interrupted after hanging; Swift build/tests unavailable"
+        ],
+        "tests_passed": false,
+        "issues": [
+          "UNVERIFIED-BUILD: no Swift toolchain on host.",
+          "npm test did not complete within polling window and was interrupted."
+        ],
+        "summary": "SplitEngine ahora valida y lanza CostCoreError en el orden requerido, elimina SplitRejection/rejectionReason y conserva el algoritmo y valores canónicos. Tests actualizados con errores tipados, propiedades deterministas y total negativo.",
+        "needs_escalation": false,
+        "escalation_reason": ""
+      },
+      "review_status": "approve",
+      "qa_status": "approve",
+      "blockers": [],
       "run_id": "20260912-111714",
       "created_at": "2026-09-12T09:25:18.928Z",
-      "updated_at": "2026-09-12T13:23:45.430Z"
+      "updated_at": "2026-09-12T13:42:26.654Z",
+      "review": {
+        "task_id": "TASK-024",
+        "decision": "approve",
+        "issues": [
+          "UNVERIFIED-BUILD (DEC-006): no hay toolchain Swift en el host; `npm test` (verde) sólo cubre el orquestador, no compila ni ejecuta CostCore. Revisión estática por lectura de ficheros.",
+          "NIT (no bloqueante): el comentario «Índice 0 = conductor» está dentro de la rama .everyone, incrustado entre `SplitResult(` y `shares:`; la rama .passengersOnly comparte la misma convención y su sitio natural sería el doc-comment de `SplitResult.shares`.",
+          "NIT (no bloqueante): los tests usan `try!` en lugar de marcar los métodos `throws` con `try`; compila igual, pero un fallo inesperado aborta el runner en vez de reportar el test."
+        ],
+        "required_changes": [],
+        "summary": "Verificado por lectura directa de los tres ficheros. SplitEngine.split es `throws` con el orden exacto exigido (rango 1..8 → participantCountOutOfRange(people); passengersOnly con people==1 → passengersOnlyWithoutPassengers; cents<0 → negativeTotal; cents==0 → shares vacío) y el algoritmo posterior queda byte a byte igual (conductor q+remainder / +1 céntimo a los primeros `remainder` pasajeros). Cero coincidencias de precondition/preconditionFailure/fatalError en el fichero; SplitRejection y rejectionReason ya no existen en el código (sólo se citan en los ADR DEC-010/DEC-012, fuera de alcance y correcto). Un grep en EuroGas confirma que no queda ningún otro llamante de SplitEngine.split fuera de los dos ficheros de test, así que el cambio de firma no rompe código fuera de allowed_files. SplitEngineTests conserva los cinco repartos canónicos §8.2 con los mismos arrays y el caso de total cero, y añade XCTAssertThrowsError + `as? CostCoreError` para people=0, people=9 (ambos con total .zero, lo que fija el orden frente al caso de total cero), passengersOnly con un participante y total negativo. SplitPropertyTests mantiene el generador determinista (0xC0DEC0DE, mismo LCG) con 1000 iteraciones × 2 reglas y las cinco propiedades, más el caso de total negativo. CostCoreError ya expone los tres casos usados. Diff limitado a los tres ficheros permitidos; sin secretos, dependencias ni comandos peligrosos. No se afirma compilación ni ejecución de Swift."
+      }
     },
     {
       "id": "TASK-025",
@@ -1509,8 +1577,8 @@
       "description": "Reescribir por completo EuroGas/docs/CONTRACTS.md transcribiendo ÚNICAMENTE firmas copiadas literalmente del código fuente tal como queda tras las tareas 2 y 3. Abre y copia de: CostCore.swift (`costModelVersion`), Models/Money.swift (`roundHalfUp`, `MoneyCents`, `UnitPriceMilliEUR`, `MoneyParsingError`), Models/CostCoreError.swift, Cost/CostEngine.swift (`CostInputs`, `CostBreakdown`, ambas sobrecargas `throws` de `calculate`), Split/SplitEngine.swift (`SplitRule`, `SplitResult`, `split` `throws`), Ledger/Identifiers.swift (PersonID, GroupID, TripID, PaymentBatchID), Ledger/LedgerEntry.swift (incluido `Kind`), Ledger/LedgerMath.swift (balance, pending, credit, netAcrossGroups), Ledger/AccountingPeriod.swift (bounds, accountingMonth, AccountingPeriodError), Ledger/FreeWindow.swift (visibleRange, FreeWindowError), Ledger/MonthlyStatement.swift (ambos init y `build`), Ledger/PaymentAllocationProposal.swift (GroupPending, PaymentAllocationError, ambas sobrecargas de `propose`). NO transcribas ninguna firma de memoria: cualquier divergencia respecto al fuente reproduce el defecto que esta tarea cierra.\nObligaciones concretas:\n(a) Eliminar la frase de la línea 35 que afirma que `CostInputs`, `CostBreakdown`, `SplitRule` y `SplitResult` no existen.\n(b) Documentar la invariante «suma(shares) == total, no existe driverExtra» y la convención posicional «índice 0 = conductor».\n(c) Fijar `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql` como ÚNICA definición canónica del esquema v1, existente y verificada por el arnés SQLite; borrar toda mención a `EuroGas/Packages/CostCore/v1_initial.sql` (líneas 63 y 70) y no citar ninguna otra ruta de DDL.\n(d) Declarar que cualquier binding futuro (GRDB u otro) debe ejecutar ese mismo texto SQL sin reescribirlo (DEC-005, DEC-008).\n(e) Actualizar la tabla de propiedad de archivos para cubrir Models/, Cost/, Split/, Ledger/, Tests/, Persistence/Sources/Persistence/Migrations/ y Persistence/Tests/.\n(f) Mantener `LocationProvider`, `RoutingService`, `PurchaseAccess` y `ActiveTripState` como PENDIENTE.\n(g) Advertir que `LedgerMath.netAcrossGroups` es sólo diagnóstico y no puede mostrarse como saldo por grupo (§7.2), y que `PaymentAllocationProposal` es matemática local: sin pagos reales, sin billing y sin credenciales.\n(h) Documentar los cinco tipos de error existentes con sus casos reales: MoneyParsingError, CostCoreError, PaymentAllocationError, AccountingPeriodError, FreeWindowError.\nEl estado del código Swift sigue siendo UNVERIFIED-BUILD: el documento no puede afirmar que nada de esto compile o se haya ejecutado.",
       "parent_task": null,
       "assigned_manager": "implementation-manager",
-      "assigned_worker": null,
-      "status": "BLOCKED",
+      "assigned_worker": "codex/gpt-5.6-luna",
+      "status": "DONE",
       "priority": "P1",
       "dependencies": [
         "TASK-023",
@@ -1560,22 +1628,48 @@
         "Afirmar compilación o ejecución de Swift"
       ],
       "approval_category": "REQUIRES_HUMAN_APPROVAL",
-      "branch": null,
+      "branch": "agent/TASK-025",
       "worktree": null,
-      "attempts": 0,
-      "result": null,
-      "review_status": null,
-      "qa_status": null,
+      "attempts": 1,
+      "result": {
+        "task_id": "TASK-025",
+        "status": "completed",
+        "files_changed": [
+          "EuroGas/docs/CONTRACTS.md"
+        ],
+        "tests_run": [
+          "git diff --check",
+          "npm test"
+        ],
+        "tests_passed": true,
+        "issues": [
+          "Warnings no bloqueantes por permisos del ignore global de Git."
+        ],
+        "summary": "Reescrito CONTRACTS.md con firmas literales, errores reales, invariantes de reparto, advertencias de LedgerMath y PaymentAllocationProposal, ruta única del DDL canónico, bindings futuros sin reescritura, áreas de propiedad y contratos PENDIENTE. Se mantiene UNVERIFIED-BUILD.",
+        "needs_escalation": false,
+        "escalation_reason": ""
+      },
+      "review_status": "approve",
+      "qa_status": "approve",
       "blockers": [
-        "REQUIRES_HUMAN_APPROVAL: keyword \"payment\"; keyword \"billing\"; keyword \"migration\". Approve with: agents approve TASK-025",
-        "human approved at 2026-09-12T09:30:03.313Z",
-        "unsatisfiable dependencies"
+        "human approved at 2026-09-12T09:30:03.313Z"
       ],
       "run_id": "20260912-111714",
       "created_at": "2026-09-12T09:25:18.929Z",
-      "updated_at": "2026-09-12T13:23:45.430Z",
+      "updated_at": "2026-09-12T13:47:51.994Z",
       "human_approved": true,
-      "brain_approved": true
+      "brain_approved": true,
+      "review": {
+        "task_id": "TASK-025",
+        "decision": "approve",
+        "issues": [
+          "No bloqueante: CostCoreError aparece transcrito dos veces (sección Models/CostCoreError.swift y sección de errores tipados); duplicación, no divergencia, pero obliga a mantener dos copias sincronizadas.",
+          "No bloqueante: las implementaciones de errorDescription de MoneyParsingError y CostCoreError no se transcriben; el documento se limita a declaraciones, criterio aplicado de forma consistente en todo el archivo.",
+          "No bloqueante: la fila de EuroGas/Packages/CostCore/Package.swift desaparece de la tabla de propiedad; no estaba exigida por (e), pero el paquete queda sin propietario declarado."
+        ],
+        "required_changes": [],
+        "summary": "Verificado abriendo cada fuente y comparando carácter a carácter: costModelVersion, roundHalfUp, MoneyCents, UnitPriceMilliEUR, CostCoreError, CostInputs (init throws), CostBreakdown, ambas sobrecargas throws de CostEngine.calculate, SplitRule, SplitResult, SplitEngine.split throws, PersonID/GroupID/TripID/PaymentBatchID, LedgerEntry con Kind, las cuatro funciones de LedgerMath, AccountingPeriod.bounds/accountingMonth, FreeWindow.visibleRange, los dos init y build de MonthlyStatement, GroupPending y ambas propose coinciden sin divergencia con el código. Los cinco tipos de error se documentan con sus casos reales. Ya no aparece la afirmación de que CostInputs/CostBreakdown/SplitRule/SplitResult no existen. Se documenta suma(shares)==total sin driverExtra y la convención índice 0 = conductor, coherente con el comentario del propio SplitEngine. La ruta EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql existe y está cubierta por el arnés Persistence/Tests/PersistenceTests/schema_v1.test.mjs; la ruta obsoleta de CostCore ha desaparecido y no se cita ninguna otra ruta de DDL (grep confirma una única mención en el documento). DEC-005 y DEC-008 existen y respaldan la cláusula de bindings futuros. Advertencias de netAcrossGroups (§7.2) y de PaymentAllocationProposal presentes. Los cuatro contratos PENDIENTE se mantienen. La tabla cubre las siete áreas exigidas. El documento declara UNVERIFIED-BUILD y no afirma en ningún punto que el código compile o se haya ejecutado. El diff se limita a EuroGas/docs/CONTRACTS.md y npm test pasa."
+      }
     },
     {
       "id": "TASK-026",
@@ -1583,8 +1677,8 @@
       "description": "Actualizar EuroGas/docs/STATUS.md para que la evidencia corresponda a ejecuciones reales sobre ESTA rama (feature/continua-el-trabajo-integrado-del-run-20-111714, que ya incluye el arreglo del filtro de copia en Windows, commit 02fc09c). Procedimiento obligatorio:\n1. Ejecuta `npm test` y `node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs` y guarda la salida ÍNTEGRA Y SIN TRUNCAR de cada uno en `.ai/RUNS/20260912-111714/evidence-npm-test.txt` y `.ai/RUNS/20260912-111714/evidence-sqlite-harness.txt`, junto con el código de salida.\n2. Sólo si `npm test` da 35 pass / 0 fail / exit 0 puedes publicarlo como VERIFIED, citando la salida real y referenciando el fichero de evidencia. Si el resultado difiere, registra el resultado REAL, no lo etiquetes VERIFIED y declara el bloqueo. Igual para el arnés SQLite (esperado 18 pass / 0 fail / exit 0, VERIFIED).\n3. Todo el código Swift, incluidos CostCoreError, los cambios de CostEngine y los de SplitEngine de este run, permanece UNVERIFIED-BUILD: no afirmes compilación ni ejecución. Xcode, iPhone, tracking de campo, StoreKit real y Live Activity permanecen EXTERNO con remisión a FIELD_TESTS.md (DEC-006).\n4. Sustituye el párrafo de las líneas 108 (que declara CONTRACTS.md incompleto y difiere su actualización a un ticket propio) por la constatación de que los contratos quedan congelados aquí, ya transcritos contra el código real.\n5. Actualiza el bloque de handoff §19.4 para que coincida exactamente con la sección de evidencias y con los ficheros realmente tocados en este run, manteniendo la declaración «Beta parcial: este tramo NO completa CORE-7».\n6. No atribuyas causas no verificadas a ninguna ejecución de tests (p. ej. al fallo histórico de `npm test`): si la causa no se ha comprobado en este host, escríbelo explícitamente como no identificada.\nEste documento fue el bloqueante de la ronda 5 de QA: una etiqueta VERIFIED sin salida real adjunta vuelve a bloquear el run.",
       "parent_task": null,
       "assigned_manager": "implementation-manager",
-      "assigned_worker": null,
-      "status": "BLOCKED",
+      "assigned_worker": "codex/gpt-5.6-luna",
+      "status": "DONE",
       "priority": "P1",
       "dependencies": [
         "TASK-025"
@@ -1625,19 +1719,46 @@
         "Modificar código Swift, SQL, CONTRACTS.md, orchestrator/**, bin/**, package.json o .gitignore"
       ],
       "approval_category": "AUTO_APPROVED",
-      "branch": null,
+      "branch": "agent/TASK-026",
       "worktree": null,
-      "attempts": 0,
-      "result": null,
-      "review_status": null,
-      "qa_status": null,
-      "blockers": [
-        "dependency TASK-025 failed or blocked"
-      ],
+      "attempts": 3,
+      "result": {
+        "task_id": "TASK-026",
+        "status": "completed",
+        "files_changed": [
+          "EuroGas/docs/STATUS.md",
+          ".ai/RUNS/20260912-111714/evidence-npm-test.txt",
+          ".ai/RUNS/20260912-111714/evidence-sqlite-harness.txt"
+        ],
+        "tests_run": [
+          "npm test",
+          "node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs",
+          "git diff --check"
+        ],
+        "tests_passed": true,
+        "issues": [],
+        "summary": "Evidencias completas archivadas: npm test 35 pass/0 fail/exit 0 y arnés SQLite 18 pass/0 fail/exit 0. STATUS.md actualizado con referencias, estados Swift UNVERIFIED-BUILD, externos, contratos congelados, párrafo CostCoreError corregido y handoff §19.4 limitado a los tres ficheros modificados.",
+        "needs_escalation": false,
+        "escalation_reason": ""
+      },
+      "review_status": "approve",
+      "qa_status": "approve",
+      "blockers": [],
       "run_id": "20260912-111714",
       "created_at": "2026-09-12T09:25:18.929Z",
-      "updated_at": "2026-09-12T09:25:18.942Z"
+      "updated_at": "2026-09-12T14:03:11.855Z",
+      "review": {
+        "task_id": "TASK-026",
+        "decision": "approve",
+        "issues": [
+          "Cosmetic: this run's changes (CostCoreError, CostEngine, SplitEngine) are documented under the heading '## TASK-019 - correcciones QA r2' (STATUS.md:104), which no longer matches the content; the paragraph itself is accurate, so it is not blocking.",
+          "Cosmetic: handoff (STATUS.md:129) cites 'feature/continua-el-trabajo-integrado-del-run-20-111714 (commit integrado 02fc09c)' as commit/branch, which is the integration branch as stated in the task, not the commit carrying this documentation change.",
+          "Note: taxonomy (STATUS.md:9) defines VERIFIED as 'salida real registrada en este documento'; the full output now lives in the run directory with only the summary in-document. The links make this traceable, but the definition could be tightened in a later pass."
+        ],
+        "required_changes": [],
+        "summary": "Approved. Evidence files exist, are untruncated and carry exit codes: npm test 35 pass/0 fail/exit 0 and SQLite harness 18 pass/0 fail/exit 0; the orchestrator's independent re-run reproduced both, so the VERIFIED labels are backed by real output rather than asserted. Swift claims were checked against source: SplitEngine.swift:12-24 and CostEngine.swift:16-27,64-86 have no precondition and throw typed CostCoreError with the negative-total guard before the zero-total case, matching STATUS.md:106; all Swift rows remain UNVERIFIED-BUILD with no compilation claim. The obsolete paragraph deferring CONTRACTS.md to a future ticket is replaced by a freeze statement that CONTRACTS.md substantiates. The five EXTERNO rows still defer to FIELD_TESTS.md, handoff SS19.4 matches the evidence section and the three files actually modified, 'Beta parcial: NO completa CORE-7' is retained, no unverified failure cause is attributed, and the diff is confined to STATUS.md plus the two run evidence files. Only cosmetic issues remain, none of which reintroduce the round-5 blocker."
+      }
     }
   ],
-  "updated_at": "2026-09-12T13:23:45.430Z"
+  "updated_at": "2026-09-12T14:07:26.502Z"
 }

@@ -1,0 +1,83 @@
+$ npm test
+exit=0
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+✔ normal task stays AUTO_APPROVED (3.1141ms)
+✔ new dependency requires brain approval (escalation test) (1.7207ms)
+✔ billing / production / secrets require human approval (0.5917ms)
+✔ category never lowered below manager declaration (0.3618ms)
+✔ changed files outside allowed_files or forbidden are detected (1.4929ms)
+✔ schema validator catches missing/enum/extra (1.3001ms)
+✔ independent tasks run in one wave up to maxParallel (3.1852ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.451ms)
+✔ glob overlap detection (0.9111ms)
+✔ dependencies order waves (0.9253ms)
+✔ unsatisfiable dependency reported (0.6204ms)
+✔ matchesAny handles globs and directories (0.8117ms)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+✔ happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final (5559.2572ms)
+✔ QA can reject: fix tasks are created, executed, and QA re-runs (7071.6924ms)
+✔ review request_changes triggers a worker fix attempt (retry count works) (5848.9973ms)
+✔ repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain (5364.9384ms)
+✔ conflict test: overlapping allowed_files are serialized, never in the same wave (7123.0364ms)
+✔ escalation test: dependency change goes to the brain, billing change waits for a human (8235.6018ms)
+✔ guardrail: worker touching a forbidden file is reverted and the task fails (3937.3349ms)
+✔ stop + resume: STOP marker halts the run and resume finishes it (5671.2931ms)
+✔ truncate returns empty string for falsy inputs (1.6257ms)
+✔ truncate returns text unchanged when shorter than max (0.3488ms)
+✔ truncate returns text unchanged at the boundary (length === max) (0.3665ms)
+✔ truncate appends exact suffix when text is longer than max (0.2911ms)
+✔ truncate with max === 0 on non-empty text returns empty prefix plus suffix (0.2668ms)
+✔ truncate slices multi-line text byte-for-byte with no newline handling (0.2243ms)
+✔ slugify lowercases and hyphenates spaces (0.2998ms)
+✔ slugify collapses punctuation runs and trims edge dashes (0.3471ms)
+✔ slugify preserves digits (0.3578ms)
+✔ slugify is idempotent for already-slug input (0.3622ms)
+✔ slugify drops non-ASCII characters instead of transliterating (0.3286ms)
+✔ slugify falls back to 'objective' for empty, punctuation-
+... [truncated 414 chars]
+
+$ node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
+exit=0
+✔ PRAGMA foreign_keys está activo (2.2325ms)
+✔ control positivo: inserción válida (1.0776ms)
+✔ control positivo: segundo Trip completed (0.997ms)
+✔ control positivo: cargo de otra persona en el mismo viaje (0.9232ms)
+✔ Group.createdAt existe y es NOT NULL (1.2257ms)
+✔ schema rechaza amountCents = 0 (1.0789ms)
+✔ schema rechaza debtorID == creditorID (1.0409ms)
+✔ schema rechaza charge con paymentBatchID (1.0538ms)
+✔ schema rechaza payment con tripID (0.9363ms)
+✔ schema rechaza groupID NULL (2.0625ms)
+✔ schema rechaza segundo owner (2.2365ms)
+✔ schema rechaza segundo viaje active/interrupted (2.0123ms)
+✔ schema rechaza cargo duplicado por persona+viaje (1.9235ms)
+✔ schema rechaza precio <= 0 (0.8929ms)
+✔ schema rechaza consumo <= 0 (0.9803ms)
+✔ schema rechaza endedAt < startedAt (1.0021ms)
+✔ schema rechaza FK inexistente (0.8613ms)
+✔ borrar Trip con cargos está restringido (1.4324ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.9

@@ -1,27 +1,25 @@
 {
-  "objective": "Cerrar exclusivamente los defectos finales de QA de EuroGas del run 20260911-174246 conforme a ARCHITECTURE_BLUEPRINT_rev5.md.",
-  "result": "BLOCKED",
-  "completed": [],
-  "failed": [
-    "0/5 tareas integradas; TASK-023, TASK-024 y TASK-025 bloqueadas por dependencias insatisfacibles; TASK-026 bloqueada por TASK-025.",
-    "Tests y QA no ejecutados; no existe evidencia actual para declarar el cierre."
+  "objective": "Cerrar los defectos finales de QA de EuroGas CORE-7 conforme a ARCHITECTURE_BLUEPRINT_rev5.md.",
+  "result": "SUCCESS",
+  "completed": [
+    "5/5 tareas integradas en feature/continua-el-trabajo-integrado-del-run-20-111714 según el manager; QA aprobada con 22 criterios satisfechos.",
+    "Validaciones del núcleo mediante errores tipados capturables, rechazo explícito de total negativo y pruebas actualizadas; fórmulas y valores canónicos conservados.",
+    "CONTRACTS.md contrastado por QA con las APIs reales de Cost, Split y Ledger, incluidos sus errores y la ruta canónica de Persistence.",
+    "Evidencia actual respaldada por QA: npm test 35/35 y arnés SQLite 18/18, ambos exit=0.",
+    "Contenido de PROJECT_STATE.md actualizado en este JSON para escritura por el orquestador."
   ],
-  "blockers": [
-    "Grafo de dependencias sin resolución.",
-    "Puerta humana de TASK-025 sin acción ni motivo identificados.",
-    "Presencia del trabajo previo y del commit 02fc09c en la base de trabajo pendiente de verificación."
-  ],
+  "failed": [],
+  "blockers": [],
   "decisions": [
-    "Usar feature/continua-el-trabajo-integrado-del-run-20-111714 como rama de continuación, verificando que contiene el trabajo integrado previo y 02fc09c antes de ejecutar tareas.",
-    "Aprobar expresamente la conversión a throws de CostInputs.init, ambas sobrecargas de CostEngine.calculate y SplitEngine.split: está comprendida en el mandato de errores tipados capturables. Conservar cálculos y valores esperados.",
-    "Aprobar el rechazo explícito de total negativo y la eliminación de SplitRejection asociada a la transición a errores lanzados.",
-    "Aprobar como única ruta canónica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql.",
-    "Registrar estas decisiones en ADR con identificadores disponibles; DEC-010..DEC-013 no se consideran existentes ni acreditados.",
-    "La documentación de APIs y PaymentAllocation como matemática local están autorizadas. Si TASK-025 implica otra acción que requiere aprobación humana, identificarla y escalarla; Brain no concede esa aprobación.",
-    "Publicar npm test 35/35 y SQLite 18/18 como evidencia actual únicamente tras ejecutarlos y confirmar esos resultados en la rama de continuación.",
-    "Conservar los componentes correctos. Swift permanece UNVERIFIED-BUILD; Apple/Xcode/iPhone, EXTERNO. Brain y Worker permanecen en Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy ni operaciones externas."
+    "Aceptar el cierre del alcance autorizado con QA aprobada; los defectos documentales menores restantes no bloquean este resultado.",
+    "Reconocer como rama de cierre feature/continua-el-trabajo-integrado-del-run-20-111714. La evidencia actual corresponde a esta rama y no se atribuye a la anterior; la presencia concreta de 02fc09c no está verificada independientemente.",
+    "Ratificar como autorizados los cambios a throws, el rechazo de total negativo y la eliminación de SplitRejection/rejectionReason.",
+    "Ratificar como única ruta canónica EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql.",
+    "Aprobar el contenido de los ADR candidatos; su registro e identificadores siguen sin confirmar. No presumir DEC-010..DEC-013.",
+    "PaymentAllocation es matemática local autorizada. Mantener Swift como UNVERIFIED-BUILD y Apple/Xcode/iPhone como EXTERNO.",
+    "Mantener Brain y Worker en Codex sin fallback; sin instalaciones, dependencias nuevas, push, deploy, TestFlight ni operaciones reales de pagos o producción."
   ],
-  "next_recommended_action": "Encargar al manager resolver las dependencias y clasificar la puerta de TASK-025 con estas decisiones, verificar la base y completar el alcance autorizado con tests y nueva QA.",
-  "project_state_md": "# PROJECT STATE\n\n## Current status\nEuroGas CORE-7: cierre de QA BLOCKED. Continuación en `feature/continua-el-trabajo-integrado-del-run-20-111714`, pendiente de verificar su base. Especificación: `ARCHITECTURE_BLUEPRINT_rev5.md`. Este intento integró 0/5 tareas; tests y QA no ejecutados.\n\n## Features done\nTrabajo previo de CostCore, CostEngine, SplitEngine, ledger y Persistence conservable según los informes recibidos. SQLite previo: 18/18 según QA anterior; no revalidado en este intento. Todo Swift: UNVERIFIED-BUILD.\n\n## In progress\nErrores tipados capturables, rechazo de total negativo, actualización de pruebas, contratos literales y evidencia de STATUS.md.\n\n## Blockers\nDependencias insatisfacibles en TASK-023..025; TASK-026 depende de TASK-025. Puerta humana de TASK-025 sin fundamento especificado. Sin QA actual.\n\n## Important debt\nVerificar integración previa y commit `02fc09c`; ejecutar npm test y arnés SQLite. Acreditar ADR y usar exclusivamente `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`. No presentar resultados históricos como evidencia actual.\n\n## Pending decisions\nBrain aprueba las firmas throws, rechazo de total negativo, eliminación asociada de SplitRejection y ruta canónica. Registrar ADR sin presumir identificadores. Identificar cualquier acción humana real detrás de TASK-025.\n\n## Next priority\nResolver bloqueos del manager, completar únicamente los defectos finales y obtener QA aprobada. Apple/Xcode/iPhone: EXTERNO. Brain y Worker: Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy, TestFlight, compras reales ni producción.\n",
-  "roadmap_update": "\n## EuroGas CORE-7 — cierre QA bloqueado\n- Continuación: 0/5 tareas integradas; tests y QA no ejecutados. M1 sigue abierto.\n- Brain aprueba errores tipados con throws, rechazo de total negativo y ruta canónica del DDL; ADR pendientes de registro.\n- Prioridad: resolver dependencias y puerta de TASK-025, verificar la base, completar correcciones y obtener evidencia actual y QA aprobada.\n- Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone: EXTERNO. Brain y Worker en Codex sin fallback.\n"
+  "next_recommended_action": "Corregir en el próximo cambio de STATUS.md el recuento a 13 rechazos y 3 controles positivos y el encabezado TASK-019 desfasado.",
+  "project_state_md": "# PROJECT STATE\n\n## Current status\nEuroGas CORE-7: cierre del alcance QA SUCCESS conforme a ARCHITECTURE_BLUEPRINT_rev5.md. 5/5 tareas integradas en `feature/continua-el-trabajo-integrado-del-run-20-111714` según manager; QA aprobada, 22 criterios satisfechos.\n\n## Features done\nCostCore, CostEngine, SplitEngine, ledger y Persistence conservados. Errores tipados capturables, rechazo de total negativo, pruebas y contratos actualizados. Ruta DDL única: `EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`. Evidencia actual validada por QA: npm test 35/35 y SQLite 18/18, ambos exit=0.\n\n## In progress\nNinguna tarea pendiente del alcance cerrado. Todo Swift: UNVERIFIED-BUILD. Apple/Xcode/iPhone y validaciones de campo: EXTERNO.\n\n## Blockers\nSin bloqueos críticos para este cierre. La compilación Swift y la validación Apple siguen pendientes externamente.\n\n## Important debt\nCorregir en STATUS.md el recuento a 13 rechazos y 3 controles positivos y el encabezado TASK-019 desfasado. Mejorar diagnósticos de tests que usan try!. Confirmar registro de ADR. QA no verificó independientemente por Git la ausencia de cambios fuera de alcance.\n\n## Pending decisions\nNinguna decisión bloqueante. Brain ratifica throws, rechazo de total negativo, eliminación de SplitRejection y ruta DDL canónica; identificadores ADR sin confirmar.\n\n## Next priority\nCorregir la deuda documental menor de STATUS.md. Brain y Worker: Codex sin fallback. Sin instalaciones, dependencias nuevas, push, deploy, TestFlight, pagos reales ni producción.\n",
+  "roadmap_update": "## EuroGas CORE-7 — cierre QA aprobado\n- Este estado sustituye las entradas anteriores de cierre parcial o bloqueado: 5/5 tareas de continuación integradas; QA aprobada con 22 criterios satisfechos.\n- Evidencia actual: npm test 35/35 y SQLite 18/18, ambos exit=0. Errores tipados, rechazo de total negativo y contratos completados.\n- Cierre del alcance QA: SUCCESS. Swift permanece UNVERIFIED-BUILD; Apple/Xcode/iPhone y campo: EXTERNO. No implica validación completa del MVP.\n- Próximo paso: corregir dos detalles menores de STATUS.md. ADR aprobados en contenido, registro pendiente de confirmar.\n- Brain y Worker en Codex sin fallback; se mantienen las restricciones operativas del objetivo."
 }
