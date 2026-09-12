@@ -80,7 +80,7 @@ Resumen final de la salida real:
 ℹ fail 0
 ℹ skipped 0
 ```
-El arnés aplicó el texto íntegro de `v1_initial.sql` a una base `:memory:`, comprobó `PRAGMA foreign_keys = 1` y rechazó los doce casos de integridad; los dos controles positivos adicionales también pasaron.
+El arnés aplicó el texto íntegro de `v1_initial.sql` a una base `:memory:`, comprobó `PRAGMA foreign_keys = 1` y rechazó los trece casos de integridad; los tres controles positivos también pasaron.
 
 ## Entregables
 
@@ -101,7 +101,7 @@ Cada fila tiene exactamente una etiqueta.
 
 Los cinco elementos EXTERNO no se han probado; sus procedimientos están en `FIELD_TESTS.md`.
 
-## TASK-019 — correcciones QA r2
+## Run 20260912-111714 — cierre de correcciones QA
 
 Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energyCostCents`; los valores Decimal de consumo y factor se construyen desde cadenas; `roundHalfUp` mantiene una única llamada desde Cost; y la distancia valida `isFinite` antes de convertir. La validación de `passengersOnly`, del rango de participantes y del total negativo se realiza mediante errores tipados capturables (`CostCoreError`) lanzados antes del caso de total cero, sin `precondition`. CostCoreError, los cambios de CostEngine y SplitEngine y sus tests tampoco se han compilado ni ejecutado en este host: quedan **UNVERIFIED-BUILD**, no EXTERNO.
 
