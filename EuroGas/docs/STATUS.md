@@ -2,7 +2,7 @@
 
 ## Declaración de alcance
 
-**Beta parcial: este tramo NO completa CORE-7 (§20.2).** Faltan el centro económico completo, persistencia, app y validación en dispositivo/campo.
+**Beta parcial: este tramo NO completa CORE-7 (§20.2).** El ledger, `v1_initial.sql`/G2 y la persistencia quedan recortados DEL TRAMO; también faltan app y validación en dispositivo/campo. El centro económico sigue incompleto porque faltan ledger y esquema.
 
 ## Taxonomía de etiquetas (DEC-006)
 
@@ -63,7 +63,8 @@ Cada fila tiene exactamente una etiqueta.
 | Entregable | Etiqueta | Evidencia o limitación |
 |---|---|---|
 | Tipos monetarios y parsing (§5.1) | **UNVERIFIED-BUILD** | Código y tests escritos; falta toolchain Swift |
-| CostCore completo (cálculo, reparto, ledger) | **NO ENTREGADO** | No existe código de cálculo, reparto ni ledger en el código congelado |
+| CostEngine y SplitEngine (§5, §8) | **UNVERIFIED-BUILD** | Correcciones de TASK-019 escritas; no compiladas ni ejecutadas en este host por falta de toolchain Swift |
+| Ledger y persistencia | **NO ENTREGADO** | Fuera de este ticket |
 | Esquema v1 / G2 | **UNVERIFIED** | Falta `v1_initial.sql`; causa indicada arriba |
 | Suite del orquestador | **VERIFIED** | `npm test`: 35 pass, 0 fail, código 0 |
 | Xcode | **EXTERNO** | Remisión a [FIELD_TESTS.md](FIELD_TESTS.md) |
@@ -74,15 +75,20 @@ Cada fila tiene exactamente una etiqueta.
 
 Los cinco elementos EXTERNO no se han probado; sus procedimientos están en `FIELD_TESTS.md`.
 
+## TASK-019 — correcciones QA r2
+
+Los segmentos suman 355000 m y comparan `energyUnits`, `energyCostEUR` y `energyCostCents`; los valores Decimal de consumo y factor se construyen desde cadenas; `roundHalfUp` mantiene una única llamada desde Cost; la distancia valida `isFinite` antes de convertir; y la precondición de `passengersOnly` precede el caso de total cero. Estas correcciones tampoco se han compilado ni ejecutado en este host: quedan **UNVERIFIED-BUILD**, no EXTERNO.
+
+`CONTRACTS.md` aún NO transcribe `CostInputs`/`CostBreakdown`/`SplitRule`/`SplitResult` (sigue afirmando que no existen), porque está fuera de los allowed_files de esta tarea; la actualización del contrato queda pendiente de ticket propio.
+
 ## RECORTADO
 
-- El centro económico completo y la persistencia quedan fuera del entregable congelado; sólo existe el contrato monetario.
-- `v1_initial.sql` y G2: recortados/no entregados.
+- Ledger, `v1_initial.sql`/G2 y la persistencia quedan recortados DEL TRAMO.
 - S3 (GPS y máquina de estados): recortado.
 
 ## Requisitos pendientes de CORE-7
 
-- Implementar `CostInputs`, `CostBreakdown`, `SplitRule`, `SplitResult`, cálculo, reparto y ledger.
+- Implementar ledger y persistencia.
 - Entregar `v1_initial.sql` y ejecutar G2 con constraints contra SQLite real.
 - Implementar snapshots, viaje, `ActiveTripState`, app, routing y recuperación.
 - Implementar cuentas/grupos, pagos, StoreKit 2/ProGate, Live Activity y pruebas de campo.
