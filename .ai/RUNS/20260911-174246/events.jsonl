@@ -95,3 +95,33 @@
 {"ts":"2026-09-12T08:09:46.991Z","type":"escalate_to_brain","reason":"qa max rounds"}
 {"ts":"2026-09-12T08:10:33.206Z","type":"agent_call","label":"brain-final","role":"brain","provider":"codex","model":"gpt-6-astra","reasoning":"high","policy":"none","started_at":"2026-09-12T08:09:47.008Z","duration_ms":46195,"cost_usd":null,"turns":null,"models_used":["gpt-6-astra"],"permission_denials":[],"error":null}
 {"ts":"2026-09-12T08:10:33.212Z","type":"run_finished","result":"PARTIAL","status":"PAUSED"}
+{"ts":"2026-09-12T08:13:33.241Z","type":"conflict_serialized","task":"TASK-020","conflicts_with":"TASK-019","reason":"overlapping allowed_files; serialized"}
+{"ts":"2026-09-12T08:13:33.248Z","type":"wave_start","tasks":["TASK-019"]}
+{"ts":"2026-09-12T08:13:33.771Z","type":"worker_start","task":"TASK-019","attempt":2}
+{"ts":"2026-09-12T08:21:13.973Z","type":"agent_call","label":"worker-TASK-019-a2","role":"worker","provider":"codex","model":"gpt-5.6-luna","reasoning":"medium","policy":"worker","started_at":"2026-09-12T08:13:33.774Z","duration_ms":460197,"cost_usd":null,"turns":null,"models_used":["gpt-5.6-luna"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:27:13.395Z","type":"agent_call","label":"review-TASK-019-a2","role":"implementation-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T08:23:01.149Z","duration_ms":252243,"cost_usd":0.8264741,"turns":11,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:27:13.397Z","type":"review","task":"TASK-019","attempt":2,"decision":"request_changes","tests_passed":true}
+{"ts":"2026-09-12T08:27:13.400Z","type":"worker_start","task":"TASK-019","attempt":3}
+{"ts":"2026-09-12T08:31:30.443Z","type":"agent_call","label":"worker-TASK-019-a3","role":"worker","provider":"codex","model":"gpt-5.6-luna","reasoning":"medium","policy":"worker","started_at":"2026-09-12T08:27:13.419Z","duration_ms":257022,"cost_usd":null,"turns":null,"models_used":["gpt-5.6-luna"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:35:00.946Z","type":"agent_call","label":"review-TASK-019-a3","role":"implementation-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T08:33:05.708Z","duration_ms":115236,"cost_usd":0.4940938,"turns":11,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:35:00.948Z","type":"review","task":"TASK-019","attempt":3,"decision":"approve","tests_passed":true}
+{"ts":"2026-09-12T08:35:02.254Z","type":"merged","task":"TASK-019"}
+{"ts":"2026-09-12T08:35:02.261Z","type":"wave_start","tasks":["TASK-020"]}
+{"ts":"2026-09-12T08:35:02.725Z","type":"worker_start","task":"TASK-020","attempt":1}
+{"ts":"2026-09-12T08:40:11.036Z","type":"agent_call","label":"worker-TASK-020-a1","role":"worker","provider":"codex","model":"gpt-5.6-luna","reasoning":"medium","policy":"worker","started_at":"2026-09-12T08:35:02.728Z","duration_ms":308305,"cost_usd":null,"turns":null,"models_used":["gpt-5.6-luna"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:43:42.921Z","type":"agent_call","label":"review-TASK-020-a1","role":"implementation-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T08:41:47.978Z","duration_ms":114941,"cost_usd":0.45482629999999996,"turns":8,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:43:42.923Z","type":"review","task":"TASK-020","attempt":1,"decision":"request_changes","tests_passed":true}
+{"ts":"2026-09-12T08:43:42.927Z","type":"worker_start","task":"TASK-020","attempt":2}
+{"ts":"2026-09-12T08:49:50.392Z","type":"agent_call","label":"worker-TASK-020-a2","role":"worker","provider":"codex","model":"gpt-5.6-luna","reasoning":"medium","policy":"worker","started_at":"2026-09-12T08:43:42.934Z","duration_ms":367457,"cost_usd":null,"turns":null,"models_used":["gpt-5.6-luna"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:53:38.328Z","type":"agent_call","label":"review-TASK-020-a2","role":"implementation-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T08:51:16.031Z","duration_ms":142295,"cost_usd":0.6136907,"turns":9,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T08:53:38.329Z","type":"review","task":"TASK-020","attempt":2,"decision":"request_changes","tests_passed":true}
+{"ts":"2026-09-12T08:53:38.338Z","type":"worker_start","task":"TASK-020","attempt":3}
+{"ts":"2026-09-12T08:58:01.059Z","type":"agent_call","label":"worker-TASK-020-a3","role":"worker","provider":"codex","model":"gpt-5.6-luna","reasoning":"medium","policy":"worker","started_at":"2026-09-12T08:53:38.342Z","duration_ms":262715,"cost_usd":null,"turns":null,"models_used":["gpt-5.6-luna"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T09:02:09.387Z","type":"agent_call","label":"review-TASK-020-a3","role":"implementation-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T08:59:27.909Z","duration_ms":161475,"cost_usd":0.6697401000000001,"turns":9,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T09:02:09.391Z","type":"review","task":"TASK-020","attempt":3,"decision":"approve","tests_passed":true}
+{"ts":"2026-09-12T09:02:10.910Z","type":"merged","task":"TASK-020"}
+{"ts":"2026-09-12T09:12:36.589Z","type":"agent_call","label":"qa-round5","role":"qa-manager","provider":"claude","model":"claude-opus-5","reasoning":"high","policy":"readonly","started_at":"2026-09-12T09:07:54.302Z","duration_ms":282285,"cost_usd":1.424378,"turns":25,"models_used":["claude-haiku-4-5-20251001","claude-opus-5"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T09:12:36.593Z","type":"qa","round":5,"decision":"request_changes"}
+{"ts":"2026-09-12T09:12:36.596Z","type":"escalate_to_brain","reason":"qa max rounds"}
+{"ts":"2026-09-12T09:13:23.437Z","type":"agent_call","label":"brain-final","role":"brain","provider":"codex","model":"gpt-6-astra","reasoning":"high","policy":"none","started_at":"2026-09-12T09:12:36.616Z","duration_ms":46820,"cost_usd":null,"turns":null,"models_used":["gpt-6-astra"],"permission_denials":[],"error":null}
+{"ts":"2026-09-12T09:13:23.444Z","type":"run_finished","result":"PARTIAL","status":"PAUSED"}

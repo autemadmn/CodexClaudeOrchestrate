@@ -1,0 +1,69 @@
+$ node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
+exit=0
+✔ PRAGMA foreign_keys está activo (4.521ms)
+✔ control positivo: inserción válida (1.9165ms)
+✔ control positivo: segundo Trip completed (1.6992ms)
+✔ control positivo: cargo de otra persona en el mismo viaje (1.5813ms)
+✔ Group.createdAt existe y es NOT NULL (2.0415ms)
+✔ schema rechaza amountCents = 0 (1.7064ms)
+✔ schema rechaza debtorID == creditorID (1.6141ms)
+✔ schema rechaza charge con paymentBatchID (1.8377ms)
+✔ schema rechaza payment con tripID (3.4878ms)
+✔ schema rechaza groupID NULL (1.8718ms)
+✔ schema rechaza segundo owner (1.162ms)
+✔ schema rechaza segundo viaje active/interrupted (0.9875ms)
+✔ schema rechaza cargo duplicado por persona+viaje (1.2071ms)
+✔ schema rechaza precio <= 0 (0.9242ms)
+✔ schema rechaza consumo <= 0 (0.9949ms)
+✔ schema rechaza endedAt < startedAt (0.982ms)
+✔ schema rechaza FK inexistente (1.754ms)
+✔ borrar Trip con cargos está restringido (1.4883ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 154.3584
+
+$ npm test
+exit=1
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+✔ normal task stays AUTO_APPROVED (3.6684ms)
+✔ new dependency requires brain approval (escalation test) (1.4802ms)
+✔ billing / production / secrets require human approval (0.5973ms)
+✔ category never lowered below manager declaration (0.4824ms)
+✔ changed files outside allowed_files or forbidden are detected (1.9503ms)
+✔ schema validator catches missing/enum/extra (1.9863ms)
+✔ independent tasks run in one wave up to maxParallel (4.3459ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.4183ms)
+✔ glob overlap detection (0.5578ms)
+✔ dependencies order waves (0.4375ms)
+✔ unsatisfiable dependency reported (0.351ms)
+✔ matchesAny handles globs and directories (0.6919ms)
+warning: in the working copy of '.ai/DECISIONS/DEC-004-no-crear-eurogas-xcodeproj-ni-el-target-app-en-est.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-005-esquema-v1-como-ddl-sql-can-nico-sin-capa-grdb-tod.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-006-taxonom-a-obligatoria-de-tres-estados-verified-unv.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-007-tipos-monetarios-nominales-distintos-en-lugar-de-i.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-008-verificar-el-ddl-v1-con-el-sqlite-integrado-de-nod.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/DECISIONS/DEC-009-brain-approved-sql-and-unverified-build.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/PROJECT_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/ROADMAP.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/calls/001-brain-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/calls/002-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/events.jsonl', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/input.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-165411/run.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/001-brain-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/002-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/003-product-architect-spec.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/004-brain-approval-spec-level-decisions-requested.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/005-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/006-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/007-implementation-plan.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.ai/RUNS/20260911-174246/calls/008-brain-approval-tasks.json', LF will be replace
+... [truncated 114290 chars]

@@ -30,3 +30,10 @@
 - Avance parcial: paquete y tipos monetarios integrados; Swift UNVERIFIED-BUILD. QA pendiente de aprobación.
 - Prioridad: resolver aprobaciones y fallos repetidos; completar contratos, coste, reparto, ledger y SQLite con pruebas críticas.
 - Validaciones Apple y de campo: EXTERNO. Brain y Worker en Codex sin fallback.
+
+<!-- run 20260911-174246 -->
+## EuroGas CORE-7 — cierre parcial
+- 5/20 tareas integradas; M1 sigue abierto y QA solicita cambios.
+- SQLite real: 18/18, exit=0. Swift: UNVERIFIED-BUILD. Suite del orquestador integrada: exit=1, causa pendiente.
+- Prioridad: resolver escalación humana, corregir contratos y evidencia, reparar errores del núcleo y repetir QA.
+- GRDB y extras diferidos; validaciones Apple y de campo EXTERNO. Brain y Worker en Codex sin fallback.

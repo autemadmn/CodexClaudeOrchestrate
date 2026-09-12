@@ -1,0 +1,54 @@
+$ npm test
+exit=0
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+✔ normal task stays AUTO_APPROVED (2.985ms)
+✔ new dependency requires brain approval (escalation test) (1.4048ms)
+✔ billing / production / secrets require human approval (0.5679ms)
+✔ category never lowered below manager declaration (0.4244ms)
+✔ changed files outside allowed_files or forbidden are detected (2.4308ms)
+✔ schema validator catches missing/enum/extra (1.5539ms)
+✔ independent tasks run in one wave up to maxParallel (4.4765ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.6517ms)
+✔ glob overlap detection (0.8121ms)
+✔ dependencies order waves (0.6845ms)
+✔ unsatisfiable dependency reported (0.5552ms)
+✔ matchesAny handles globs and directories (0.8887ms)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+✔ happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final (13009.5674ms)
+✔ QA can reject: fix tasks are created, executed, and QA re-runs (15334.7809ms)
+✔ review request_changes triggers a worker fix attempt (retry count works) (11918.3964ms)
+✔ repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain (10965.1637ms)
+✔ conflict test: overlapping allowed_files are serialized, never in the same wave (14238.8292ms)
+✔ escalation test: dependency change goes to the brain, billing change waits for a human (15646.3368ms)
+✔ guardrail: worker touching a forbidden file is reverted and the task fails (9915.5524ms)
+✔ stop + resume: STOP marker halts the run and resume finishes it (11550.4053ms)
+✔ truncate returns empty string for falsy inputs (3.0989ms)
+✔ truncate returns text unchanged when shorter than max (0.4311ms)
+✔ truncate returns text unchanged at the boundary (length === max) (0.5104ms)
+✔ truncate appends exact suffix when text is longer than max (0.5596ms)
+✔ truncate with max === 0 on non-empty text returns empty prefix plus suffix (0.4101ms)
+✔ truncate slices multi-line text byte-for-byte with no newline handling (0.3972ms)
+✔ slugify lowercases and hyphenates spaces (0.5911ms)
+✔ slugify collapses punctuation runs and trims edge dashes (0.4291ms)
+✔ slugify preserves digits (0.3631ms)
+✔ slugify is idempotent for already-slug input (0.5007ms)
+✔ slugify drops non-ASCII characters instead of transliterating (0.4327ms)
+✔ slugify falls back to 'objective' for empty, punct
+... [truncated 421 chars]

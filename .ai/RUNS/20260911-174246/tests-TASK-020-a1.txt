@@ -1,0 +1,78 @@
+$ node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
+exit=0
+✔ PRAGMA foreign_keys está activo (3.0747ms)
+✔ schema rechaza amountCents = 0 (1.8686ms)
+✔ schema rechaza debtorID == creditorID (1.6827ms)
+✔ schema rechaza charge con paymentBatchID (1.4492ms)
+✔ schema rechaza payment con tripID (1.2418ms)
+✔ schema rechaza groupID NULL (1.27ms)
+✔ schema rechaza segundo owner (2.0406ms)
+✔ schema rechaza segundo viaje active/interrupted (1.9846ms)
+✔ schema rechaza cargo duplicado por persona+viaje (1.726ms)
+✔ schema rechaza precio <= 0 (1.4397ms)
+✔ schema rechaza consumo <= 0 (1.3807ms)
+✔ schema rechaza endedAt < startedAt (1.3873ms)
+✔ schema rechaza FK inexistente (1.1173ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 164.4001
+
+$ npm test
+exit=0
+> codex-claude-orchestrate@0.1.0 test
+> node --test orchestrator/test/*.test.mjs
+
+✔ normal task stays AUTO_APPROVED (2.5698ms)
+✔ new dependency requires brain approval (escalation test) (1.0196ms)
+✔ billing / production / secrets require human approval (0.3997ms)
+✔ category never lowered below manager declaration (0.3848ms)
+✔ changed files outside allowed_files or forbidden are detected (1.9412ms)
+✔ schema validator catches missing/enum/extra (1.3045ms)
+✔ independent tasks run in one wave up to maxParallel (3.976ms)
+✔ two tasks editing the same file are serialized (conflict test) (0.5672ms)
+✔ glob overlap detection (1.013ms)
+✔ dependencies order waves (0.9274ms)
+✔ unsatisfiable dependency reported (0.6609ms)
+✔ matchesAny handles globs and directories (1.038ms)
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+✔ happy path: brain -> spec -> tasks -> workers (parallel) -> review -> merge -> QA -> brain final (10817.3379ms)
+✔ QA can reject: fix tasks are created, executed, and QA re-runs (14438.0254ms)
+✔ review request_changes triggers a worker fix attempt (retry count works) (13535.4232ms)
+✔ repeated worker failure stops at MAX_FIX_ATTEMPTS and escalates to the brain (8379.5743ms)
+✔ conflict test: overlapping allowed_files are serialized, never in the same wave (12103.985ms)
+✔ escalation test: dependency change goes to the brain, billing change waits for a human (14298.4869ms)
+✔ guardrail: worker touching a forbidden file is reverted and the task fails (7364.3514ms)
+✔ stop + resume: STOP marker halts the run and resume finishes it (9590.2289ms)
+✔ truncate returns empty string for falsy inputs (3.5609ms)
+✔ truncate returns text unchanged when shorter than max (0.5644ms)
+✔ truncate returns text unchanged at the boundary (length === max) (0.4502ms)
+✔ truncate appends exact suffix when text is longer than max (0.3109ms)
+✔ truncate with max === 0 on non-empty text returns empty prefix plus suffix (0.3016ms)
+✔ truncate slices multi-line text byte-for-byte with no newline handling (0.4243ms)
+✔ slugify lowercases and hyphenates spaces (0.5681ms)
+✔ slugify collapses punctuation runs and trims edge dashes (0.3828ms)
+✔ slugify preserves digits (0.374ms)
+✔ slugify is idempotent for already-slug input (0.5293ms)
+✔ slugify drops non-ASCII characters instead of transliterating (0.3973ms)
+✔ slugify falls back to 'objective' for empty, punctuation
+... [truncated 415 chars]

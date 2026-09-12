@@ -1,42 +1,42 @@
 # Run 20260911-174246
 
 OBJECTIVE:
-Implementar EuroGas conforme a ARCHITECTURE_BLUEPRINT_rev5.md, completando el mayor tramo seguro e integrado de CORE-7 verificable en este entorno.
+Implementar EuroGas CORE-7 conforme a ARCHITECTURE_BLUEPRINT_rev5.md, conservando lo correcto y priorizando núcleo económico, contratos, persistencia y pruebas críticas.
 
 RESULT:
 PARTIAL
 
 COMPLETED:
-- Según los resúmenes, 3/20 tareas integradas en feature/implementa-eurogas-usando-architecture-b-174246.
-- Paquete CostCore y tipos monetarios con parsing y redondeo; revisión estática favorable, ejecución Swift sin verificar.
-- npm test: 35/35 pruebas del orquestador aprobadas; no acredita el funcionamiento de EuroGas.
+- 5/20 tareas integradas en feature/implementa-eurogas-usando-architecture-b-174246, según el manager.
+- CostCore sin dependencias: tipos monetarios, parsing, redondeo, coste, reparto, ledger y ventana Free revisados estáticamente por QA. Swift permanece UNVERIFIED-BUILD.
+- DDL v1 y arnés verificados sobre SQLite real: 18/18 pruebas, exit=0, según QA.
 
 FAILED:
-- QA solicita cambios: faltan CostEngine, SplitEngine, ledger, ventana Free, distribución de pagos y persistencia.
-- El test del esquema SQLite termina con exit=1 porque el arnés no existe; G2 no ejecutado.
-- Contratos incompletos y ruta canónica del DDL inconsistente.
-- Reintentos agotados y cambios fuera del alcance permitido impidieron integrar trabajo adicional.
+- QA solicita cambios; no se cumple la definición de terminado.
+- npm test devuelve exit=1 en la rama integrada; STATUS.md conserva afirmaciones VERIFIED de una ejecución anterior.
+- CONTRACTS.md omite contratos existentes y errores tipados, y declara una ruta incorrecta para el DDL.
+- El núcleo usa precondition donde se exigen errores tipados y acepta un total negativo devolviendo un reparto que incumple suma(shares) == total.
+- 15/20 tareas reportadas como fallidas o bloqueadas; existen intentos agotados y una modificación fuera de alcance revertida.
 
 BLOCKERS:
-- Puertas REQUIRES_HUMAN_APPROVAL pendientes; Brain no puede levantarlas.
-- Fallos repetidos requieren escalación humana antes de nuevos intentos sobre el mismo alcance.
-- swift --version terminó con exit=1: compilación y pruebas Swift permanecen UNVERIFIED-BUILD.
-- Autenticación actual de Codex desconocida; debe verificarse antes de reanudar sin fallback.
+- Puertas REQUIRES_HUMAN_APPROVAL pendientes y fallos repetidos escalados: requieren resolución humana antes de reintentar las tareas afectadas.
+- La causa del fallo de npm test es desconocida: la salida está truncada. El problema de filtrado de rutas en Windows es una hipótesis.
+- Compilación y pruebas Swift sin verificar; autenticación actual de Codex desconocida.
 
 DECISIONS:
-- No declarar SUCCESS: faltan entregables obligatorios, hay un test fallido y QA no aprueba.
-- Conservar el trabajo integrado correcto y mantener rev5 como especificación vigente.
-- Priorizar contratos, CostEngine, SplitEngine, ledger, persistencia y pruebas críticas; diferir extras y la dependencia GRDB.
-- Adoptar EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql como ruta canónica; pendiente reflejarla en los contratos.
-- La revisión estática no sustituye compilación ni pruebas ejecutadas; no confundir UNVERIFIED-BUILD de Swift con EXTERNO.
-- Registrar como EXTERNO la validación Xcode, iPhone, tracking de campo, StoreKit real y Live Activity.
-- Mantener Brain y Worker en Codex sin fallback; no realizar deploy, TestFlight, compras reales, push ni cambios de producción.
+- Conservar el trabajo integrado correcto; declarar PARTIAL y no cerrar CORE-7 ni M1.
+- Escalar conjuntamente las aprobaciones pendientes y los intentos agotados; Brain no concede aprobaciones reservadas al humano.
+- Priorizar evidencia completa del fallo de npm test, corrección de STATUS.md y congelación de contratos con el DDL real antes de ampliar funcionalidades.
+- Exigir errores tipados, rechazo explícito de totales negativos y revisión del aislamiento entre grupos y de la identidad de participantes.
+- Mantener Swift integrado como UNVERIFIED-BUILD; esta etiqueta no satisface la validación de compilación ni de pruebas.
+- Diferir GRDB y extras. Xcode, instalación en iPhone, tracking de campo, StoreKit real y Live Activity permanecen EXTERNO.
+- Brain y Worker deben permanecer en Codex sin fallback. Mantener prohibidos deploy, TestFlight, compras reales, push y cambios de producción.
 
 NEXT RECOMMENDED ACTION:
-Escalar al humano una resolución consolidada de las puertas pendientes y los intentos agotados, con alcance local explícito y permisos de archivos coherentes, antes de reanudar CORE-7.
+Presentar al humano una escalación consolidada para resolver las puertas pendientes y autorizar la reanudación tras los intentos agotados, con alcance limitado a reparar pruebas, contratos y errores del núcleo antes de una nueva QA.
 
 ---
 Branch: feature/implementa-eurogas-usando-architecture-b-174246 (base: claude/multiagent-dev-system-96bbxe)
-Tasks: TASK-002=DONE, TASK-003=BLOCKED, TASK-004=BLOCKED, TASK-005=BLOCKED, TASK-006=BLOCKED, TASK-007=BLOCKED, TASK-008=BLOCKED, TASK-009=BLOCKED, TASK-010=BLOCKED, TASK-011=BLOCKED, TASK-012=BLOCKED, TASK-013=BLOCKED, TASK-014=FAILED, TASK-015=BLOCKED, TASK-016=FAILED, TASK-017=BLOCKED, TASK-018=DONE, TASK-019=FAILED, TASK-020=BLOCKED, TASK-021=DONE
-QA: request_changes | Cost (claude calls only): $8.349
+Tasks: TASK-002=DONE, TASK-003=BLOCKED, TASK-004=BLOCKED, TASK-005=BLOCKED, TASK-006=BLOCKED, TASK-007=BLOCKED, TASK-008=BLOCKED, TASK-009=BLOCKED, TASK-010=BLOCKED, TASK-011=BLOCKED, TASK-012=BLOCKED, TASK-013=BLOCKED, TASK-014=FAILED, TASK-015=BLOCKED, TASK-016=FAILED, TASK-017=BLOCKED, TASK-018=DONE, TASK-019=DONE, TASK-020=DONE, TASK-021=DONE
+QA: request_changes | Cost (claude calls only): $12.8322
 Models: brain=codex/gpt-6-astra, manager=claude/claude-opus-5, worker=codex/gpt-5.6-luna
