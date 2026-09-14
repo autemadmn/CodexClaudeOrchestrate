@@ -1,4 +1,5 @@
 import Foundation
+import Persistence
 
 protocol BackupService: Sendable {
     func makeBackup() throws -> Data

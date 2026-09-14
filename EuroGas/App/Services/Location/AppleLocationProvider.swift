@@ -2,7 +2,7 @@
 import CostCore
 
 @MainActor
-final class AppleLocationProvider: NSObject, LocationProvider, CLLocationManagerDelegate {
+final class AppleLocationProvider: NSObject, LocationProvider, @MainActor CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var continuation: AsyncStream<LocationFix>.Continuation?
     private var authorizationContinuation: CheckedContinuation<Void, Never>?

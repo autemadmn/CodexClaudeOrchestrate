@@ -5,7 +5,7 @@ import CostCore
 final class ReplayLocationProvider: LocationProvider {
     var authorizationState: LocationAuthorizationState = .allowed
     private let fixes: [LocationFix]
-    init(fixes: [LocationFix] = Self.cityDrive) { self.fixes = fixes }
+    init(fixes: [LocationFix] = ReplayLocationProvider.cityDrive) { self.fixes = fixes }
     func requestAuthorization() async {}
     func startUpdates() -> AsyncStream<LocationFix> {
         AsyncStream { continuation in

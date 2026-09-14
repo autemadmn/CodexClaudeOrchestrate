@@ -1,5 +1,6 @@
 import SwiftUI
 import CostCore
+import Persistence
 
 struct AccountsView: View {
     @ObservedObject var model: AppModel

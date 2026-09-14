@@ -47,7 +47,9 @@ private struct TripEditView: View {
         Form {
             Section("Viaje") {
                 LabeledContent("Destino", value: trip.destination ?? "Viaje libre")
-                LabeledContent("Distancia", value: "\(trip.acceptedDistanceMeters / 1000, specifier: "%.1f") km")
+                LabeledContent("Distancia") {
+                    Text("\(trip.acceptedDistanceMeters / 1000, specifier: "%.1f") km")
+                }
                 LabeledContent("Energía", value: TripFormatting.money(trip.energyCostCents))
             }
             Section("Gasto manual") {

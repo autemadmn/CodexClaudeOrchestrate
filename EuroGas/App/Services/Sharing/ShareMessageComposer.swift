@@ -1,5 +1,6 @@
 import Foundation
 import CostCore
+import Persistence
 
 struct ShareMessageComposer: Sendable {
     func tripMessage(origin: String?, destination: String?, energyCost: MoneyCents, expenses: MoneyCents, people: Int, rule: SplitRule) -> String {
