@@ -1,6 +1,6 @@
 # EuroGas — contratos congelados
 
-Este documento transcribe únicamente declaraciones copiadas literalmente del código fuente. El estado de construcción de Swift es **UNVERIFIED-BUILD**: este documento no afirma que el código compile ni que se haya ejecutado.
+Este documento describe las APIs públicas de dominio y los límites de integración vigentes. El estado de construcción de Swift es **UNVERIFIED-BUILD**: este documento no afirma que el código compile ni que se haya ejecutado.
 
 ## API pública de CostCore
 
@@ -250,3 +250,66 @@ La única definición canónica del esquema v1 es `EuroGas/Packages/Persistence/
 | `EuroGas/docs/CONTRACTS.md` | Codex | Documentación contractual |
 | `EuroGas/docs/STATUS.md` | Codex | Estado y evidencias |
 | `EuroGas/docs/FIELD_TESTS.md` | Codex | Procedimientos externos |
+
+## GPS y estado de viaje
+
+`CostCore` mantiene estos contratos sin importar CoreLocation, MapKit, GRDB, StoreKit, ActivityKit, SwiftUI ni UIKit:
+
+- `LocationFix`: coordenadas, precisión horizontal, velocidad opcional y timestamp.
+- `GPSFilter`: ancla aceptada, máximo 65 m de precisión, máximo 62 m/s, gap estimado limitado a 90 s/3 km, intervalos mayores no medidos y contador de rechazos.
+- `GPSAccumulatorSnapshot`: distancia aceptada, distancia de gap estimada, fixes rechazados e intervalos no medidos.
+- `StationaryDetector`: umbral inicial de 0,8 m/s durante 180 segundos; se alimenta antes de descartar jitter.
+- `TripPhase`: `idle`, `planning`, `ready`, `starting`, `tracking`, `paused`, `finishing`, `completed`, `interrupted`.
+- `TripStateMachine.apply`: única transición de estados; una transición inválida lanza `TripStateError`.
+- `ActiveTripState`: checkpoint versionado con secuencia, última medición, acumulador, flag no medido y Live Activity opcional.
+
+Tras recuperación se exige una nueva ancla. Nunca se suma una recta correspondiente al tiempo en que el proceso no midió.
+
+## Persistence
+
+La única definición canónica del esquema sigue siendo:
+
+`EuroGas/Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql`
+
+`AppDatabase` carga ese recurso mediante `Bundle.module`; no existe una copia Swift del DDL. Usa `DatabasePool` para la base de aplicación, `DatabaseQueue` para memoria/tests, activa foreign keys, deja WAL bajo la gestión de `DatabasePool` y aplica `completeUntilFirstUserAuthentication` a los archivos en iOS.
+
+SwiftPM fija exactamente GRDB `7.10.0`, consultada en el repositorio oficial. La resolución y compilación siguen **UNVERIFIED-BUILD** hasta ejecutarlas en Xcode.
+
+`EuroGasStore` agrupa las transacciones de aplicación:
+
+- bootstrap idempotente de exactamente un owner y un grupo técnico “Sin grupo”;
+- configuración de vehículo/perfil/precio y lectura de su snapshot;
+- inicio único, checkpoint de viaje + acumulador y recuperación;
+- finalización/edición con sustitución atómica de cargos derivados;
+- borrado de viaje después de quitar sus cargos, sin borrar pagos;
+- lote de pago por grupos y deshacer lote atómicamente;
+- saldos por persona/grupo y extracto por mes `Europe/Madrid`;
+- backup JSON v1 sin entitlement, importación por reemplazo en transacción y regeneración de cargos;
+- CSV independiente de viajes y cuentas.
+
+Los `Decimal` del backup y SQLite se escriben como cadenas. Dinero final sigue en `MoneyCents`; precio unitario sigue en `UnitPriceMilliEUR`.
+
+## Servicios de aplicación
+
+`AppContainer` es el único composition root. Las Views reciben el contenedor/modelos explícitamente; no crean dependencias globales ni consultan tablas.
+
+- `AppRepository`: persistencia y comandos de repositorio.
+- `LocationProvider`: autorización esperada hasta decisión y stream de `LocationFix`; implementaciones Apple y replay. Si el permiso se revoca, el stream termina, el checkpoint conserva el acumulado y el usuario aún puede finalizar.
+- `RoutingService`: ruta recuperable y apertura de Apple Maps, Google Maps o Waze sin SDK/claves externas.
+- `TripControlling`: start/pause/resume/finish/recover/discard.
+- `LiveActivityService`: start/update/end/recover; un fallo no detiene el viaje.
+- `PurchaseAccess`: estado unknown/free/purchasing/purchased/pending/revoked/unavailable, compra y restauración.
+- `ProGate`: permite crear datos contables named solo en estado purchased; purchased y revoked conservan lectura histórica. Free, pending, unavailable y unknown limitan el detalle a la ventana Free sin borrar filas.
+- `LedgerService`: saldos, extracto mensual, propuesta determinista por grupos, pago y deshacer.
+- `BackupService`: exportación, preview, importación reemplazante y CSV.
+- `AppClock`: reloj inyectable; `FixedAppClock` se reserva para tests/previews.
+
+## Identificadores provisionales
+
+Los identificadores de app, extensión, App Group, tests y producto local se centralizan en `EuroGas/Config/Project.xcconfig`. `Info.plist` pasa App Group y producto a la app. `EuroGas.storekit` replica únicamente el producto provisional para StoreKit Testing local. No existe Development Team configurado.
+
+## Evidencia
+
+- **VERIFIED**: comando ejecutado realmente en Windows con salida observada.
+- **UNVERIFIED-BUILD**: fuente Swift/proyecto escritos pero no compilados aquí.
+- **EXTERNO**: requiere Mac, Xcode, Apple Developer, App Store Connect, iPhone, vehículo o revisión de Apple.

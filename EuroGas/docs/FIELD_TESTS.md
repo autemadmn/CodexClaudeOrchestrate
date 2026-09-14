@@ -1,33 +1,66 @@
-# Procedimientos externos — EXTERNO
+# EuroGas — pruebas de campo
 
-Estos cinco procedimientos figuran como **EXTERNO** en [STATUS.md](STATUS.md) y no se han ejecutado; la referencia es bidireccional.
+Todos los procedimientos de este archivo son **EXTERNO**. No se han ejecutado en Windows y un replay/fake no los sustituye.
 
-## Apertura en Xcode — EXTERNO
+## Preparación segura
 
-**Se necesita:** un Mac con una versión compatible de Xcode y el repositorio.
+- Mac con Xcode 16 o posterior compatible con iOS 18.
+- iPhone compatible, cable/carga y equipo Apple Development seleccionado.
+- Vehículo estacionado para configurar la app. Durante la conducción, quien conduce no manipula el móvil.
+- Anotar modelo de iPhone, versión iOS, batería inicial, conexión/carga y si Apple Maps está en primer plano.
 
-**Cómo se comprobará:** abrir el paquete `EuroGas/Packages/CostCore` en Xcode y verificar que el paquete resuelve sin dependencias externas y que su esquema de tests aparece disponible.
+## Matriz mínima
 
-## Instalación en iPhone — EXTERNO
+| Ensayo | Procedimiento | Evidencia |
+|---|---|---|
+| Apertura/build | Resolver paquetes, compilar CostCore, Persistence, app y tests | Log de Xcode y commit |
+| 20–30 min urbano | Iniciar, bloquear pantalla, pausar/reanudar y finalizar | Hora, odómetro/referencia, km app, coste, señal, batería |
+| 20–30 min autovía con Maps | Abrir navegación externa y mantener EuroGas en background | Continuidad de fixes y actualizaciones visibles |
+| Túnel/parking | Atravesar una pérdida breve y una prolongada | Gap estimado separado de intervalo no medido; sin salto ficticio |
+| Pausa | Parar manualmente y probar pausa estacionaria | Sin sumar jitter; nueva ancla al reanudar |
+| Cierre/reapertura | Terminar proceso desde Xcode y abrir de nuevo | Pantalla interrumpida; continuar/terminar/descartar; sin duplicados |
+| Permiso revocado | Revocar ubicación durante el viaje | Acumulado conservado y finalización posible |
+| Live Activity | Lock Screen y Dynamic Island compatible | Inicio/update/fin; stale visible; fallo no detiene tracking |
+| BEV replay + dispositivo | Perfil kWh/100 km y €/kWh | Ninguna etiqueta de litros/gasolina en resultado |
+| Cuenta completa | Viaje named, gasto, pago parcial, editar/borrar | Cargos recalculados; pago permanece; crédito visible |
+| Backup | Exportar, importar en base de ensayo y comparar | Mismos viajes, gastos, pagos y saldos; Pro no restaurado |
+| StoreKit Testing | Comprar, cancelar, pending, restaurar y revocar | Precio StoreKit; datos intactos; Free tras revocación |
 
-**Se necesita:** un Mac con Xcode, un iPhone compatible, Apple ID/equipo de firma y la configuración de firma correspondiente.
+## Continuidad y límites
 
-**Cómo se comprobará:** compilar una build de la app desde Xcode, instalarla en el iPhone y confirmar que se abre correctamente.
+Objetivos iniciales de investigación: diferencia de distancia menor del 5 % en carretera y 8 % en urbano. Son umbrales de diagnóstico, no una garantía comercial. Comparar contra odómetro o recorrido de referencia y registrar sus limitaciones.
 
-## Tracking de campo — EXTERNO
+Probar por separado:
 
-**Se necesita:** un iPhone instalado, un vehículo real, configuración de consumo y precio, y dos sesiones de conducción supervisada; quien conduce no manipula el móvil.
+1. app en background con Maps delante;
+2. pantalla bloqueada;
+3. proceso terminado por el usuario;
+4. proceso terminado por el sistema cuando sea reproducible;
+5. regreso tras más de 90 segundos.
 
-**Cómo se comprobará:** durante un recorrido real, iniciar, pausar, reanudar y finalizar el viaje con la pantalla bloqueada y el navegador delante; comparar la distancia y el coste registrados con los datos observados y revisar los errores recuperables.
+La configuración no promete relanzamiento automático. Tras interrupción, comprobar que EuroGas crea una ancla nueva y marca lo no medido.
 
-## StoreKit real — EXTERNO
+## Live Activity
 
-**Se necesita:** Apple ID de pruebas, configuración de StoreKit/App Store Connect y un producto Pro configurado.
+Verificar Lock Screen, compact, minimal y expanded. Confirmar que no aparecen nombres ni saldos personales. Esperar más de 30 segundos sin update para inspeccionar `staleDate`. Descartar manualmente la actividad y confirmar que no se recrea en bucle y que el viaje continúa.
 
-**Cómo se comprobará:** en el entorno de pruebas, ejercitar compra, restauración, cancelación, estado pendiente y revocación, y comprobar que el estado Pro y los datos locales quedan coherentes.
+## StoreKit
 
-## Live Activity — EXTERNO
+Usar primero `App/Resources/EuroGas.storekit`; no crear ni cobrar un producto real durante esta fase. Probar `success`, cancelación, pendiente, fallo temporal, restore y revocación. Confirmar que un fallo temporal no se interpreta como revocación y que el backup no contiene producto, recibo ni entitlement.
 
-**Se necesita:** un iPhone compatible con Live Activity y una build firmada que incluya la actividad.
+## Registro de cada ensayo
 
-**Cómo se comprobará:** iniciar un viaje y verificar en la pantalla bloqueada y, cuando corresponda, en Dynamic Island que la actividad inicia, actualiza y finaliza; confirmar también que un fallo de la actividad no detiene el viaje.
+```text
+Fecha/hora:
+Commit/build:
+iPhone/iOS:
+Escenario:
+Pantalla/Maps/carga:
+Distancia de referencia:
+Distancia aceptada:
+Gap estimado/no medido:
+Coste y parámetros:
+Resultado:
+Logs no sensibles:
+Incidencias y siguiente acción:
+```
