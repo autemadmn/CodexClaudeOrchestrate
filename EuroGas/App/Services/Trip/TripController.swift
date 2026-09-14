@@ -86,6 +86,8 @@ final class TripController: ObservableObject, TripControlling {
                     guard !Task.isCancelled else { return }
                     await self?.handle(fix)
                 }
+                guard !Task.isCancelled else { return }
+                await self?.handleLocationStreamEnded()
             }
         } catch {
             fail(error)
@@ -114,7 +116,11 @@ final class TripController: ObservableObject, TripControlling {
                 try machine.apply(.recoverInterrupted); phase = machine.phase; filter.requireFreshAnchor()
                 monotonicStart = monotonicClock.now
                 let stream = location.startUpdates()
-                updateTask = Task { [weak self] in for await fix in stream { guard !Task.isCancelled else { return }; await self?.handle(fix) } }
+                updateTask = Task { [weak self] in
+                    for await fix in stream { guard !Task.isCancelled else { return }; await self?.handle(fix) }
+                    guard !Task.isCancelled else { return }
+                    await self?.handleLocationStreamEnded()
+                }
                 return
             } catch { fail(error); return }
         }
@@ -197,6 +203,14 @@ final class TripController: ObservableObject, TripControlling {
         distanceMeters = filter.snapshot.acceptedDistanceMeters
         do { try saveCheckpoint(force: false) } catch { fail(error) }
         await liveActivity.update(livePresentation())
+    }
+
+    private func handleLocationStreamEnded() async {
+        guard phase == .starting || phase == .tracking else { return }
+        if location.authorizationState == .denied || location.authorizationState == .restricted {
+            lastError = "El permiso de ubicación se ha desactivado. El acumulado se conserva y puedes terminar el viaje."
+            do { try saveCheckpoint(force: true) } catch { fail(error) }
+        }
     }
 
     private func recalculate() {

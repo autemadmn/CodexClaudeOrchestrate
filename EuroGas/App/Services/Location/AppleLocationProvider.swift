@@ -5,6 +5,7 @@ import CostCore
 final class AppleLocationProvider: NSObject, LocationProvider, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var continuation: AsyncStream<LocationFix>.Continuation?
+    private var authorizationContinuation: CheckedContinuation<Void, Never>?
 
     override init() {
         super.init()
@@ -26,7 +27,13 @@ final class AppleLocationProvider: NSObject, LocationProvider, CLLocationManager
         }
     }
 
-    func requestAuthorization() async { manager.requestWhenInUseAuthorization() }
+    func requestAuthorization() async {
+        guard manager.authorizationStatus == .notDetermined else { return }
+        await withCheckedContinuation { continuation in
+            authorizationContinuation = continuation
+            manager.requestWhenInUseAuthorization()
+        }
+    }
 
     func startUpdates() -> AsyncStream<LocationFix> {
         if manager.accuracyAuthorization == .reducedAccuracy {
@@ -55,5 +62,15 @@ final class AppleLocationProvider: NSObject, LocationProvider, CLLocationManager
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         if (error as? CLError)?.code == .denied { stopUpdates() }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus != .notDetermined {
+            authorizationContinuation?.resume()
+            authorizationContinuation = nil
+        }
+        if manager.authorizationStatus == .denied || manager.authorizationStatus == .restricted {
+            stopUpdates()
+        }
     }
 }

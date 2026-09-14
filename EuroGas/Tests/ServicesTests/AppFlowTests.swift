@@ -90,6 +90,21 @@ final class AppFlowTests: XCTestCase {
         XCTAssertEqual(live.events.last, "end")
     }
 
+    func testDeniedLocationDoesNotCreateAnActiveTrip() async throws {
+        let repository = EuroGasStore(database: try AppDatabase.inMemory())
+        let clock = FixedAppClock()
+        let vehicleID = try repository.configureVehicle(.init(displayName: "Coche", energyKind: "gasoline", consumptionPer100: 6, unitPrice: .init(milliEUR: 1_499)), now: clock.now)
+        let location = ReplayLocationProvider()
+        location.authorizationState = .denied
+        let controller = TripController(repository: repository, location: location, liveActivity: FakeLiveActivityService(), clock: clock)
+
+        await controller.start(.init(vehicleID: vehicleID, vehicleName: "Coche", consumptionPer100: 6, realWorldFactor: 1, unitPrice: .init(milliEUR: 1_499), people: 1, splitRule: .everyone, groupID: SystemIDs.ungrouped, participantIDs: [], origin: nil, destination: nil))
+
+        XCTAssertEqual(controller.phase, .idle)
+        XCTAssertNotNil(controller.lastError)
+        XCTAssertNil(try repository.activeTrip())
+    }
+
     func testBackupServiceRejectsInvalidBeforeMutation() throws {
         let repository = EuroGasStore(database: try AppDatabase.inMemory())
         let service = LocalBackupService(repository: repository, clock: FixedAppClock())
