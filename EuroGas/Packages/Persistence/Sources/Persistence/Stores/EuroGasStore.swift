@@ -39,8 +39,26 @@ public final class EuroGasStore: @unchecked Sendable {
             return DrivingConfiguration(consumptionPer100: consumption, realWorldFactor: factor, unitPrice: UnitPriceMilliEUR(milliEUR: row["unitPriceMilliEUR"]))
         }
     }
-    public func people(includeArchived: Bool = false) throws -> [PersonRecord] { try database.writer.read { db in try PersonRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isOwner").desc, Column("createdAt")).fetchAll(db) } }
-    public func groups(includeArchived: Bool = false) throws -> [GroupRecord] { try database.writer.read { db in try GroupRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isUngrouped").desc, Column("createdAt")).fetchAll(db) } }
+    public func people(includeArchived: Bool = false) throws -> [PersonRecord] {
+        try database.writer.read { db in
+            let request = includeArchived
+                ? PersonRecord.all()
+                : PersonRecord.filter(Column("archivedAt") == nil)
+            return try request
+                .order(Column("isOwner").desc, Column("createdAt"))
+                .fetchAll(db)
+        }
+    }
+    public func groups(includeArchived: Bool = false) throws -> [GroupRecord] {
+        try database.writer.read { db in
+            let request = includeArchived
+                ? GroupRecord.all()
+                : GroupRecord.filter(Column("archivedAt") == nil)
+            return try request
+                .order(Column("isUngrouped").desc, Column("createdAt"))
+                .fetchAll(db)
+        }
+    }
     public func completedTrips() throws -> [TripRecord] { try database.writer.read { try TripRecord.filter(Column("status") == "completed").order(Column("startedAt").desc).fetchAll($0) } }
     public func activeTrip() throws -> TripRecord? { try database.writer.read { try TripRecord.filter(Column("status") == "active" || Column("status") == "interrupted").fetchOne($0) } }
     public func participantIDs(tripID: String) throws -> [String] { try database.writer.read { db in try TripParticipantRecord.filter(Column("tripID") == tripID).order(Column("sortOrder")).fetchAll(db).map(\.personID) } }
@@ -115,7 +133,8 @@ public final class EuroGasStore: @unchecked Sendable {
     private func rewriteCompletedTrip(_ completion: TripCompletion) throws {
         try database.writer.write { db in
             guard var trip = try TripRecord.fetchOne(db, key: completion.tripID) else { throw PersistenceError.activeTripMissing }
-            guard completion.endedAt >= try Self.date(trip.startedAt) else { throw PersistenceError.invalidState("El fin no puede ser anterior al inicio.") }
+            let startedAt = try Self.date(trip.startedAt)
+            guard completion.endedAt >= startedAt else { throw PersistenceError.invalidState("El fin no puede ser anterior al inicio.") }
             if !completion.participantIDs.isEmpty {
                 guard completion.participantIDs.count == trip.totalPeople, completion.participantIDs.first == SystemIDs.owner else { throw PersistenceError.invalidState("El propietario debe ser el participante 0.") }
                 trip.accountingMode = "named"
