@@ -2,8 +2,8 @@ import Foundation
 #if canImport(ActivityKit)
 import ActivityKit
 
-public struct TripActivityAttributes: ActivityAttributes {
-    public struct ContentState: Codable, Hashable {
+public struct TripActivityAttributes: ActivityAttributes, Sendable {
+    public struct ContentState: Codable, Hashable, Sendable {
         public let costCents: Int64
         public let distanceMeters: Double
         public let totalPeople: Int

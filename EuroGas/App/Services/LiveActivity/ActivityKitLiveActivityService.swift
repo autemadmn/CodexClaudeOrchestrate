@@ -1,4 +1,4 @@
-@preconcurrency import ActivityKit
+import ActivityKit
 import Foundation
 import EuroGasShared
 
@@ -14,11 +14,11 @@ final class ActivityKitLiveActivityService: LiveActivityService {
     }
 
     func update(_ presentation: LiveTripPresentation) async {
-        await activity?.update(using: state(presentation))
+        await activity?.update(.init(state: state(presentation), staleDate: Date().addingTimeInterval(30)))
     }
 
     func end(_ presentation: LiveTripPresentation) async {
-        await activity?.end(using: state(presentation), dismissalPolicy: .after(Date().addingTimeInterval(60)))
+        await activity?.end(.init(state: state(presentation), staleDate: nil), dismissalPolicy: .after(Date().addingTimeInterval(60)))
         activity = nil
     }
 
