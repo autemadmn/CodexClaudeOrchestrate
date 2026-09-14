@@ -10,7 +10,9 @@ ARTIFACT_DIRECTORY="$REPOSITORY_ROOT/build/ios/ipa"
 APP_PATH="$DERIVED_DATA/Build/Products/Release-iphoneos/EuroGas.app"
 IPA_PATH="$ARTIFACT_DIRECTORY/EuroGas-free-sideload-unsigned.ipa"
 BUILD_INFORMATION="$ARTIFACT_DIRECTORY/EuroGas-free-sideload-build.txt"
+BUILD_LOG="$REPOSITORY_ROOT/build/ios/xcodebuild.log"
 STAGING_DIRECTORY="$(mktemp -d)"
+CANDIDATE_IPA="$STAGING_DIRECTORY/EuroGas-free-sideload-unsigned.ipa"
 
 cleanup() {
   rm -rf "$STAGING_DIRECTORY"
@@ -19,7 +21,7 @@ trap cleanup EXIT
 
 mkdir -p "$DERIVED_DATA" "$ARTIFACT_DIRECTORY" "$STAGING_DIRECTORY/Payload"
 
-xcodebuild build \
+if xcodebuild build \
   -project "$PROJECT_PATH" \
   -scheme EuroGas \
   -configuration Release \
@@ -29,7 +31,13 @@ xcodebuild build \
   CODE_SIGNING_REQUIRED=NO \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGN_ENTITLEMENTS="" \
-  DEVELOPMENT_TEAM=""
+  DEVELOPMENT_TEAM="" > "$BUILD_LOG" 2>&1; then
+  tail -n 5 "$BUILD_LOG"
+else
+  echo "Xcode failed. Diagnostics (full output: build/ios/xcodebuild.log):" >&2
+  grep -n -A 4 -B 2 -E 'error:|BUILD FAILED|The following build commands failed:' "$BUILD_LOG" >&2 || true
+  exit 1
+fi
 
 if [[ ! -d "$APP_PATH" || ! -f "$APP_PATH/EuroGas" ]]; then
   echo "No se encontró EuroGas.app o su ejecutable después de compilar." >&2
@@ -58,13 +66,16 @@ fi
 
 (
   cd "$STAGING_DIRECTORY"
-  /usr/bin/zip -qry "$IPA_PATH" Payload
+  /usr/bin/zip -qry "$CANDIDATE_IPA" Payload
 )
 
-if [[ ! -s "$IPA_PATH" ]]; then
+if [[ ! -s "$CANDIDATE_IPA" ]]; then
   echo "El IPA no se creó o está vacío." >&2
   exit 1
 fi
+
+python3 "$SCRIPT_DIRECTORY/verify-unsigned-ipa.py" "$CANDIDATE_IPA"
+mv "$CANDIDATE_IPA" "$IPA_PATH"
 
 {
   echo "Artifact: $(basename "$IPA_PATH")"
@@ -76,8 +87,8 @@ fi
   echo "Build: $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$STAGING_DIRECTORY/Payload/EuroGas.app/Info.plist")"
   echo "Live Activity extension: omitted for free sideloading"
   echo "Code signing: intentionally absent; AltServer/AltStore must sign locally"
+  echo "Validation: ZIP integrity, arm64 iOS binaries, resources and runtime dependencies passed"
   shasum -a 256 "$IPA_PATH"
 } > "$BUILD_INFORMATION"
 
-unzip -t "$IPA_PATH"
 cat "$BUILD_INFORMATION"

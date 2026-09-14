@@ -1,6 +1,8 @@
 IOS_DEPLOYMENT_TARGET = 18.0
 SDKROOT = iphoneos
 SUPPORTED_PLATFORMS = iphoneos iphonesimulator
+ALWAYS_SEARCH_USER_PATHS = NO
+LD_RUNPATH_SEARCH_PATHS = $(inherited) @executable_path/Frameworks @loader_path/Frameworks
 SWIFT_VERSION = 6.0
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1

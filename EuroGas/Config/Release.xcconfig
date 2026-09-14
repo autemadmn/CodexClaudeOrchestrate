@@ -1,2 +1,3 @@
 #include "Project.xcconfig"
 SWIFT_COMPILATION_MODE = wholemodule
+ENABLE_TESTABILITY = NO

@@ -12,6 +12,7 @@ workflows:
           npm test
           node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
           npm run test:eurogas:static
+          python3 -B EuroGas/Tools/test_verify_unsigned_ipa.py
       - name: Inspeccionar proyecto y resolver paquetes
         script: |
           xcodebuild -version
@@ -23,6 +24,7 @@ workflows:
         script: |
           bash EuroGas/Tools/build-unsigned-ipa.sh
     artifacts:
+      - build/ios/xcodebuild.log
       - build/ios/ipa/*.ipa
       - build/ios/ipa/*.txt
       - build/ios/DerivedData/Logs/Build/*.xcactivitylog

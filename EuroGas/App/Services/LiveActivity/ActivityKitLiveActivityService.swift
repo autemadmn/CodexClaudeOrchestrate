@@ -7,6 +7,7 @@ final class ActivityKitLiveActivityService: LiveActivityService {
     private var activity: Activity<TripActivityAttributes>?
 
     func start(_ presentation: LiveTripPresentation) async throws -> String? {
+        guard Bundle.main.object(forInfoDictionaryKey: "NSSupportsLiveActivities") as? Bool == true else { return nil }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return nil }
         let attributes = TripActivityAttributes(tripID: presentation.tripID, vehicleName: presentation.vehicleName, startedAt: presentation.startedAt)
         activity = try Activity.request(attributes: attributes, content: .init(state: state(presentation), staleDate: Date().addingTimeInterval(30)), pushType: nil)
