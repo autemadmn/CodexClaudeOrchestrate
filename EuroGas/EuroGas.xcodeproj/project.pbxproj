@@ -11,6 +11,8 @@
 		A10000000000000000000003 /* EuroGasShared in Frameworks */ = {isa = PBXBuildFile; productRef = A70000000000000000000003 /* EuroGasShared */; };
 		A10000000000000000000004 /* EuroGasShared in Frameworks */ = {isa = PBXBuildFile; productRef = A70000000000000000000003 /* EuroGasShared */; };
 		A10000000000000000000005 /* EuroGasWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* EuroGasWidgets.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000006 /* CostCore in Frameworks */ = {isa = PBXBuildFile; productRef = A70000000000000000000004 /* CostCore */; };
+		A10000000000000000000007 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = A70000000000000000000005 /* Persistence */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +47,7 @@
 /* Begin PBXFrameworksBuildPhase section */
 		A30000000000000000000001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
 		A30000000000000000000002 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000004, ); runOnlyForDeploymentPostprocessing = 0; };
-		A30000000000000000000003 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000003 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000006, A10000000000000000000007, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,7 +59,7 @@
 /* Begin PBXNativeTarget section */
 		A50000000000000000000001 /* EuroGas */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000001; buildPhases = (A31000000000000000000001, A30000000000000000000001, A32000000000000000000001, A30000000000000000000004, ); buildRules = (); dependencies = (A81000000000000000000002, ); fileSystemSynchronizedGroups = (A22000000000000000000001, ); name = EuroGas; packageProductDependencies = (A70000000000000000000001, A70000000000000000000002, A70000000000000000000003, ); productName = EuroGas; productReference = A20000000000000000000001; productType = "com.apple.product-type.application"; };
 		A50000000000000000000002 /* EuroGasWidgets */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000002; buildPhases = (A31000000000000000000002, A30000000000000000000002, A32000000000000000000002, ); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (A22000000000000000000002, ); name = EuroGasWidgets; packageProductDependencies = (A70000000000000000000003, ); productName = EuroGasWidgets; productReference = A20000000000000000000002; productType = "com.apple.product-type.app-extension"; };
-		A50000000000000000000003 /* EuroGasTests */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000003; buildPhases = (A31000000000000000000003, A30000000000000000000003, A32000000000000000000003, ); buildRules = (); dependencies = (A81000000000000000000001, ); fileSystemSynchronizedGroups = (A22000000000000000000003, ); name = EuroGasTests; packageProductDependencies = (); productName = EuroGasTests; productReference = A20000000000000000000003; productType = "com.apple.product-type.bundle.unit-test"; };
+		A50000000000000000000003 /* EuroGasTests */ = {isa = PBXNativeTarget; buildConfigurationList = A60000000000000000000003; buildPhases = (A31000000000000000000003, A30000000000000000000003, A32000000000000000000003, ); buildRules = (); dependencies = (A81000000000000000000001, ); fileSystemSynchronizedGroups = (A22000000000000000000003, ); name = EuroGasTests; packageProductDependencies = (A70000000000000000000004, A70000000000000000000005, ); productName = EuroGasTests; productReference = A20000000000000000000003; productType = "com.apple.product-type.bundle.unit-test"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -109,6 +111,8 @@
 		A70000000000000000000001 /* CostCore */ = {isa = XCSwiftPackageProductDependency; package = A71000000000000000000001; productName = CostCore; };
 		A70000000000000000000002 /* Persistence */ = {isa = XCSwiftPackageProductDependency; package = A71000000000000000000002; productName = Persistence; };
 		A70000000000000000000003 /* EuroGasShared */ = {isa = XCSwiftPackageProductDependency; package = A71000000000000000000003; productName = EuroGasShared; };
+		A70000000000000000000004 /* CostCore */ = {isa = XCSwiftPackageProductDependency; package = A71000000000000000000001; productName = CostCore; };
+		A70000000000000000000005 /* Persistence */ = {isa = XCSwiftPackageProductDependency; package = A71000000000000000000002; productName = Persistence; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A90000000000000000000001 /* Project object */;

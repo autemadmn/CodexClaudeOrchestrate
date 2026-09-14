@@ -41,21 +41,33 @@ export function validate() {
     'App/Features/Paywall/PaywallView.swift', 'App/Features/Settings/SettingsView.swift',
     'App/Services/Trip/TripController.swift', 'App/Services/Location/AppleLocationProvider.swift',
     'App/Services/Routing/AppleRoutingService.swift', 'App/Services/LiveActivity/ActivityKitLiveActivityService.swift',
-    'App/Services/Ledger/LedgerService.swift', 'App/Services/Store/StoreKitPurchaseAccess.swift',
-    'App/Services/Backup/LocalBackupService.swift', 'App/Resources/Localizable.xcstrings',
+    'App/Services/Ledger/LedgerService.swift', 'App/Services/Store/StoreKitPurchaseAccess.swift', 'App/Services/Store/ProGate.swift',
+    'App/Services/Backup/LocalBackupService.swift', 'App/Services/Sharing/ShareMessageComposer.swift', 'App/Resources/Localizable.xcstrings',
     'App/Resources/PrivacyInfo.xcprivacy', 'App/Resources/EuroGas.storekit', 'Widgets/TripLiveActivity.swift',
+    'Tests/Fixtures/invalid-backup.json',
     'Packages/CostCore/Package.swift', 'Packages/Persistence/Package.swift', 'Packages/EuroGasShared/Package.swift',
-    'Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql'
+    'Packages/Persistence/Sources/Persistence/Migrations/v1_initial.sql',
+    'docs/MAC_HANDOFF.md', 'docs/XCODE_FIRST_BUILD_CHECKLIST.md', 'docs/TESTFLIGHT_PREPARATION.md'
   ];
   for (const item of required) assert(statSafe(join(euroGas, item)), `Falta ${item}`, errors);
 
-  for (const item of ['ProjectDefinition.json','App/Resources/Localizable.xcstrings','App/Resources/EuroGas.storekit','App/Resources/Assets.xcassets/Contents.json','App/Resources/Assets.xcassets/AccentColor.colorset/Contents.json','App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json']) {
+  for (const item of ['ProjectDefinition.json','App/Resources/Localizable.xcstrings','App/Resources/EuroGas.storekit','App/Resources/Assets.xcassets/Contents.json','App/Resources/Assets.xcassets/AccentColor.colorset/Contents.json','App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json','Tests/Fixtures/invalid-backup.json']) {
     try { JSON.parse(readFileSync(join(euroGas, item), 'utf8')); } catch (error) { errors.push(`JSON inválido ${item}: ${error.message}`); }
   }
   const appIcon = JSON.parse(readFileSync(join(euroGas, 'App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json'), 'utf8'));
   for (const image of appIcon.images.filter(image => image.filename)) assert(statSafe(join(euroGas, 'App/Resources/Assets.xcassets/AppIcon.appiconset', image.filename)), `Recurso AppIcon inexistente: ${image.filename}`, errors);
+  const appIconPNG = readFileSync(join(euroGas, 'App/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png'));
+  assert(appIconPNG.subarray(1, 4).toString('ascii') === 'PNG', 'AppIcon no es PNG', errors);
+  assert(appIconPNG.readUInt32BE(16) === 1024 && appIconPNG.readUInt32BE(20) === 1024, 'AppIcon debe medir 1024x1024', errors);
+  assert(![4, 6].includes(appIconPNG[25]), 'AppIcon contiene canal alfa', errors);
   for (const item of ['App/Resources/Info.plist','App/Resources/PrivacyInfo.xcprivacy','App/Resources/EuroGas.entitlements','Widgets/Info.plist','Widgets/EuroGasWidgets.entitlements']) {
     assert(plistLooksWellFormed(readFileSync(join(euroGas, item), 'utf8')), `Plist/XML mal formado: ${item}`, errors);
+  }
+  const appInfo = readFileSync(join(euroGas, 'App/Resources/Info.plist'), 'utf8');
+  const widgetInfo = readFileSync(join(euroGas, 'Widgets/Info.plist'), 'utf8');
+  for (const key of ['CFBundleExecutable', 'CFBundleIdentifier', 'CFBundlePackageType', 'CFBundleShortVersionString', 'CFBundleVersion']) {
+    assert(appInfo.includes(`<key>${key}</key>`), `Info.plist de app no declara ${key}`, errors);
+    assert(widgetInfo.includes(`<key>${key}</key>`), `Info.plist de widget no declara ${key}`, errors);
   }
 
   const project = readFileSync(join(euroGas, 'EuroGas.xcodeproj/project.pbxproj'), 'utf8');
@@ -86,6 +98,11 @@ export function validate() {
   const config = readFileSync(join(euroGas, 'Config/Project.xcconfig'), 'utf8');
   assert(config.includes('PRODUCT_BUNDLE_IDENTIFIER = com.example.EuroGas'), 'Bundle ID provisional no centralizado', errors);
   assert(/^DEVELOPMENT_TEAM\s*=\s*$/m.test(config), 'Development Team no está vacío', errors);
+  const storeKit = JSON.parse(readFileSync(join(euroGas, 'App/Resources/EuroGas.storekit'), 'utf8'));
+  const configuredProduct = config.match(/^PRO_PRODUCT_IDENTIFIER\s*=\s*(\S+)\s*$/m)?.[1];
+  assert(storeKit.products.length === 1 && storeKit.products[0].type === 'NonConsumable' && storeKit.products[0].productID === configuredProduct, 'StoreKit local no coincide con el producto provisional central', errors);
+  const status = readFileSync(join(euroGas, 'docs/STATUS.md'), 'utf8');
+  assert(!/\*\*(UNVERIFIED|NO ENTREGADO)\*\*/.test(status), 'STATUS usa una categoría de evidencia no permitida', errors);
   const sourceText = allFiles.filter(file => /\.(swift|plist|entitlements|xcconfig|pbxproj|storekit)$/.test(file)).map(file => readFileSync(file, 'utf8')).join('\n');
   assert(!/com\.autem\.eurogas/i.test(sourceText), 'Aparece un identificador definitivo no autorizado', errors);
   assert(!/(sk-(proj-)?[A-Za-z0-9_-]{20,}|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|AKIA[0-9A-Z]{16})/.test(sourceText), 'Posible secreto detectado', errors);

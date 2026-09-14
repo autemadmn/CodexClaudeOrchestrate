@@ -39,7 +39,16 @@ public final class AppDatabase: @unchecked Sendable {
         configuration.prepareDatabase { db in
             try db.execute(sql: "PRAGMA foreign_keys = ON")
         }
-        return try AppDatabase(writer: DatabasePool(path: url.path, configuration: configuration))
+        let database = try AppDatabase(writer: DatabasePool(path: url.path, configuration: configuration))
+#if os(iOS)
+        for suffix in ["", "-wal", "-shm"] {
+            let protectedURL = URL(fileURLWithPath: url.path + suffix)
+            if FileManager.default.fileExists(atPath: protectedURL.path) {
+                try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: protectedURL.path)
+            }
+        }
+#endif
+        return database
     }
 
     public static func inMemory() throws -> AppDatabase {

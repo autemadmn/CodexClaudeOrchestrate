@@ -65,6 +65,7 @@ final class TripController: ObservableObject, TripControlling {
 
     func start(_ configuration: TripConfiguration) async {
         guard phase == .idle else { lastError = "Ya hay un viaje en curso."; return }
+        lastError = nil
         if location.authorizationState == .notDetermined { await location.requestAuthorization() }
         guard location.authorizationState == .allowed || location.authorizationState == .reducedAccuracy else {
             lastError = "Necesitamos permiso de ubicación para registrar kilómetros. Puedes seguir planificando sin activarlo."
@@ -77,7 +78,8 @@ final class TripController: ObservableObject, TripControlling {
             self.configuration = configuration
             monotonicStart = monotonicClock.now
             let presentation = livePresentation()
-            activityID = try await liveActivity.start(presentation)
+            do { activityID = try await liveActivity.start(presentation) }
+            catch { lastError = "El viaje continúa sin Live Activity: \(error.localizedDescription)" }
             let stream = location.startUpdates()
             updateTask = Task { [weak self] in
                 for await fix in stream {
@@ -85,7 +87,16 @@ final class TripController: ObservableObject, TripControlling {
                     await self?.handle(fix)
                 }
             }
-        } catch { fail(error) }
+        } catch {
+            fail(error)
+            if tripID == nil {
+                machine = TripStateMachine()
+                phase = .idle
+            } else {
+                machine = TripStateMachine(phase: .interrupted)
+                phase = .interrupted
+            }
+        }
     }
 
     func pause() async {
@@ -117,6 +128,10 @@ final class TripController: ObservableObject, TripControlling {
     func finish(expenses: [ExpenseInput], participantIDs: [String]) async {
         guard phase == .tracking || Self.isPaused(phase) || phase == .interrupted else { return }
         do {
+            if let pausedAt {
+                pausedSeconds += Self.seconds(pausedAt.duration(to: monotonicClock.now))
+                self.pausedAt = nil
+            }
             try machine.apply(.finish); phase = machine.phase
             updateTask?.cancel(); location.stopUpdates()
             try saveCheckpoint(force: true)
@@ -125,22 +140,32 @@ final class TripController: ObservableObject, TripControlling {
             try repository.completeTrip(.init(tripID: tripID, endedAt: clock.now, expenses: expenses, participantIDs: resolvedParticipants))
             try machine.apply(.finishCommitted); phase = machine.phase
             await liveActivity.end(livePresentation())
-        } catch { fail(error); return }
+        } catch {
+            fail(error)
+            machine = TripStateMachine(phase: .interrupted)
+            phase = .interrupted
+            await liveActivity.update(livePresentation())
+            return
+        }
         resetAfterCompletion()
     }
 
     func recoverIfNeeded() async {
         do {
-            guard let state = try repository.activeTripState(), let storedTrip = try repository.activeTrip() else { return }
-            tripID = state.tripID.rawValue; filter = GPSFilter(snapshot: state.accumulator, lastAcceptedFix: nil, requiresFreshAnchor: true)
+            guard let storedTrip = try repository.activeTrip() else { return }
+            tripID = storedTrip.id
+            machine = TripStateMachine(phase: .interrupted)
+            phase = .interrupted
+            guard let state = try repository.activeTripState() else { throw PersistenceError.invalidState("El viaje activo no tiene checkpoint recuperable.") }
+            filter = GPSFilter(snapshot: state.accumulator, lastAcceptedFix: nil, requiresFreshAnchor: true)
             tripStartedAt = try ISO8601DateFormatter().date(from: storedTrip.startedAt).unwrap(or: PersistenceError.invalidState("Fecha inicial inválida."))
             let vehicleName = try repository.vehicles().first(where: { $0.id == storedTrip.vehicleID })?.displayName ?? "EuroGas"
             let storedParticipants = try repository.participantIDs(tripID: storedTrip.id)
             configuration = TripConfiguration(vehicleID: storedTrip.vehicleID, vehicleName: vehicleName, consumptionPer100: Decimal(string: storedTrip.profileConsumptionPer100) ?? 1, realWorldFactor: Decimal(string: storedTrip.profileRealWorldFactor) ?? 1, unitPrice: .init(milliEUR: storedTrip.fuelPriceMilliEUR), people: storedTrip.totalPeople, splitRule: storedTrip.splitRule == "everyone" ? .everyone : .passengersOnly, groupID: storedTrip.groupID, participantIDs: storedParticipants, origin: storedTrip.origin, destination: storedTrip.destination)
             distanceMeters = state.accumulator.acceptedDistanceMeters
-            machine = TripStateMachine(phase: .interrupted); phase = .interrupted
             currentCost = MoneyCents(cents: storedTrip.energyCostCents)
             baseMovingSeconds = storedTrip.movingSeconds; pausedSeconds = storedTrip.pausedSeconds; basePausedSeconds = storedTrip.pausedSeconds
+            checkpointSequence = state.sequence; lastCheckpointDate = state.savedAt; lastCheckpointDistance = distanceMeters
             activityID = await liveActivity.recover(id: state.liveActivityID, presentation: livePresentation())
             lastError = "Se recuperó lo guardado. El intervalo desde la última medición no se suma. Continúa o termina el viaje."
         } catch { fail(error) }
@@ -196,7 +221,7 @@ final class TripController: ObservableObject, TripControlling {
     }
 
     private func movingDuration() -> TimeInterval {
-        guard let start = monotonicStart else { return 0 }
+        guard let start = monotonicStart else { return baseMovingSeconds }
         return baseMovingSeconds + max(0, Self.seconds(start.duration(to: monotonicClock.now)) - (pausedSeconds - basePausedSeconds))
     }
 
@@ -205,7 +230,7 @@ final class TripController: ObservableObject, TripControlling {
     }
 
     private func fail(_ error: Error) { lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription }
-    private func resetAfterCompletion() { phase = .idle; machine = TripStateMachine(); tripID = nil; tripStartedAt = nil; configuration = nil; filter = GPSFilter(); stationaryDetector = StationaryDetector(); distanceMeters = 0; currentCost = .zero; monotonicStart = nil; pausedAt = nil; pausedSeconds = 0; baseMovingSeconds = 0; basePausedSeconds = 0; activityID = nil }
+    private func resetAfterCompletion() { phase = .idle; machine = TripStateMachine(); tripID = nil; tripStartedAt = nil; configuration = nil; filter = GPSFilter(); stationaryDetector = StationaryDetector(); distanceMeters = 0; currentCost = .zero; lastError = nil; checkpointSequence = 0; lastCheckpointDate = nil; lastCheckpointDistance = 0; monotonicStart = nil; pausedAt = nil; pausedSeconds = 0; baseMovingSeconds = 0; basePausedSeconds = 0; activityID = nil }
     private static func isPaused(_ phase: TripPhase) -> Bool { if case .paused = phase { true } else { false } }
     private static func seconds(_ duration: Duration) -> TimeInterval { let parts = duration.components; return Double(parts.seconds) + Double(parts.attoseconds) / 1e18 }
 }
