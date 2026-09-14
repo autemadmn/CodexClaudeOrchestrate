@@ -45,4 +45,5 @@ final class FakeLiveActivityService: LiveActivityService {
     func start(_ presentation: LiveTripPresentation) async throws -> String? { events.append("start"); return "fake-activity" }
     func update(_ presentation: LiveTripPresentation) async { events.append("update") }
     func end(_ presentation: LiveTripPresentation) async { events.append("end") }
+    func recover(id: String?, presentation: LiveTripPresentation) async -> String? { events.append("recover"); return id ?? "fake-recovered" }
 }

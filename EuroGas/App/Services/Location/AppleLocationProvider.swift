@@ -29,6 +29,9 @@ final class AppleLocationProvider: NSObject, LocationProvider, CLLocationManager
     func requestAuthorization() async { manager.requestWhenInUseAuthorization() }
 
     func startUpdates() -> AsyncStream<LocationFix> {
+        if manager.accuracyAuthorization == .reducedAccuracy {
+            manager.requestTemporaryFullAccuracyAuthorization(withPurposeKey: "TripPreciseLocation")
+        }
         manager.allowsBackgroundLocationUpdates = true
         manager.startUpdatingLocation()
         return AsyncStream { continuation in

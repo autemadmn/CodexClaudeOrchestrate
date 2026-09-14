@@ -65,6 +65,7 @@ protocol LiveActivityService: AnyObject {
     func start(_ presentation: LiveTripPresentation) async throws -> String?
     func update(_ presentation: LiveTripPresentation) async
     func end(_ presentation: LiveTripPresentation) async
+    func recover(id: String?, presentation: LiveTripPresentation) async -> String?
 }
 
 protocol AppRepository: AnyObject, Sendable {
@@ -74,6 +75,8 @@ protocol AppRepository: AnyObject, Sendable {
     func people(includeArchived: Bool) throws -> [PersonRecord]
     func groups(includeArchived: Bool) throws -> [GroupRecord]
     func completedTrips() throws -> [TripRecord]
+    func activeTrip() throws -> TripRecord?
+    func participantIDs(tripID: String) throws -> [String]
     func createPerson(name: String, emoji: String?, now: Date) throws -> String
     func createGroup(name: String, memberIDs: [String], now: Date) throws -> String
     func startTrip(_ request: TripStartRequest) throws -> String

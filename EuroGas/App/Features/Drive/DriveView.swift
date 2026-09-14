@@ -57,9 +57,13 @@ struct DriveView: View {
             Text("Combustible o energía estimada").foregroundStyle(.secondary)
             Text("\(trip.distanceMeters / 1000, specifier: "%.2f") km · \(phaseLabel)").font(.headline)
             HStack {
-                if case .paused = trip.phase { Button("Reanudar") { Task { await trip.resume() } }.buttonStyle(.borderedProminent) }
+                if trip.phase == .interrupted {
+                    Button("Continuar") { Task { await trip.resume() } }.buttonStyle(.borderedProminent)
+                    Button("Terminar") { showSummary = true }.buttonStyle(.bordered)
+                    Button("Descartar", role: .destructive) { Task { await trip.discardRecovered(); model.refresh() } }.buttonStyle(.bordered)
+                } else if case .paused = trip.phase { Button("Reanudar") { Task { await trip.resume() } }.buttonStyle(.borderedProminent) }
                 else { Button("Pausar") { Task { await trip.pause() } }.buttonStyle(.bordered) }
-                Button("Terminar") { showSummary = true }.buttonStyle(.borderedProminent).tint(.red)
+                if trip.phase != .interrupted { Button("Terminar") { showSummary = true }.buttonStyle(.borderedProminent).tint(.red) }
             }.controlSize(.large)
         }.padding().frame(maxWidth: .infinity).background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18))
     }

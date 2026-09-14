@@ -1,10 +1,8 @@
 import Foundation
 
 enum AppEnvironment {
-    static let provisionalBundleID = "com.example.EuroGas"
-    static let provisionalWidgetBundleID = "com.example.EuroGas.TripLiveActivity"
-    static let provisionalAppGroupID = "group.com.example.EuroGas"
-    static let provisionalProProductID = "com.example.EuroGas.pro"
+    static var appGroupID: String { Bundle.main.object(forInfoDictionaryKey: "EuroGasAppGroupIdentifier") as? String ?? "group.com.example.EuroGas" }
+    static var proProductID: String { Bundle.main.object(forInfoDictionaryKey: "EuroGasProProductIdentifier") as? String ?? "com.example.EuroGas.pro" }
     static let accountingTimeZone = TimeZone(identifier: "Europe/Madrid")!
     static let databaseName = "EuroGas.sqlite"
 }

@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDisplayName</key><string>EuroGas</string>
+    <key>EuroGasAppGroupIdentifier</key><string>$(APP_GROUP_IDENTIFIER)</string>
+    <key>EuroGasProProductIdentifier</key><string>$(PRO_PRODUCT_IDENTIFIER)</string>
     <key>UILaunchScreen</key><dict/>
     <key>NSLocationWhenInUseUsageDescription</key><string>EuroGas usa tu ubicación durante el viaje para registrar kilómetros y estimar combustible o energía.</string>
     <key>NSLocationTemporaryUsageDescriptionDictionary</key>

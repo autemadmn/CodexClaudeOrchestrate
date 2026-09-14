@@ -27,6 +27,7 @@ protocol TripControlling: AnyObject {
     func resume() async
     func finish(expenses: [ExpenseInput], participantIDs: [String]) async
     func recoverIfNeeded() async
+    func discardRecovered() async
 }
 
 @MainActor
@@ -42,9 +43,11 @@ final class TripController: ObservableObject, TripControlling {
     private let clock: any AppClock
     private var machine = TripStateMachine()
     private var filter = GPSFilter()
+    private var stationaryDetector = StationaryDetector()
     private var updateTask: Task<Void, Never>?
     private var configuration: TripConfiguration?
     private var tripID: String?
+    private var tripStartedAt: Date?
     private var activityID: String?
     private var checkpointSequence = 0
     private var lastCheckpointDate: Date?
@@ -52,6 +55,8 @@ final class TripController: ObservableObject, TripControlling {
     private var monotonicStart: ContinuousClock.Instant?
     private var pausedAt: ContinuousClock.Instant?
     private var pausedSeconds: TimeInterval = 0
+    private var baseMovingSeconds: TimeInterval = 0
+    private var basePausedSeconds: TimeInterval = 0
     private let monotonicClock = ContinuousClock()
 
     init(repository: AppRepository, location: LocationProvider, liveActivity: LiveActivityService, clock: any AppClock) {
@@ -68,7 +73,7 @@ final class TripController: ObservableObject, TripControlling {
         do {
             try machine.apply(.start); phase = machine.phase
             let request = TripStartRequest(vehicleID: configuration.vehicleID, consumptionPer100: configuration.consumptionPer100, realWorldFactor: configuration.realWorldFactor, unitPrice: configuration.unitPrice, totalPeople: configuration.people, splitRule: configuration.splitRule, groupID: configuration.groupID, participantIDs: configuration.participantIDs, origin: configuration.origin, destination: configuration.destination, startedAt: clock.now)
-            tripID = try repository.startTrip(request)
+            tripID = try repository.startTrip(request); tripStartedAt = clock.now
             self.configuration = configuration
             monotonicStart = monotonicClock.now
             let presentation = livePresentation()
@@ -93,9 +98,18 @@ final class TripController: ObservableObject, TripControlling {
     }
 
     func resume() async {
+        if phase == .interrupted {
+            do {
+                try machine.apply(.recoverInterrupted); phase = machine.phase; filter.requireFreshAnchor()
+                monotonicStart = monotonicClock.now
+                let stream = location.startUpdates()
+                updateTask = Task { [weak self] in for await fix in stream { guard !Task.isCancelled else { return }; await self?.handle(fix) } }
+                return
+            } catch { fail(error); return }
+        }
         guard case .paused = phase else { return }
         if let pausedAt { pausedSeconds += Self.seconds(pausedAt.duration(to: monotonicClock.now)) }
-        pausedAt = nil; filter.requireFreshAnchor()
+        pausedAt = nil; filter.requireFreshAnchor(); stationaryDetector.reset()
         do { try machine.apply(.resume); phase = machine.phase; try saveCheckpoint(force: true); await liveActivity.update(livePresentation()) }
         catch { fail(error) }
     }
@@ -107,7 +121,8 @@ final class TripController: ObservableObject, TripControlling {
             updateTask?.cancel(); location.stopUpdates()
             try saveCheckpoint(force: true)
             guard let tripID else { throw PersistenceError.activeTripMissing }
-            try repository.completeTrip(.init(tripID: tripID, endedAt: clock.now, expenses: expenses, participantIDs: participantIDs))
+            let resolvedParticipants = participantIDs.isEmpty ? (configuration?.participantIDs ?? []) : participantIDs
+            try repository.completeTrip(.init(tripID: tripID, endedAt: clock.now, expenses: expenses, participantIDs: resolvedParticipants))
             try machine.apply(.finishCommitted); phase = machine.phase
             await liveActivity.end(livePresentation())
         } catch { fail(error); return }
@@ -116,11 +131,28 @@ final class TripController: ObservableObject, TripControlling {
 
     func recoverIfNeeded() async {
         do {
-            guard let state = try repository.activeTripState() else { return }
+            guard let state = try repository.activeTripState(), let storedTrip = try repository.activeTrip() else { return }
             tripID = state.tripID.rawValue; filter = GPSFilter(snapshot: state.accumulator, lastAcceptedFix: nil, requiresFreshAnchor: true)
+            tripStartedAt = try ISO8601DateFormatter().date(from: storedTrip.startedAt).unwrap(or: PersistenceError.invalidState("Fecha inicial inválida."))
+            let vehicleName = try repository.vehicles().first(where: { $0.id == storedTrip.vehicleID })?.displayName ?? "EuroGas"
+            let storedParticipants = try repository.participantIDs(tripID: storedTrip.id)
+            configuration = TripConfiguration(vehicleID: storedTrip.vehicleID, vehicleName: vehicleName, consumptionPer100: Decimal(string: storedTrip.profileConsumptionPer100) ?? 1, realWorldFactor: Decimal(string: storedTrip.profileRealWorldFactor) ?? 1, unitPrice: .init(milliEUR: storedTrip.fuelPriceMilliEUR), people: storedTrip.totalPeople, splitRule: storedTrip.splitRule == "everyone" ? .everyone : .passengersOnly, groupID: storedTrip.groupID, participantIDs: storedParticipants, origin: storedTrip.origin, destination: storedTrip.destination)
             distanceMeters = state.accumulator.acceptedDistanceMeters
             machine = TripStateMachine(phase: .interrupted); phase = .interrupted
+            currentCost = MoneyCents(cents: storedTrip.energyCostCents)
+            baseMovingSeconds = storedTrip.movingSeconds; pausedSeconds = storedTrip.pausedSeconds; basePausedSeconds = storedTrip.pausedSeconds
+            activityID = await liveActivity.recover(id: state.liveActivityID, presentation: livePresentation())
             lastError = "Se recuperó lo guardado. El intervalo desde la última medición no se suma. Continúa o termina el viaje."
+        } catch { fail(error) }
+    }
+
+    func discardRecovered() async {
+        guard phase == .interrupted, let tripID else { return }
+        do {
+            try repository.deleteTrip(id: tripID)
+            location.stopUpdates()
+            await liveActivity.end(livePresentation())
+            resetAfterCompletion()
         } catch { fail(error) }
     }
 
@@ -128,6 +160,11 @@ final class TripController: ObservableObject, TripControlling {
         guard phase == .starting || phase == .tracking else { return }
         if phase == .starting {
             do { try machine.apply(.firstFix); phase = machine.phase } catch { fail(error); return }
+        }
+        if stationaryDetector.observe(fix), phase == .tracking {
+            do { try machine.apply(.pause(.stationary)); phase = machine.phase; pausedAt = monotonicClock.now; try saveCheckpoint(force: true); await liveActivity.update(livePresentation()) }
+            catch { fail(error) }
+            return
         }
         let result = filter.process(fix)
         if case .normal = result { recalculate() }
@@ -160,15 +197,19 @@ final class TripController: ObservableObject, TripControlling {
 
     private func movingDuration() -> TimeInterval {
         guard let start = monotonicStart else { return 0 }
-        return max(0, Self.seconds(start.duration(to: monotonicClock.now)) - pausedSeconds)
+        return baseMovingSeconds + max(0, Self.seconds(start.duration(to: monotonicClock.now)) - (pausedSeconds - basePausedSeconds))
     }
 
     private func livePresentation() -> LiveTripPresentation {
-        .init(tripID: tripID ?? "pending", vehicleName: configuration?.vehicleName ?? "EuroGas", startedAt: clock.now, costCents: currentCost.cents, distanceMeters: distanceMeters, totalPeople: configuration?.people ?? 1, phase: String(describing: phase))
+        .init(tripID: tripID ?? "pending", vehicleName: configuration?.vehicleName ?? "EuroGas", startedAt: tripStartedAt ?? clock.now, costCents: currentCost.cents, distanceMeters: distanceMeters, totalPeople: configuration?.people ?? 1, phase: String(describing: phase))
     }
 
     private func fail(_ error: Error) { lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription }
-    private func resetAfterCompletion() { phase = .idle; machine = TripStateMachine(); tripID = nil; configuration = nil; filter = GPSFilter(); distanceMeters = 0; currentCost = .zero; monotonicStart = nil; pausedAt = nil; pausedSeconds = 0; activityID = nil }
+    private func resetAfterCompletion() { phase = .idle; machine = TripStateMachine(); tripID = nil; tripStartedAt = nil; configuration = nil; filter = GPSFilter(); stationaryDetector = StationaryDetector(); distanceMeters = 0; currentCost = .zero; monotonicStart = nil; pausedAt = nil; pausedSeconds = 0; baseMovingSeconds = 0; basePausedSeconds = 0; activityID = nil }
     private static func isPaused(_ phase: TripPhase) -> Bool { if case .paused = phase { true } else { false } }
     private static func seconds(_ duration: Duration) -> TimeInterval { let parts = duration.components; return Double(parts.seconds) + Double(parts.attoseconds) / 1e18 }
+}
+
+private extension Optional {
+    func unwrap(or error: @autoclosure () -> Error) throws -> Wrapped { guard let value = self else { throw error() }; return value }
 }

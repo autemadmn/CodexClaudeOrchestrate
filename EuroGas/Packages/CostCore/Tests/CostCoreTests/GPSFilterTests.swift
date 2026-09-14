@@ -28,6 +28,14 @@ final class GPSFilterTests: XCTestCase {
         XCTAssertEqual(filter.snapshot.unmeasuredIntervalCount, 1)
     }
 
+    func testStationaryDetectorTriggersAfterThreeMinutesOfValidFixes() {
+        var detector = StationaryDetector()
+        XCTAssertFalse(detector.observe(LocationFix(latitude: 40, longitude: -3, horizontalAccuracy: 5, speedMetersPerSecond: 0.1, timestamp: start)))
+        XCTAssertTrue(detector.observe(LocationFix(latitude: 40, longitude: -3, horizontalAccuracy: 5, speedMetersPerSecond: 0.1, timestamp: start.addingTimeInterval(180))))
+        detector.reset()
+        XCTAssertFalse(detector.observe(LocationFix(latitude: 40, longitude: -3, horizontalAccuracy: 5, speedMetersPerSecond: 2, timestamp: start.addingTimeInterval(181))))
+    }
+
     private func fix(latitude: Double, longitude: Double, seconds: TimeInterval) -> LocationFix {
         LocationFix(latitude: latitude, longitude: longitude, horizontalAccuracy: 5, timestamp: start.addingTimeInterval(seconds))
     }

@@ -23,11 +23,11 @@ final class StoreKitPurchaseAccess: ObservableObject, PurchaseAccess {
 
     func refresh() async {
         do {
-            product = try await Product.products(for: [AppEnvironment.provisionalProProductID]).first
+            product = try await Product.products(for: [AppEnvironment.proProductID]).first
             displayPrice = product?.displayPrice
             var found = false
             for await result in Transaction.currentEntitlements {
-                guard case let .verified(transaction) = result, transaction.productID == AppEnvironment.provisionalProProductID else { continue }
+                guard case let .verified(transaction) = result, transaction.productID == AppEnvironment.proProductID else { continue }
                 found = true
                 await apply(transaction)
             }
@@ -55,7 +55,7 @@ final class StoreKitPurchaseAccess: ObservableObject, PurchaseAccess {
     }
 
     private func apply(_ transaction: Transaction) async {
-        guard transaction.productID == AppEnvironment.provisionalProProductID else { return }
+        guard transaction.productID == AppEnvironment.proProductID else { return }
         state = transaction.revocationDate == nil ? .purchased : .revoked
     }
 }

@@ -21,6 +21,15 @@ final class ActivityKitLiveActivityService: LiveActivityService {
         activity = nil
     }
 
+    func recover(id: String?, presentation: LiveTripPresentation) async -> String? {
+        if let id, let existing = Activity<TripActivityAttributes>.activities.first(where: { $0.id == id }) {
+            activity = existing
+            await update(presentation)
+            return id
+        }
+        return try? await start(presentation)
+    }
+
     private func state(_ value: LiveTripPresentation) -> TripActivityAttributes.ContentState {
         .init(costCents: value.costCents, distanceMeters: value.distanceMeters, totalPeople: value.totalPeople, indicativeShareCents: value.totalPeople > 0 ? value.costCents / Int64(value.totalPeople) : 0, phase: value.phase, lastUpdatedAt: Date())
     }

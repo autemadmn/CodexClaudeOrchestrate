@@ -21,7 +21,7 @@ final class AppContainer {
     }
 
     static func live() throws -> AppContainer {
-        let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppEnvironment.provisionalAppGroupID)
+        let baseURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: AppEnvironment.appGroupID)
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let database = try AppDatabase.open(at: baseURL.appendingPathComponent(AppEnvironment.databaseName))
         return AppContainer(repository: EuroGasStore(database: database), location: AppleLocationProvider(), routing: AppleRoutingService(), purchaseAccess: StoreKitPurchaseAccess(), liveActivity: ActivityKitLiveActivityService(), clock: SystemAppClock())

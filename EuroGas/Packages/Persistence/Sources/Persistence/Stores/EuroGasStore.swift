@@ -42,6 +42,8 @@ public final class EuroGasStore: @unchecked Sendable {
     public func people(includeArchived: Bool = false) throws -> [PersonRecord] { try database.writer.read { db in try PersonRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isOwner").desc, Column("createdAt")).fetchAll(db) } }
     public func groups(includeArchived: Bool = false) throws -> [GroupRecord] { try database.writer.read { db in try GroupRecord.filter(includeArchived ? SQLLiteral(sql: "1") : SQLLiteral(sql: "archivedAt IS NULL")).order(Column("isUngrouped").desc, Column("createdAt")).fetchAll(db) } }
     public func completedTrips() throws -> [TripRecord] { try database.writer.read { try TripRecord.filter(Column("status") == "completed").order(Column("startedAt").desc).fetchAll($0) } }
+    public func activeTrip() throws -> TripRecord? { try database.writer.read { try TripRecord.filter(Column("status") == "active" || Column("status") == "interrupted").fetchOne($0) } }
+    public func participantIDs(tripID: String) throws -> [String] { try database.writer.read { db in try TripParticipantRecord.filter(Column("tripID") == tripID).order(Column("sortOrder")).fetchAll(db).map(\.personID) } }
 
     @discardableResult
     public func createPerson(name: String, emoji: String? = nil, now: Date = Date()) throws -> String {

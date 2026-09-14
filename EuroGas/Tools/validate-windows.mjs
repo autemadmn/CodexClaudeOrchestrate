@@ -52,6 +52,8 @@ export function validate() {
   for (const item of ['ProjectDefinition.json','App/Resources/Localizable.xcstrings','App/Resources/EuroGas.storekit','App/Resources/Assets.xcassets/Contents.json','App/Resources/Assets.xcassets/AccentColor.colorset/Contents.json','App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json']) {
     try { JSON.parse(readFileSync(join(euroGas, item), 'utf8')); } catch (error) { errors.push(`JSON inválido ${item}: ${error.message}`); }
   }
+  const appIcon = JSON.parse(readFileSync(join(euroGas, 'App/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json'), 'utf8'));
+  for (const image of appIcon.images.filter(image => image.filename)) assert(statSafe(join(euroGas, 'App/Resources/Assets.xcassets/AppIcon.appiconset', image.filename)), `Recurso AppIcon inexistente: ${image.filename}`, errors);
   for (const item of ['App/Resources/Info.plist','App/Resources/PrivacyInfo.xcprivacy','App/Resources/EuroGas.entitlements','Widgets/Info.plist','Widgets/EuroGasWidgets.entitlements']) {
     assert(plistLooksWellFormed(readFileSync(join(euroGas, item), 'utf8')), `Plist/XML mal formado: ${item}`, errors);
   }
