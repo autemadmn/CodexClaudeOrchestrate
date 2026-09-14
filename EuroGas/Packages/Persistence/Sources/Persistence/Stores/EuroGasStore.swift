@@ -44,6 +44,7 @@ public final class EuroGasStore: @unchecked Sendable {
     public func completedTrips() throws -> [TripRecord] { try database.writer.read { try TripRecord.filter(Column("status") == "completed").order(Column("startedAt").desc).fetchAll($0) } }
     public func activeTrip() throws -> TripRecord? { try database.writer.read { try TripRecord.filter(Column("status") == "active" || Column("status") == "interrupted").fetchOne($0) } }
     public func participantIDs(tripID: String) throws -> [String] { try database.writer.read { db in try TripParticipantRecord.filter(Column("tripID") == tripID).order(Column("sortOrder")).fetchAll(db).map(\.personID) } }
+    public func expenses(tripID: String) throws -> [ManualExpenseRecord] { try database.writer.read { db in try ManualExpenseRecord.filter(Column("tripID") == tripID).order(Column("createdAt")).fetchAll(db) } }
 
     @discardableResult
     public func createPerson(name: String, emoji: String? = nil, now: Date = Date()) throws -> String {

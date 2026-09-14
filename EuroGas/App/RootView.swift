@@ -9,13 +9,25 @@ final class AppModel: ObservableObject {
     @Published var groups: [GroupRecord] = []
     @Published var trips: [TripRecord] = []
     @Published var balances: [BalanceSummary] = []
+    @Published private(set) var purchaseState: PurchaseState = .unknown
+    @Published private(set) var purchaseDisplayPrice: String?
     @Published var errorMessage: String?
     let container: AppContainer
 
     init(container: AppContainer) { self.container = container; refresh() }
 
     var needsOnboarding: Bool { vehicles.isEmpty }
-    var isPro: Bool { if case .purchased = container.purchaseAccess.state { true } else { false } }
+    var proGate: ProGate { ProGate(state: purchaseState) }
+    var isPro: Bool { proGate.canCreateNamedAccountingData }
+    var visibleTrips: [TripRecord] {
+        if proGate.canReadRetainedHistory { return trips }
+        guard let range = try? FreeWindow.visibleRange(now: container.clock.now, in: AppEnvironment.accountingTimeZone) else { return [] }
+        let formatter = ISO8601DateFormatter()
+        return trips.filter { trip in
+            guard let startedAt = formatter.date(from: trip.startedAt) else { return false }
+            return startedAt >= range.start && startedAt <= range.end
+        }
+    }
 
     func refresh() {
         do {
@@ -25,6 +37,26 @@ final class AppModel: ObservableObject {
             trips = try container.repository.completedTrips()
             balances = try container.ledger.balances()
         } catch { errorMessage = error.localizedDescription }
+    }
+
+    func refreshPurchaseAccess() async {
+        await container.purchaseAccess.refresh()
+        syncPurchaseAccess()
+    }
+
+    func purchase() async {
+        await container.purchaseAccess.purchase()
+        syncPurchaseAccess()
+    }
+
+    func restorePurchases() async {
+        await container.purchaseAccess.restore()
+        syncPurchaseAccess()
+    }
+
+    private func syncPurchaseAccess() {
+        purchaseState = container.purchaseAccess.state
+        purchaseDisplayPrice = container.purchaseAccess.displayPrice
     }
 
     func configureVehicle(name: String, energy: String, consumption: String, price: String) -> Bool {
@@ -39,11 +71,8 @@ final class AppModel: ObservableObject {
 
 struct RootView: View {
     @StateObject private var model: AppModel
-    let startupError: String?
 
-    init(container: AppContainer, startupError: String? = nil) {
-        _model = StateObject(wrappedValue: AppModel(container: container)); self.startupError = startupError
-    }
+    init(container: AppContainer) { _model = StateObject(wrappedValue: AppModel(container: container)) }
 
     var body: some View {
         Group {
@@ -58,10 +87,10 @@ struct RootView: View {
                 }
             }
         }
-        .task { await model.container.purchaseAccess.refresh(); await model.container.tripController.recoverIfNeeded() }
-        .alert("EuroGas", isPresented: Binding(get: { startupError != nil || model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
+        .task { await model.refreshPurchaseAccess(); await model.container.tripController.recoverIfNeeded() }
+        .alert("EuroGas", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
             Button("Aceptar") { model.errorMessage = nil }
-        } message: { Text(startupError ?? model.errorMessage ?? "") }
+        } message: { Text(model.errorMessage ?? "") }
     }
 }
 

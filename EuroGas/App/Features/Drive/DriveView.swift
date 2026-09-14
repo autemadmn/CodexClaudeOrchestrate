@@ -13,6 +13,9 @@ struct DriveView: View {
     @State private var planning = false
     @State private var manualExpense = ""
     @State private var showSummary = false
+    @State private var useNamedParticipants = false
+    @State private var selectedGroupID = SystemIDs.ungrouped
+    @State private var selectedParticipantIDs: Set<String> = []
 
     init(model: AppModel) { self.model = model; _trip = ObservedObject(wrappedValue: model.container.tripController) }
 
@@ -43,7 +46,17 @@ struct DriveView: View {
                     }
                 }
             }
-            Stepper("Personas: \(people)", value: $people, in: 1...8)
+            if model.isPro {
+                Toggle("Usar personas y cuentas", isOn: $useNamedParticipants)
+                if useNamedParticipants {
+                    Picker("Grupo", selection: $selectedGroupID) { ForEach(model.groups) { Text($0.name).tag($0.id) } }
+                    ForEach(model.people.filter { !$0.isOwner }) { person in
+                        Toggle(person.name, isOn: Binding(get: { selectedParticipantIDs.contains(person.id) }, set: { value in if value { selectedParticipantIDs.insert(person.id) } else { selectedParticipantIDs.remove(person.id) }; people = min(8, selectedParticipantIDs.count + 1) }))
+                    }
+                    Text("Yo (conductor) siempre ocupa la posición 0.").font(.footnote).foregroundStyle(.secondary)
+                }
+            }
+            if !useNamedParticipants { Stepper("Personas: \(people)", value: $people, in: 1...8) }
             Toggle("Sólo pagan los pasajeros", isOn: $passengersOnly).disabled(people == 1)
             Button(destination.isEmpty ? "Empezar sin destino" : "Empezar viaje") { Task { await start() } }
                 .buttonStyle(.borderedProminent).controlSize(.large).frame(maxWidth: .infinity).accessibilityLabel("Empezar viaje")
@@ -75,6 +88,7 @@ struct DriveView: View {
                     Text("Distancia registrada: \(trip.distanceMeters / 1000, specifier: "%.2f") km")
                     Text("Energía estimada: \(TripFormatting.money(trip.currentCost.cents))")
                     TextField("Peajes/parking (€)", text: $manualExpense).keyboardType(.decimalPad)
+                    ShareLink(item: shareMessage) { Label("Compartir reparto", systemImage: "square.and.arrow.up") }
                 }
                 Section { Text("Al confirmar se recalculan los cargos en la misma transacción. Los pagos existentes no se borran.").font(.footnote) }
             }
@@ -91,8 +105,8 @@ struct DriveView: View {
 
     private func start() async {
         guard let vehicle = model.vehicles.first else { return }
-        let participants = model.isPro ? Array(([SystemIDs.owner] + model.people.filter { !$0.isOwner }.map(\.id)).prefix(people)) : []
-        let group = model.groups.first(where: { !$0.isUngrouped })?.id ?? SystemIDs.ungrouped
+        let participants = namedParticipants
+        let group = namedMode ? selectedGroupID : SystemIDs.ungrouped
         do {
             let driving = try model.container.repository.drivingConfiguration(vehicleID: vehicle.id)
             await trip.start(.init(vehicleID: vehicle.id, vehicleName: vehicle.displayName, consumptionPer100: driving.consumptionPer100, realWorldFactor: driving.realWorldFactor, unitPrice: driving.unitPrice, people: people, splitRule: passengersOnly ? .passengersOnly : .everyone, groupID: group, participantIDs: participants.count == people ? participants : [], origin: origin, destination: destination.isEmpty ? nil : destination))
@@ -102,10 +116,20 @@ struct DriveView: View {
     private func finish() async {
         var expenses: [ExpenseInput] = []
         if !manualExpense.isEmpty, let amount = try? MoneyCents(parsing: manualExpense, locale: Locale(identifier: "es_ES")), amount.cents > 0 { expenses.append(.init(label: "Peajes/parking", kind: "other", amount: amount)) }
-        let participants = model.isPro ? Array(([SystemIDs.owner] + model.people.filter { !$0.isOwner }.map(\.id)).prefix(people)) : []
+        let participants = namedParticipants
         await trip.finish(expenses: expenses, participantIDs: participants.count == people ? participants : [])
         showSummary = false; manualExpense = ""; model.refresh()
     }
+
+    private var shareMessage: String {
+        let expense = (try? MoneyCents(parsing: manualExpense, locale: Locale(identifier: "es_ES"))) ?? .zero
+        return model.container.shareComposer.tripMessage(origin: origin, destination: destination, energyCost: trip.currentCost, expenses: expense, people: people, rule: passengersOnly ? .passengersOnly : .everyone)
+    }
+    private var namedParticipants: [String] {
+        guard namedMode else { return [] }
+        return [SystemIDs.owner] + model.people.filter { !$0.isOwner && selectedParticipantIDs.contains($0.id) }.prefix(7).map(\.id)
+    }
+    private var namedMode: Bool { model.isPro && useNamedParticipants }
 
     private var phaseLabel: String { switch trip.phase { case .starting: "Buscando señal"; case .tracking: "En marcha"; case .paused: "En pausa"; case .interrupted: "Interrumpido"; case .finishing: "Guardando"; default: "Preparando" } }
 }

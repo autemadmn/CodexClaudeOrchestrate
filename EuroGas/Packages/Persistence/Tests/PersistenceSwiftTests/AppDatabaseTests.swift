@@ -31,12 +31,21 @@ final class AppDatabaseTests: XCTestCase {
     func testBackupRoundTripPreservesBalancesAndRejectsInvalidInput() throws {
         let original = EuroGasStore(database: try AppDatabase.inMemory())
         let now = Date(timeIntervalSince1970: 1_725_000_000)
-        _ = try original.configureVehicle(.init(displayName: "Eléctrico", energyKind: "bev", consumptionPer100: 18, unitPrice: .init(milliEUR: 200)), now: now)
+        let vehicleID = try original.configureVehicle(.init(displayName: "Eléctrico", energyKind: "bev", consumptionPer100: 18, unitPrice: .init(milliEUR: 200)), now: now)
+        let personID = try original.createPerson(name: "Lucía", now: now)
+        let groupID = try original.createGroup(name: "Universidad", memberIDs: [SystemIDs.owner, personID], now: now)
+        let tripID = try original.startTrip(.init(vehicleID: vehicleID, consumptionPer100: 18, unitPrice: .init(milliEUR: 200), totalPeople: 2, splitRule: .everyone, groupID: groupID, participantIDs: [SystemIDs.owner, personID], startedAt: now))
+        let active = ActiveTripState(tripID: TripID(tripID), sequence: 1, savedAt: now, phase: .tracking, lastAcceptedFix: nil, accumulator: .init(acceptedDistanceMeters: 10_000), lastMovementAt: now, unmeasuredIntervalFlag: false, liveActivityID: nil)
+        try original.checkpoint(.init(tripID: tripID, state: active, energyCost: .init(cents: 360), estimatedEnergy: 1.8, movingSeconds: 600, pausedSeconds: 0))
+        try original.completeTrip(.init(tripID: tripID, endedAt: now.addingTimeInterval(600), expenses: [.init(label: "Parking", kind: "parking", amount: .init(cents: 240))], participantIDs: [SystemIDs.owner, personID]))
+        _ = try original.recordPayment(personID: personID, allocations: [(groupID, .init(cents: 75))], occurredAt: now.addingTimeInterval(700), note: "Bizum")
+        let expectedBalances = try original.balances()
         let data = try original.exportBackup(now: now)
         let restored = EuroGasStore(database: try AppDatabase.inMemory())
         try restored.importBackup(data)
         XCTAssertEqual(try restored.vehicles().map(\.displayName), ["Eléctrico"])
+        XCTAssertEqual(try restored.balances(), expectedBalances)
         XCTAssertThrowsError(try restored.importBackup(Data("{}".utf8)))
-        XCTAssertEqual(try restored.vehicles().map(\.displayName), ["Eléctrico"])
+        XCTAssertEqual(try restored.balances(), expectedBalances)
     }
 }

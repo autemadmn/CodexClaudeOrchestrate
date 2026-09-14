@@ -54,6 +54,7 @@ struct AccountsView: View {
                         LabeledContent("Cierre", value: TripFormatting.money(statement.closing.cents))
                     }
                 }
+                ShareLink(item: model.container.shareComposer.accountMessage(month: currentMonth, balance: balance, statement: statement)) { Label("Compartir cuenta", systemImage: "square.and.arrow.up") }
             }
             .navigationTitle("Registrar pago")
             .toolbar {
@@ -72,7 +73,7 @@ struct AccountsView: View {
     }
 
     private func currentStatement(for personID: String) -> MonthlyStatement? {
-        let month = AccountingPeriod.accountingMonth(of: model.container.clock.now, in: AppEnvironment.accountingTimeZone)
-        return try? model.container.ledger.monthlyStatement(personID: personID, month: month)
+        try? model.container.ledger.monthlyStatement(personID: personID, month: currentMonth)
     }
+    private var currentMonth: String { AccountingPeriod.accountingMonth(of: model.container.clock.now, in: AppEnvironment.accountingTimeZone) }
 }

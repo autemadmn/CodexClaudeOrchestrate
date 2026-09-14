@@ -51,6 +51,45 @@ final class AppFlowTests: XCTestCase {
         XCTAssertEqual(try repository.people().count, before)
     }
 
+    func testAppModelReflectsPurchaseAndRevocationImmediately() async throws {
+        let repository = EuroGasStore(database: try AppDatabase.inMemory())
+        let access = FakePurchaseAccess(state: .free)
+        let container = AppContainer(repository: repository, location: ReplayLocationProvider(), routing: FakeRoutingService(), purchaseAccess: access, liveActivity: FakeLiveActivityService(), clock: FixedAppClock())
+        let model = AppModel(container: container)
+        await model.refreshPurchaseAccess()
+        XCTAssertFalse(model.isPro)
+        XCTAssertFalse(model.proGate.canReadRetainedHistory)
+        await model.purchase()
+        XCTAssertTrue(model.isPro)
+        access.state = .revoked
+        await model.refreshPurchaseAccess()
+        XCTAssertFalse(model.isPro)
+        XCTAssertEqual(model.purchaseState, .revoked)
+        XCTAssertTrue(model.proGate.canReadRetainedHistory)
+    }
+
+    func testCheckpointRecoveryRestoresDistanceAndCanDiscard() async throws {
+        let repository = EuroGasStore(database: try AppDatabase.inMemory())
+        let clock = FixedAppClock()
+        let vehicleID = try repository.configureVehicle(.init(displayName: "Coche", energyKind: "gasoline", consumptionPer100: 6, unitPrice: .init(milliEUR: 1_499)), now: clock.now)
+        let tripID = try repository.startTrip(.init(vehicleID: vehicleID, consumptionPer100: 6, unitPrice: .init(milliEUR: 1_499), totalPeople: 1, splitRule: .everyone, startedAt: clock.now))
+        let snapshot = GPSAccumulatorSnapshot(acceptedDistanceMeters: 4_200, estimatedGapDistanceMeters: 0, rejectedFixCount: 1, unmeasuredIntervalCount: 1)
+        let active = ActiveTripState(tripID: TripID(tripID), sequence: 3, savedAt: clock.now, phase: .tracking, lastAcceptedFix: nil, accumulator: snapshot, lastMovementAt: clock.now, unmeasuredIntervalFlag: true, liveActivityID: "old-activity")
+        try repository.checkpoint(.init(tripID: tripID, state: active, energyCost: .init(cents: 38), estimatedEnergy: 0.25, movingSeconds: 240, pausedSeconds: 12))
+
+        let live = FakeLiveActivityService()
+        let controller = TripController(repository: repository, location: ReplayLocationProvider(), liveActivity: live, clock: clock)
+        await controller.recoverIfNeeded()
+        XCTAssertEqual(controller.phase, .interrupted)
+        XCTAssertEqual(controller.distanceMeters, 4_200, accuracy: 0.001)
+        XCTAssertEqual(live.events, ["recover"])
+
+        await controller.discardRecovered()
+        XCTAssertEqual(controller.phase, .idle)
+        XCTAssertNil(try repository.activeTrip())
+        XCTAssertEqual(live.events.last, "end")
+    }
+
     func testBackupServiceRejectsInvalidBeforeMutation() throws {
         let repository = EuroGasStore(database: try AppDatabase.inMemory())
         let service = LocalBackupService(repository: repository, clock: FixedAppClock())

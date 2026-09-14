@@ -77,6 +77,7 @@ protocol AppRepository: AnyObject, Sendable {
     func completedTrips() throws -> [TripRecord]
     func activeTrip() throws -> TripRecord?
     func participantIDs(tripID: String) throws -> [String]
+    func expenses(tripID: String) throws -> [ManualExpenseRecord]
     func createPerson(name: String, emoji: String?, now: Date) throws -> String
     func createGroup(name: String, memberIDs: [String], now: Date) throws -> String
     func startTrip(_ request: TripStartRequest) throws -> String

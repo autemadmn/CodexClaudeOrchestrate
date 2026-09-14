@@ -11,6 +11,7 @@ final class AppContainer {
     let ledger: LedgerService
     let backup: BackupService
     let tripController: TripController
+    let shareComposer = ShareMessageComposer()
     let clock: any AppClock
 
     init(repository: AppRepository, location: LocationProvider, routing: RoutingService, purchaseAccess: PurchaseAccess, liveActivity: LiveActivityService, clock: any AppClock) {

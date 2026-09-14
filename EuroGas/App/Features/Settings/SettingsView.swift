@@ -25,6 +25,7 @@ struct SettingsView: View {
                 Section("Datos locales") {
                     Button("Exportar backup completo") { exportBackup() }
                     Button("Exportar viajes CSV") { exportTripsCSV() }
+                    Button("Exportar cuentas CSV") { exportAccountsCSV() }
                     Button("Importar backup") { importing = true }
                     Text("El backup puede contener nombres y rutas. No incluye compras, recibos, credenciales ni muestras GPS crudas.").font(.footnote).foregroundStyle(.secondary)
                 }
@@ -49,9 +50,18 @@ struct SettingsView: View {
         }
     }
 
-    private var accessLabel: String { model.isPro ? "Pro activo" : "Modo Free · detalle de 30 días; datos antiguos conservados" }
+    private var accessLabel: String {
+        switch model.purchaseState {
+        case .purchased: "Pro activo"
+        case .revoked: "Compra revocada · datos existentes visibles y exportables"
+        case .pending: "Compra pendiente · modo Free activo"
+        case let .unavailable(message): message
+        default: "Modo Free · detalle de 30 días; datos antiguos conservados"
+        }
+    }
     private var locationLabel: String { switch model.container.location.authorizationState { case .allowed: "Ubicación permitida"; case .reducedAccuracy: "Precisión reducida"; case .denied: "Ubicación denegada"; case .restricted: "Ubicación restringida"; case .notDetermined: "Permiso aún no solicitado" } }
     private func exportBackup() { do { document = .init(data: try model.container.backup.makeBackup()); filename = "EuroGas-backup.json"; exporting = true } catch { model.errorMessage = error.localizedDescription } }
     private func exportTripsCSV() { do { document = .init(data: Data(try model.container.backup.csvFiles().trips.utf8)); filename = "EuroGas-trips.csv"; exporting = true } catch { model.errorMessage = error.localizedDescription } }
+    private func exportAccountsCSV() { do { document = .init(data: Data(try model.container.backup.csvFiles().accounts.utf8)); filename = "EuroGas-accounts.csv"; exporting = true } catch { model.errorMessage = error.localizedDescription } }
     private func importBackup() { guard let data = pendingImport else { return }; do { try model.container.backup.importReplacingLocalData(data); pendingImport = nil; importPreview = nil; model.refresh() } catch { model.errorMessage = error.localizedDescription } }
 }

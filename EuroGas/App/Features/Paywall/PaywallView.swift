@@ -9,12 +9,12 @@ struct PaywallView: View {
             Text("EuroGas Pro").font(.largeTitle.bold())
             Text("Lleva las cuentas con tus compañeros de coche. Personas, grupos y saldos mes a mes. Compra única.").multilineTextAlignment(.center)
             Text("Los viajes y pagos existentes nunca se borran si la compra se revoca.").font(.footnote).foregroundStyle(.secondary)
-            Button("Comprar \(model.container.purchaseAccess.displayPrice ?? "")") { Task { await model.container.purchaseAccess.purchase(); status = purchaseLabel; model.refresh() } }
+            Button("Comprar \(model.purchaseDisplayPrice ?? "")") { Task { await model.purchase(); status = purchaseLabel; model.refresh() } }
                 .buttonStyle(.borderedProminent).controlSize(.large)
-                .disabled(model.container.purchaseAccess.displayPrice == nil)
-            Button("Restaurar compras") { Task { await model.container.purchaseAccess.restore(); status = purchaseLabel; model.refresh() } }
+                .disabled(model.purchaseDisplayPrice == nil)
+            Button("Restaurar compras") { Task { await model.restorePurchases(); status = purchaseLabel; model.refresh() } }
             if !status.isEmpty { Text(status).foregroundStyle(.secondary) }
         }.padding().navigationTitle("Pro")
     }
-    private var purchaseLabel: String { switch model.container.purchaseAccess.state { case .purchased: "Pro activo"; case .pending: "Compra pendiente"; case .revoked: "Compra revocada; datos conservados"; case let .unavailable(message): message; default: "Modo Free" } }
+    private var purchaseLabel: String { switch model.purchaseState { case .purchased: "Pro activo"; case .pending: "Compra pendiente"; case .revoked: "Compra revocada; datos conservados"; case let .unavailable(message): message; default: "Modo Free" } }
 }

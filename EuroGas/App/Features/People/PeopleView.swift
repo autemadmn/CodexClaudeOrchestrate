@@ -16,7 +16,15 @@ struct PeopleView: View {
             Section("Grupos") {
                 ForEach(model.groups.filter { !$0.isUngrouped }) { Text($0.name) }
                 TextField("Nombre del grupo", text: $groupName)
-                ForEach(model.people) { person in Toggle(person.name, isOn: Binding(get: { selection.contains(person.id) }, set: { $0 ? selection.insert(person.id) : selection.remove(person.id) })).disabled(person.isOwner) }
+                ForEach(model.people) { person in
+                    Toggle(person.name, isOn: Binding(
+                        get: { selection.contains(person.id) },
+                        set: { selected in
+                            if selected { selection.insert(person.id) }
+                            else { selection.remove(person.id) }
+                        }
+                    )).disabled(person.isOwner)
+                }
                 Button("Crear grupo") { addGroup() }.disabled(!model.isPro || groupName.isEmpty)
             }
             if !model.isPro { Section { Text("Crear personas, grupos y nuevos cargos requiere Pro. Tus datos existentes siguen visibles y exportables.").foregroundStyle(.secondary) } }
@@ -28,7 +36,8 @@ struct PeopleView: View {
         catch { model.errorMessage = error.localizedDescription }
     }
     private func addGroup() {
-        do { _ = try model.container.repository.createGroup(name: groupName, memberIDs: Array(selection), now: model.container.clock.now); groupName = ""; model.refresh() }
+        let ordered = [SystemIDs.owner] + model.people.filter { !$0.isOwner && selection.contains($0.id) }.map(\.id)
+        do { _ = try model.container.repository.createGroup(name: groupName, memberIDs: ordered, now: model.container.clock.now); groupName = ""; model.refresh() }
         catch { model.errorMessage = error.localizedDescription }
     }
 }
