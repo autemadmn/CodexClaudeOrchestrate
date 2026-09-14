@@ -1,0 +1,28 @@
+workflows:
+  eurogas-free-sideload:
+    name: EuroGas - IPA gratuito para pruebas
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      xcode: 26.0
+      node: 22
+    scripts:
+      - name: Validaciones independientes de Xcode
+        script: |
+          npm test
+          node --test EuroGas/Packages/Persistence/Tests/PersistenceTests/schema_v1.test.mjs
+          npm run test:eurogas:static
+      - name: Inspeccionar proyecto y resolver paquetes
+        script: |
+          xcodebuild -version
+          xcodebuild -list -project EuroGas/EuroGas.xcodeproj
+          xcodebuild -resolvePackageDependencies \
+            -project EuroGas/EuroGas.xcodeproj \
+            -scheme EuroGas
+      - name: Compilar y empaquetar IPA sin firma
+        script: |
+          bash EuroGas/Tools/build-unsigned-ipa.sh
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/ipa/*.txt
+      - build/ios/DerivedData/Logs/Build/*.xcactivitylog
