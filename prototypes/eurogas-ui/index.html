@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#070b0a" />
+  <title>EuroGas · Prototipo visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b1714'/%3E%3Cpath d='M20 44c0-13 9-22 24-24' stroke='%232fd07e' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='44' r='5' fill='%232fd07e'/%3E%3C/svg%3E" />
+  <style>
+    /* ============================================================
+       EUROGAS · DESIGN SYSTEM
+       ============================================================ */
+    :root {
+      /* — Color ————————————————————————————— */
+      --bg:            #070b0a;
+      --surface:       #101715;
+      --raised:        #18211e;
+      --raised-2:      #202a27;
+      --line:          #2a3632;
+
+      --accent:        #2fd07e;
+      --accent-strong: #36ed94;
+      --accent-soft:   rgba(47, 208, 126, .10);
+      --accent-line:   rgba(47, 208, 126, .24);
+      --grad-accent:   linear-gradient(135deg, #16ad70, #2fd07e);
+
+      --text:          #f2f5f4;
+      --text-muted:    #9eaaa6;
+      --text-dim:      #6f7b77;
+      --danger:        #ff6471;
+
+      /* — Espaciado (escala de 4) ———————————— */
+      --screen-x:      16px;
+      --card-pad:      14px;
+      --hero-pad:      18px;
+      --gap-sm:        8px;
+      --gap:           12px;
+      --gap-lg:        20px;
+      --section:       28px;
+
+      /* — Radios ———————————————————————————— */
+      --r-sm:          12px;   /* inputs, tiles */
+      --r-md:          16px;   /* cards */
+      --r-lg:          20px;   /* botones */
+      --r-pill:        999px;
+
+      /* — Elevación —————————————————————————— */
+      --card-bg:       linear-gradient(145deg, rgba(28, 38, 35, .96), rgba(18, 25, 23, .96));
+      --cta-shadow:    0 12px 28px rgba(47, 208, 126, .20);
+      --hero-glow:     0 0 28px rgba(47, 208, 126, .18);
+      --phone-shadow:  0 36px 100px rgba(0, 0, 0, .56);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(47, 208, 126, .10), transparent 27rem),
+        radial-gradient(circle at 82% 76%, rgba(47, 208, 126, .09), transparent 29rem),
+        linear-gradient(145deg, #07100e 0%, #050807 48%, #0a1311 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .16;
+      background-image: radial-gradient(rgba(255, 255, 255, .32) .55px, transparent .55px);
+      background-size: 7px 7px;
+      mask-image: linear-gradient(to bottom, black, transparent 70%);
+    }
+
+    button { font: inherit; color: inherit; }
+
+    /* — Iconos ——————————————————————————————— */
+    .ico {
+      width: 20px; height: 20px;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ico-sm { width: 16px; height: 16px; }
+    .ico-lg { width: 24px; height: 24px; }
+    .ico-fill { fill: currentColor; stroke: none; }
+
+    /* ============================================================
+       SHELL (presentación de escritorio)
+       ============================================================ */
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(260px, 390px) minmax(330px, 440px);
+      justify-content: center;
+      align-items: center;
+      gap: clamp(36px, 7vw, 110px);
+      padding: 42px 32px;
+    }
+
+    .brief { max-width: 380px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 8px 12px;
+      border: 1px solid var(--accent-line);
+      border-radius: var(--r-pill);
+      color: #c8fbe0;
+      background: var(--accent-soft);
+      font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent); }
+    .brief h1 { margin: 25px 0 16px; font-size: clamp(42px, 5vw, 70px); line-height: .94; letter-spacing: -.04em; font-weight: 800; }
+    .brief h1 span { color: var(--accent); }
+    .brief > p { margin: 0; color: var(--text-muted); font-size: 16px; line-height: 1.55; }
+
+    .screen-picker { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-sm); margin-top: var(--section); }
+    .picker-btn {
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      padding: 11px 13px;
+      color: var(--text-muted);
+      background: rgba(16, 23, 21, .78);
+      text-align: left; cursor: pointer;
+      font-size: 13px; font-weight: 600;
+      transition: border-color .2s ease, transform .2s ease, color .2s ease;
+    }
+    .picker-btn:hover { border-color: #496158; transform: translateY(-1px); color: var(--text); }
+    .picker-btn.active { color: #04150e; border-color: var(--accent); background: var(--accent); }
+    .picker-btn small { display: block; opacity: .66; font-size: 10px; font-weight: 500; margin-bottom: 3px; }
+    .note { margin-top: var(--gap-lg); color: var(--text-dim); font-size: 12px; line-height: 1.5; }
+
+    /* ============================================================
+       PHONE
+       ============================================================ */
+    .phone-wrap { position: relative; justify-self: center; }
+    .phone-wrap::before {
+      content: ""; position: absolute; inset: 11% -22%;
+      border-radius: 50%;
+      background: rgba(47, 208, 126, .14);
+      filter: blur(60px);
+    }
+    .phone {
+      position: relative;
+      width: min(390px, calc(100vw - 28px));
+      height: min(820px, calc(100vh - 44px));
+      min-height: 650px;
+      border: 7px solid #252b29;
+      outline: 1px solid #59625f;
+      border-radius: 52px;
+      overflow: hidden;
+      background: var(--bg);
+      box-shadow: var(--phone-shadow), inset 0 0 0 1px rgba(255, 255, 255, .08);
+    }
+    .phone::after {
+      content: ""; position: absolute; inset: 0; border-radius: 44px;
+      pointer-events: none; z-index: 20;
+      box-shadow: inset 0 0 34px rgba(255, 255, 255, .025);
+    }
+    .island {
+      position: absolute; z-index: 30;
+      width: 104px; height: 27px; border-radius: var(--r-pill);
+      top: 10px; left: 50%; transform: translateX(-50%);
+      background: #010202;
+      box-shadow: inset 0 -1px rgba(255, 255, 255, .07);
+    }
+    .status {
+      position: absolute; z-index: 29;
+      top: 17px; left: 26px; right: 26px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; font-weight: 600;
+      pointer-events: none;
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .status-icons svg { display: block; }
+
+    .screens { height: 100%; position: relative; }
+    .screen {
+      position: absolute; inset: 0;
+      padding: 52px var(--screen-x) 84px;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateX(30px) scale(.985);
+      pointer-events: none;
+      transition: opacity .28s ease, transform .32s cubic-bezier(.2, .8, .2, 1);
+      scrollbar-width: none;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+    .screen.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: auto; z-index: 3; }
+    .screen.exit-left { transform: translateX(-30px) scale(.985); }
+
+    /* ============================================================
+       TIPOGRAFÍA (8 pasos · suelo 11px)
+       ============================================================ */
+    .t-hero-xl { font-size: 44px; line-height: 1.0;  letter-spacing: -.04em; font-weight: 800; }
+    .t-hero    { font-size: 32px; line-height: 1.05; letter-spacing: -.03em; font-weight: 800; }
+    .t-title   { font-size: 24px; line-height: 1.15; letter-spacing: -.02em; font-weight: 800; margin: 0; }
+    .t-card    { font-size: 15px; line-height: 1.3;  font-weight: 600; }
+    .t-body    { font-size: 14px; line-height: 1.45; font-weight: 400; }
+    .t-label   { font-size: 11px; line-height: 1.3;  font-weight: 600; color: var(--text-muted); }
+    .t-caption { font-size: 11px; line-height: 1.35; font-weight: 400; color: var(--text-dim); }
+
+    /* ============================================================
+       PATRONES COMUNES
+       ============================================================ */
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--gap);
+      min-height: 36px;
+      margin-bottom: var(--gap);
+    }
+    .topbar h1 { font-size: 24px; line-height: 1.15; letter-spacing: -.02em; font-weight: 800; margin: 0; }
+    .topbar-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border: 0; border-radius: 50%;
+      cursor: pointer;
+      color: var(--text);
+      background: transparent;
+      transition: background .18s ease;
+    }
+    .icon-btn:hover { background: var(--raised); }
+
+    .page-title { font-size: 28px; line-height: 1.12; letter-spacing: -.03em; font-weight: 800; margin: var(--gap) 0 6px; }
+    .lede { margin: 0 0 var(--gap-lg); color: var(--text-muted); font-size: 14px; line-height: 1.45; }
+
+    .section-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin: var(--gap-lg) 0 var(--gap-sm);
+    }
+    .section-head h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+    .section-link { color: var(--accent); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 2px; }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: var(--card-bg);
+      padding: var(--card-pad);
+    }
+    .stack { display: grid; gap: var(--gap); }
+    .stack-sm { display: grid; gap: var(--gap-sm); }
+
+    /* — Tiles de icono ————————————————————— */
+    .tile {
+      display: grid; place-items: center;
+      width: 40px; height: 40px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--raised-2);
+      color: var(--text-muted);
+      flex: none;
+    }
+    .tile-accent { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+    .tile-lg { width: 52px; height: 52px; }
+
+    /* — Botones ————————————————————————————— */
+    .action {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      width: 100%;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: var(--r-lg);
+      cursor: pointer;
+      font-size: 15px; font-weight: 600;
+      white-space: nowrap;
+      transition: transform .18s ease, filter .18s ease, background .18s ease;
+    }
+    .action.primary {
+      color: #04150e;
+      background: var(--grad-accent);
+      box-shadow: var(--cta-shadow);
+      font-weight: 800;
+    }
+    .action.primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .action.secondary {
+      min-height: 44px;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, .08);
+    }
+    .action.secondary:hover { background: rgba(255, 255, 255, .04); }
+    .action.tertiary { min-height: 40px; color: var(--accent); background: transparent; }
+    .action.tertiary:hover { background: var(--accent-soft); }
+    /* Par de acciones en una fila: evita que el CTA principal parta de línea. */
+    .action-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--gap-sm); align-items: stretch; }
+    .action-row .action { min-height: 48px; }
+
+    .mini-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: 1px solid var(--accent-line);
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: var(--r-pill);
+      padding: 7px 12px;
+      font-size: 11px; font-weight: 600;
+      cursor: pointer;
+    }
+    .mini-btn:hover { background: rgba(47, 208, 126, .16); }
+
+    .chevron { color: var(--text-dim); flex: none; }
+
+    /* — Fila de vehículo ————————————————————— */
+    .car-card { display: grid; grid-template-columns: auto 1fr auto; gap: var(--gap); align-items: center; }
+    .car-name { font-size: 15px; font-weight: 600; }
+    .car-meta { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+
+    /* — Métricas ————————————————————————————— */
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .metrics-3 { grid-template-columns: repeat(3, 1fr); }
+    .metric { text-align: center; padding: 2px 4px; }
+    .metric + .metric { border-left: 1px solid var(--line); }
+    .metric .ico { color: var(--text-muted); margin: 0 auto 7px; }
+    .metric b { display: block; font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
+    .metric small { display: block; color: var(--text-dim); font-size: 11px; margin-top: 3px; }
+
+    /* — Fila etiqueta/valor ————————————————— */
+    .row { display: grid; grid-template-columns: auto 1fr auto; gap: var(--gap); align-items: center; }
+    .row b { display: block; font-size: 15px; font-weight: 600; }
+    .row small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+    .row-value { font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
+
+    /* — Avatar (iniciales, sin emoji) ————————— */
+    .avatar {
+      display: grid; place-items: center;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-line);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px; font-weight: 800; letter-spacing: -.01em;
+      flex: none;
+    }
+    .avatar-group { border-color: var(--line); background: var(--raised-2); color: var(--text-muted); }
+
+    /* ============================================================
+       BIENVENIDA
+       ============================================================ */
+    .screen.welcome {
+      padding: 0;
+      background:
+        radial-gradient(circle at 65% 22%, rgba(33, 124, 99, .32), transparent 42%),
+        linear-gradient(180deg, #09201b, #07100e 48%, var(--bg));
+    }
+    .welcome-content {
+      position: relative; z-index: 2;
+      height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 68px 26px 32px;
+    }
+    .brand-mark { filter: drop-shadow(0 10px 24px rgba(47, 208, 126, .28)); }
+    .brand { font-size: 40px; font-weight: 800; letter-spacing: -.04em; margin-top: 16px; line-height: 1; }
+    .brand span { color: var(--accent); }
+    .tagline { max-width: 240px; color: var(--text-muted); line-height: 1.4; font-size: 15px; margin-top: 10px; }
+    .welcome-art { flex: 1; display: grid; place-items: stretch; width: 100%; min-height: 0; padding: 20px 0 12px; }
+    .welcome-art svg { width: 100%; height: 100%; }
+    .welcome-actions { display: grid; gap: var(--gap-sm); width: 100%; }
+
+    /* ============================================================
+       CONDUCIR
+       ============================================================ */
+    .route-lines { display: grid; gap: var(--gap-sm); }
+    .route-line { display: grid; grid-template-columns: 20px 1fr; align-items: center; gap: var(--gap); }
+    .route-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); justify-self: center; box-shadow: 0 0 10px rgba(47, 208, 126, .5); }
+    .route-dot.end { background: transparent; border: 1.5px solid var(--text-dim); box-shadow: none; }
+    .route-input {
+      min-height: 40px;
+      display: flex; align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--raised);
+      font-size: 14px;
+    }
+    .route-input.placeholder { color: var(--text-dim); }
+
+    /* — Campos de selección (sin card contenedora: evita caja dentro de caja) — */
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-sm); }
+    .field {
+      position: relative;
+      min-height: 52px;
+      display: flex; align-items: flex-end;
+      padding: 8px 32px 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--raised);
+      font-size: 14px; font-weight: 500;
+    }
+    .field-label { position: absolute; top: 8px; left: 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); }
+    .field .chevron { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+
+    .stepper {
+      display: flex; align-items: center; gap: var(--gap);
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--raised);
+    }
+    .stepper button {
+      width: 30px; height: 30px;
+      display: grid; place-items: center;
+      border: 0; border-radius: 50%;
+      background: transparent; color: var(--text-muted); cursor: pointer;
+    }
+    .stepper button:hover { background: var(--raised-2); color: var(--text); }
+    .stepper strong { min-width: 18px; text-align: center; font-size: 15px; font-weight: 800; }
+
+    /* ============================================================
+       CONDUCIENDO / FINALIZADO
+       ============================================================ */
+    .live-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gap); margin-bottom: var(--gap); }
+    .live-sub { display: flex; align-items: center; gap: 7px; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px rgba(47, 208, 126, .8); flex: none; }
+
+    .hero-card { padding: var(--hero-pad); }
+    .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gap); }
+    .hero-label { color: var(--text-muted); font-size: 12px; font-weight: 500; }
+    .hero-value { display: block; margin-top: 2px; color: var(--accent); font-size: 44px; line-height: 1; letter-spacing: -.04em; font-weight: 800; text-shadow: var(--hero-glow); }
+    .hero-side { text-align: right; }
+    .state-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px;
+      border: 1px solid var(--accent-line);
+      border-radius: var(--r-pill);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap;
+    }
+    .hero-timer { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin-top: 10px; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .hero-meta { margin-top: 8px; color: var(--text-dim); font-size: 11px; line-height: 1.4; }
+
+    /* — Mapa de ruta ————————————————————————— */
+    .route-map { position: relative; height: 76px; margin: var(--gap-lg) 0 var(--gap-sm); }
+    .route-map svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    .route-labels { display: flex; justify-content: space-between; gap: var(--gap); }
+    .route-labels b { display: block; font-size: 13px; font-weight: 600; }
+    .route-labels small { display: block; color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+    .route-labels div:last-child { text-align: right; }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; }
+    .split-item { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--gap); padding: 0 var(--gap); }
+    .split-item + .split-item { border-left: 1px solid var(--line); }
+    .split-item .ico { color: var(--accent); }
+    .split-item small { display: block; color: var(--text-muted); font-size: 11px; }
+    .split-item b { display: block; margin-top: 3px; font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+
+    .rating { display: grid; grid-template-columns: auto 1fr auto; gap: var(--gap); align-items: center; }
+    .rating b { display: block; font-size: 14px; font-weight: 600; }
+    .rating small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+    .stars { display: flex; gap: 3px; }
+    .stars .ico { color: var(--text-dim); width: 19px; height: 19px; cursor: pointer; transition: color .15s ease; }
+    .stars .ico:hover { color: var(--accent); }
+
+    .success-check {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--grad-accent);
+      color: #04150e;
+      box-shadow: 0 8px 22px rgba(47, 208, 126, .22);
+      flex: none;
+    }
+
+    /* ============================================================
+       VIAJES / CUENTAS
+       ============================================================ */
+    .segmented {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-md);
+      background: #141b19;
+    }
+    .segment {
+      padding: 9px 2px; text-align: center;
+      border: 0; border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+    }
+    .segment.on { background: var(--grad-accent); color: #04150e; font-weight: 800; }
+
+    .trip-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--accent-soft);
+      color: var(--accent);
+      flex: none;
+    }
+    .trip.danger .trip-icon { color: var(--danger); background: rgba(255, 100, 113, .12); }
+
+    .hero-balance { padding: var(--hero-pad); }
+    .hero-balance .hero-value { font-size: 40px; }
+
+    /* — Ajustes ————————————————————————————— */
+    .setting { display: grid; grid-template-columns: auto 1fr auto; gap: var(--gap); align-items: center; padding: var(--card-pad) 0; }
+    .setting:first-child { padding-top: 0; }
+    .setting:last-child { padding-bottom: 0; }
+    .setting + .setting { border-top: 1px solid var(--line); }
+    .setting b { display: block; font-size: 15px; font-weight: 600; }
+    .setting small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+
+    /* ============================================================
+       NAV INFERIOR
+       ============================================================ */
+    .bottom-nav {
+      position: absolute; z-index: 12;
+      left: 0; right: 0; bottom: 0;
+      height: 72px;
+      padding: 8px 10px 10px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+      border-top: 1px solid var(--line);
+      background: rgba(8, 13, 12, .92);
+      backdrop-filter: blur(16px);
+    }
+    .nav-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      border: 0; border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 11px; font-weight: 500;
+      cursor: pointer;
+      transition: color .18s ease, background .18s ease;
+    }
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+
+    .prototype-label {
+      position: absolute; right: -18px; top: 88px;
+      transform: translateX(100%);
+      writing-mode: vertical-rl;
+      color: var(--text-dim); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    }
+
+    @media (max-width: 870px) {
+      .shell { grid-template-columns: 1fr; padding: 20px 14px 34px; gap: 25px; }
+      .brief { text-align: center; margin: 0 auto; }
+      .brief h1 { font-size: 41px; margin-top: 18px; }
+      .brief > p { font-size: 14px; }
+      .screen-picker { max-width: 390px; margin: 20px auto 0; }
+      .note { display: none; }
+      .phone { height: min(780px, calc(100vh - 30px)); }
+      .prototype-label { display: none; }
+    }
+    @media (max-height: 730px) and (min-width: 871px) {
+      .phone { height: 680px; }
+      .welcome-content { padding-top: 60px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .screen { transition: opacity .01ms; }
+      * { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SPRITE DE ICONOS · 24×24 · stroke 1.5 · currentColor
+     ============================================================ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-car" viewBox="0 0 24 24">
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+      <circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M9 17h6"/>
+    </symbol>
+    <symbol id="i-fuel" viewBox="0 0 24 24">
+      <path d="M3 22h12M4 9h10M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/>
+      <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.8a2 2 0 0 0-.6-1.4L18 5"/>
+    </symbol>
+    <symbol id="i-route" viewBox="0 0 24 24">
+      <circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/>
+      <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+    </symbol>
+    <symbol id="i-banknote" viewBox="0 0 24 24">
+      <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>
+      <path d="M6 12h.01M18 12h.01"/>
+    </symbol>
+    <symbol id="i-users" viewBox="0 0 24 24">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24">
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24">
+      <path d="m12 14 4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>
+    </symbol>
+    <symbol id="i-corner-right" viewBox="0 0 24 24">
+      <path d="m15 14 5-5-5-5"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/>
+    </symbol>
+    <symbol id="i-trending-down" viewBox="0 0 24 24">
+      <path d="M16 17h6v-6"/><path d="m22 17-8.5-8.5-5 5L2 7"/>
+    </symbol>
+    <symbol id="i-trending" viewBox="0 0 24 24">
+      <path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24">
+      <path d="M20 10c0 5-5.5 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.5 20.2 4 15 4 10a8 8 0 0 1 16 0"/>
+      <circle cx="12" cy="10" r="3"/>
+    </symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24">
+      <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7V20a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24">
+      <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"/>
+    </symbol>
+    <symbol id="i-steering" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>
+      <path d="M12 9.5V3M14.4 13.6 19.8 17M9.6 13.6 4.2 17"/>
+    </symbol>
+    <symbol id="i-history" viewBox="0 0 24 24">
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7.5V12l3 2"/>
+    </symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 4v16M15 4v16"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24">
+      <path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/>
+      <path d="M18.4 2.6a2 2 0 0 1 2.8 2.8L12 14.6l-3.5.9.9-3.5z"/>
+    </symbol>
+    <symbol id="i-share" viewBox="0 0 24 24">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>
+    </symbol>
+    <symbol id="i-exit" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>
+    </symbol>
+    <symbol id="i-star" viewBox="0 0 24 24">
+      <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.4-4.3 6.1-.9z"/>
+    </symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-contrast" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="i-euro" viewBox="0 0 24 24">
+      <path d="M17.5 6.3a7 7 0 1 0 0 11.4"/><path d="M3.5 10.5h9M3.5 13.5h9"/>
+    </symbol>
+    <symbol id="i-help" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/><path d="M9.1 9.5a3 3 0 0 1 5.8 1c0 2-2.9 2.5-2.9 3.5"/><path d="M12 17.5h.01"/>
+    </symbol>
+    <symbol id="i-database" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="shell">
+  <section class="brief">
+    <div class="eyebrow"><span class="pulse"></span> Prototipo visual local</div>
+    <h1>Así se sentiría <span>EuroGas</span></h1>
+    <p>Una maqueta navegable basada en el storyboard: oscura, limpia y centrada en calcular, conducir y repartir gastos sin fricción.</p>
+    <nav class="screen-picker" aria-label="Cambiar de pantalla">
+      <button class="picker-btn active" data-go="welcome"><small>01</small>Bienvenida</button>
+      <button class="picker-btn" data-go="vehicle"><small>02</small>Tu coche</button>
+      <button class="picker-btn" data-go="drive"><small>03</small>Conducir</button>
+      <button class="picker-btn" data-go="driving"><small>04 · Vista principal</small>Conduciendo</button>
+      <button class="picker-btn" data-go="finished"><small>05 · Resumen</small>Viaje finalizado</button>
+      <button class="picker-btn" data-go="trips"><small>06</small>Viajes</button>
+      <button class="picker-btn" data-go="accounts"><small>07</small>Cuentas</button>
+      <button class="picker-btn" data-go="settings"><small>08</small>Ajustes</button>
+    </nav>
+    <p class="note">Concepto web únicamente estético. Los campos, cálculos y datos son ficticios; solo funciona el cambio entre pantallas.</p>
+  </section>
+
+  <div class="phone-wrap">
+    <span class="prototype-label">Vista conceptual · sin funciones reales</span>
+    <div class="phone">
+      <div class="island"></div>
+      <div class="status">
+        <span>9:41</span>
+        <span class="status-icons">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7.5" width="3" height="3.5" rx="1"/><rect x="4.6" y="5" width="3" height="6" rx="1"/><rect x="9.2" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.8" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 3.4a9.5 9.5 0 0 1 13 0"/><path d="M3.5 6a6 6 0 0 1 8 0"/><path d="M6 8.6a2.5 2.5 0 0 1 3 0"/></svg>
+          <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x=".7" y=".7" width="20" height="9.6" rx="2.8" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><rect x="2.4" y="2.4" width="14.5" height="6.2" rx="1.6" fill="currentColor"/><path d="M22.4 4v3a2 2 0 0 0 0-3z" fill="currentColor" fill-opacity=".5"/></svg>
+        </span>
+      </div>
+
+      <div class="screens">
+
+        <!-- ============ 01 · BIENVENIDA ============ -->
+        <section class="screen welcome active" data-screen="welcome">
+          <div class="welcome-content">
+            <svg class="brand-mark" width="60" height="60" viewBox="0 0 60 60" fill="none" role="img" aria-label="EuroGas">
+              <rect x=".9" y=".9" width="58.2" height="58.2" rx="17" fill="#0d1a16" stroke="#2fd07e" stroke-opacity=".38" stroke-width="1.8"/>
+              <path d="M19 42c0-12 8-20 22-22" stroke="#2fd07e" stroke-width="4.2" stroke-linecap="round"/>
+              <circle cx="19" cy="42" r="5.4" fill="#2fd07e"/>
+              <circle cx="41" cy="20" r="4" fill="#36ed94"/>
+            </svg>
+            <div class="brand">Euro<span>Gas</span></div>
+            <div class="tagline">Calcula y divide el coste real de tus viajes</div>
+
+            <div class="welcome-art">
+              <svg viewBox="0 0 290 330" fill="none" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ilustración de una ruta con su coste">
+                <defs>
+                  <linearGradient id="wg" x1="40" y1="300" x2="250" y2="40" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#16ad70"/><stop offset="1" stop-color="#36ed94"/>
+                  </linearGradient>
+                  <filter id="wglow" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="7" result="b"/>
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <path d="M40 292C40 224 118 236 158 192S246 146 248 58" stroke="#22302c" stroke-width="9" stroke-linecap="round" stroke-dasharray="1 17"/>
+                <path d="M40 292C40 224 118 236 158 192S246 146 248 58" stroke="url(#wg)" stroke-width="4.5" stroke-linecap="round" filter="url(#wglow)"/>
+                <circle cx="40" cy="292" r="9" fill="#2fd07e"/>
+                <circle cx="40" cy="292" r="16" stroke="#2fd07e" stroke-opacity=".26" stroke-width="2"/>
+                <circle cx="248" cy="58" r="7.5" fill="#36ed94"/>
+                <circle cx="248" cy="58" r="14.5" stroke="#36ed94" stroke-opacity=".3" stroke-width="2"/>
+                <g transform="translate(8 34)">
+                  <rect width="126" height="54" rx="16" fill="#131c19" stroke="#2a3632"/>
+                  <text x="16" y="23" fill="#9eaaa6" font-family="Inter, sans-serif" font-size="11" font-weight="500">Coste del viaje</text>
+                  <text x="16" y="43" fill="#2fd07e" font-family="Inter, sans-serif" font-size="19" font-weight="800" letter-spacing="-.5">13,76 €</text>
+                </g>
+                <g transform="translate(156 236)">
+                  <rect width="118" height="50" rx="15" fill="#131c19" stroke="#2a3632"/>
+                  <text x="15" y="21" fill="#6f7b77" font-family="Inter, sans-serif" font-size="11" font-weight="500">Por persona</text>
+                  <text x="15" y="40" fill="#f2f5f4" font-family="Inter, sans-serif" font-size="17" font-weight="800" letter-spacing="-.3">6,88 €</text>
+                </g>
+              </svg>
+            </div>
+
+            <div class="welcome-actions">
+              <button class="action primary" data-go="vehicle">Empezar</button>
+              <button class="action secondary" data-go="drive">Continuar sin cuenta</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ 02 · TU COCHE ============ -->
+        <section class="screen" data-screen="vehicle">
+          <header class="topbar">
+            <button class="icon-btn" data-go="welcome" aria-label="Volver"><svg class="ico"><use href="#i-chevron-left"/></svg></button>
+          </header>
+          <h1 class="page-title">Configura tu vehículo</h1>
+          <p class="lede">Necesitamos los datos de tu coche para calcular el consumo y el coste de tus viajes con precisión.</p>
+
+          <div class="stack">
+            <div class="card car-card">
+              <span class="tile tile-lg"><svg class="ico ico-lg"><use href="#i-car"/></svg></span>
+              <div><div class="car-name">Ford Focus 2007</div><div class="car-meta">Gasolina</div></div>
+              <button class="mini-btn" type="button"><svg class="ico ico-sm"><use href="#i-edit"/></svg> Editar</button>
+            </div>
+
+            <div class="card row">
+              <span class="tile tile-accent"><svg class="ico"><use href="#i-fuel"/></svg></span>
+              <div><small>Consumo medio</small><b>7,2 L/100 km</b></div>
+            </div>
+          </div>
+
+          <div class="section-head"><h2>Buscar en la base de datos</h2></div>
+          <div class="field-grid">
+            <div class="field"><span class="field-label">Marca</span>Ford<svg class="ico ico-sm chevron"><use href="#i-chevron-down"/></svg></div>
+            <div class="field"><span class="field-label">Modelo</span>Focus<svg class="ico ico-sm chevron"><use href="#i-chevron-down"/></svg></div>
+            <div class="field"><span class="field-label">Año</span>2007<svg class="ico ico-sm chevron"><use href="#i-chevron-down"/></svg></div>
+            <div class="field"><span class="field-label">Combustible</span>Gasolina<svg class="ico ico-sm chevron"><use href="#i-chevron-down"/></svg></div>
+          </div>
+
+          <div class="stack-sm" style="margin-top:var(--gap-lg)">
+            <button class="action primary" data-go="drive"><svg class="ico"><use href="#i-search"/></svg> Buscar en base de datos</button>
+            <button class="action tertiary" data-go="drive"><svg class="ico ico-sm"><use href="#i-edit"/></svg> Introducir consumo manualmente</button>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 03 · CONDUCIR ============ -->
+        <section class="screen" data-screen="drive">
+          <header class="topbar">
+            <h1>Conducir</h1>
+            <div class="topbar-actions">
+              <button class="icon-btn" data-go="settings" aria-label="Ajustes"><svg class="ico"><use href="#i-settings"/></svg></button>
+            </div>
+          </header>
+
+          <div class="stack">
+            <div class="card car-card" data-go="vehicle" style="cursor:pointer">
+              <span class="tile"><svg class="ico"><use href="#i-car"/></svg></span>
+              <div><div class="car-name">Ford Focus 2007</div><div class="car-meta">Gasolina · 7,2 L/100 km</div></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+
+            <div class="card">
+              <div class="route-lines">
+                <div class="route-line"><span class="route-dot"></span><div class="route-input">Mi ubicación</div></div>
+                <div class="route-line"><span class="route-dot end"></span><div class="route-input placeholder">Destino opcional</div></div>
+              </div>
+            </div>
+
+            <div class="card row">
+              <span class="tile"><svg class="ico"><use href="#i-users"/></svg></span>
+              <div><b>Personas</b><small>Se reparte el coste total</small></div>
+              <div class="stepper">
+                <button type="button" aria-label="Quitar"><svg class="ico ico-sm"><use href="#i-minus"/></svg></button>
+                <strong>1</strong>
+                <button type="button" aria-label="Añadir"><svg class="ico ico-sm"><use href="#i-plus"/></svg></button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-head" style="margin:0 0 var(--gap)">
+                <h2>Estimación de viaje</h2>
+                <span class="section-link">Ver detalle <svg class="ico ico-sm"><use href="#i-chevron-right"/></svg></span>
+              </div>
+              <div class="metrics metrics-3">
+                <div class="metric"><svg class="ico"><use href="#i-route"/></svg><b>120 km</b><small>Distancia</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-fuel"/></svg><b>8,6 L</b><small>Combustible</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-banknote"/></svg><b>13,76 €</b><small>Coste total</small></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stack-sm" style="margin-top:var(--gap-lg)">
+            <button class="action primary" data-go="driving"><svg class="ico"><use href="#i-play"/></svg> Iniciar viaje</button>
+            <button class="action tertiary" data-go="driving">Empezar sin destino</button>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 04 · CONDUCIENDO ============ -->
+        <section class="screen" data-screen="driving">
+          <header class="live-head">
+            <div>
+              <h1 class="t-title">Conduciendo</h1>
+              <div class="live-sub"><span class="live-dot"></span> Viaje en curso</div>
+            </div>
+            <button class="icon-btn" data-go="settings" aria-label="Ajustes"><svg class="ico"><use href="#i-settings"/></svg></button>
+          </header>
+
+          <div class="stack">
+            <div class="card car-card" data-go="vehicle" style="cursor:pointer">
+              <span class="tile"><svg class="ico"><use href="#i-car"/></svg></span>
+              <div><div class="car-name">Ford Focus 2007</div><div class="car-meta">Gasolina · 7,2 L/100 km</div></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+
+            <div class="card hero-card">
+              <div class="hero-top">
+                <div>
+                  <span class="hero-label">Coste actual</span>
+                  <strong class="hero-value">2,84 €</strong>
+                </div>
+                <div class="hero-side">
+                  <span class="state-pill"><span class="live-dot"></span> En marcha</span>
+                  <div class="hero-timer"><svg class="ico ico-sm"><use href="#i-clock"/></svg> 00:24:17</div>
+                </div>
+              </div>
+
+              <div class="route-map">
+                <svg viewBox="0 0 320 76" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M14 52C70 52 96 26 160 26s106 14 146 14" stroke="#39443f" stroke-width="5" stroke-linecap="round" fill="none"/>
+                  <path d="M14 52C70 52 96 26 160 26" stroke="#2fd07e" stroke-width="5" stroke-linecap="round" fill="none"/>
+                  <circle cx="14" cy="52" r="6" fill="#2fd07e"/>
+                  <circle cx="306" cy="40" r="6" fill="#5b6764"/>
+                  <circle cx="160" cy="26" r="9" fill="#2fd07e" stroke="#e8f5ee" stroke-opacity=".85" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="route-labels">
+                <div><b>Barcelona</b><small>Tu ubicación</small></div>
+                <div><b>Sant Cugat</b><small>Destino</small></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="metrics metrics-3">
+                <div class="metric"><svg class="ico"><use href="#i-route"/></svg><b>18,4 km</b><small>Distancia</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-fuel"/></svg><b>1,33 L</b><small>Combustible</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-user"/></svg><b>1,42 €</b><small>Por persona</small></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="metrics metrics-3">
+                <div class="metric"><svg class="ico"><use href="#i-gauge"/></svg><b>72 km/h</b><small>Velocidad</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-flag"/></svg><b>4,20 €</b><small>Estimado</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-corner-right"/></svg><b>12,6 km</b><small>Restante</small></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row" style="margin-top:var(--gap-lg)">
+            <button class="action secondary" type="button"><svg class="ico ico-sm"><use href="#i-pause"/></svg> Pausar</button>
+            <button class="action primary" data-go="finished"><svg class="ico"><use href="#i-stop"/></svg> Finalizar</button>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 05 · VIAJE FINALIZADO ============ -->
+        <section class="screen" data-screen="finished">
+          <header class="live-head">
+            <div style="display:flex;align-items:center;gap:var(--gap)">
+              <span class="success-check"><svg class="ico"><use href="#i-check"/></svg></span>
+              <div>
+                <h1 class="t-title">Viaje finalizado</h1>
+                <div class="live-sub">¡Todo listo! Buen viaje.</div>
+              </div>
+            </div>
+            <button class="icon-btn" data-go="settings" aria-label="Ajustes"><svg class="ico"><use href="#i-settings"/></svg></button>
+          </header>
+
+          <div class="stack">
+            <div class="card hero-card">
+              <div class="hero-top">
+                <div>
+                  <span class="hero-label">Coste total del viaje</span>
+                  <strong class="hero-value">13,76 €</strong>
+                  <div class="hero-meta">12 may · 16:20 – 16:44</div>
+                </div>
+                <span class="state-pill"><svg class="ico ico-sm"><use href="#i-check"/></svg> Completado</span>
+              </div>
+
+              <div class="route-map">
+                <svg viewBox="0 0 320 76" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M14 52C70 52 96 26 160 26s106 14 146 14" stroke="#2fd07e" stroke-width="5" stroke-linecap="round" fill="none"/>
+                  <circle cx="14" cy="52" r="6" fill="#2fd07e"/>
+                  <circle cx="306" cy="40" r="9" fill="#2fd07e" stroke="#e8f5ee" stroke-opacity=".85" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="route-labels">
+                <div><b>Barcelona</b><small>Tu ubicación</small></div>
+                <div><b>Sant Cugat</b><small>Destino</small></div>
+              </div>
+            </div>
+
+            <div class="card split">
+              <div class="split-item">
+                <svg class="ico ico-lg"><use href="#i-users"/></svg>
+                <div><small>2 personas</small><b>6,88 €</b></div>
+              </div>
+              <div class="split-item">
+                <svg class="ico ico-lg"><use href="#i-trending-down"/></svg>
+                <div><small>Has ahorrado</small><b style="color:var(--accent)">4,20 €</b></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="metrics metrics-3">
+                <div class="metric"><svg class="ico"><use href="#i-route"/></svg><b>18,4 km</b><small>Distancia</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-clock"/></svg><b>00:24</b><small>Tiempo</small></div>
+                <div class="metric"><svg class="ico"><use href="#i-fuel"/></svg><b>1,33 L</b><small>Combustible</small></div>
+              </div>
+            </div>
+
+            <div class="card rating">
+              <span class="tile tile-accent"><svg class="ico"><use href="#i-smile"/></svg></span>
+              <div>
+                <b>¿Qué tal el viaje?</b>
+                <small>Tu opinión nos ayuda a mejorar</small>
+              </div>
+              <div class="stars">
+                <svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg><svg class="ico"><use href="#i-star"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-row" style="margin-top:var(--gap-lg)">
+            <button class="action tertiary" data-go="trips"><svg class="ico ico-sm"><use href="#i-exit"/></svg> Salir</button>
+            <button class="action primary" type="button"><svg class="ico"><use href="#i-share"/></svg> Compartir</button>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 06 · VIAJES ============ -->
+        <section class="screen" data-screen="trips">
+          <header class="topbar"><h1>Viajes</h1></header>
+
+          <div class="segmented">
+            <button class="segment on" type="button">Todos</button>
+            <button class="segment" type="button">Personales</button>
+            <button class="segment" type="button">Grupos</button>
+          </div>
+
+          <div class="section-head"><h2>Recientes</h2><span class="section-link">Ver todos <svg class="ico ico-sm"><use href="#i-chevron-right"/></svg></span></div>
+          <div class="stack-sm">
+            <div class="card row trip">
+              <span class="trip-icon"><svg class="ico"><use href="#i-route"/></svg></span>
+              <div><b>Casa → Universidad</b><small>14 sept 2026 · 0,1 km</small></div>
+              <span class="row-value">0,01 €</span>
+            </div>
+            <div class="card row trip">
+              <span class="trip-icon"><svg class="ico"><use href="#i-route"/></svg></span>
+              <div><b>Madrid → Valencia</b><small>12 sept 2026 · 356 km</small></div>
+              <span class="row-value">42,30 €</span>
+            </div>
+            <div class="card row trip danger">
+              <span class="trip-icon"><svg class="ico"><use href="#i-route"/></svg></span>
+              <div><b>Trabajo → Casa</b><small>10 sept 2026 · 18 km</small></div>
+              <span class="row-value">2,14 €</span>
+            </div>
+          </div>
+
+          <div class="section-head"><h2>Cuentas pendientes</h2><span class="section-link">Ver todas <svg class="ico ico-sm"><use href="#i-chevron-right"/></svg></span></div>
+          <div class="stack-sm">
+            <div class="card row">
+              <span class="avatar">V</span>
+              <div><b>Victoria te debe</b><small>Viaje del 12 sept</small></div>
+              <span class="row-value" style="color:var(--accent)">3,20 €</span>
+            </div>
+            <div class="card row">
+              <span class="avatar avatar-group"><svg class="ico ico-sm"><use href="#i-users"/></svg></span>
+              <div><b>Grupo Valencia</b><small>4 personas · tú adelantaste</small></div>
+              <span class="row-value">42,30 €</span>
+            </div>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 07 · CUENTAS ============ -->
+        <section class="screen" data-screen="accounts">
+          <header class="topbar"><h1>Cuentas</h1></header>
+          <h1 class="page-title">Todo claro entre amigos</h1>
+          <p class="lede">Consulta de un vistazo lo que te deben y lo que queda por repartir.</p>
+
+          <div class="card hero-balance">
+            <span class="hero-label">Balance a tu favor</span>
+            <strong class="hero-value">45,50 €</strong>
+            <div class="hero-meta">Entre 5 personas · 2 cuentas abiertas</div>
+          </div>
+
+          <div class="section-head"><h2>Pendientes</h2><span class="section-link">Ver todas <svg class="ico ico-sm"><use href="#i-chevron-right"/></svg></span></div>
+          <div class="stack-sm">
+            <div class="card row">
+              <span class="avatar">V</span>
+              <div><b>Victoria te debe</b><small>Viaje del 12 sept</small></div>
+              <button class="mini-btn" type="button">Reclamar</button>
+            </div>
+            <div class="card row">
+              <span class="avatar avatar-group"><svg class="ico ico-sm"><use href="#i-users"/></svg></span>
+              <div><b>Grupo Valencia</b><small>4 personas · 42,30 €</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+        <!-- ============ 08 · AJUSTES ============ -->
+        <section class="screen" data-screen="settings">
+          <header class="topbar"><h1>Ajustes</h1></header>
+          <h1 class="page-title">A tu manera</h1>
+          <p class="lede">Preferencias del vehículo, precios y apariencia de EuroGas.</p>
+
+          <div class="card">
+            <div class="setting">
+              <span class="tile"><svg class="ico"><use href="#i-car"/></svg></span>
+              <div><b>Mi vehículo</b><small>Ford Focus 2007</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+            <div class="setting">
+              <span class="tile"><svg class="ico"><use href="#i-fuel"/></svg></span>
+              <div><b>Precio de combustible</b><small>1,60 € / litro</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+            <div class="setting">
+              <span class="tile"><svg class="ico"><use href="#i-contrast"/></svg></span>
+              <div><b>Apariencia</b><small>Oscura</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+            <div class="setting">
+              <span class="tile"><svg class="ico"><use href="#i-euro"/></svg></span>
+              <div><b>Moneda</b><small>Euro (EUR)</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+            <div class="setting">
+              <span class="tile"><svg class="ico"><use href="#i-help"/></svg></span>
+              <div><b>Ayuda y soporte</b><small>Versión conceptual 0.1</small></div>
+              <svg class="ico ico-sm chevron"><use href="#i-chevron-right"/></svg>
+            </div>
+          </div>
+
+          <nav class="bottom-nav" data-nav></nav>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const NAVIGATION = [
+    { id: 'drive',    icon: 'i-steering', label: 'Conducir' },
+    { id: 'trips',    icon: 'i-history',  label: 'Viajes'   },
+    { id: 'accounts', icon: 'i-users',    label: 'Cuentas'  },
+    { id: 'settings', icon: 'i-sliders',  label: 'Ajustes'  }
+  ];
+
+  /* Pantallas que pertenecen al flujo de "Conducir": mantienen esa pestaña activa. */
+  const NAV_OWNER = {
+    welcome: null, vehicle: 'drive', drive: 'drive', driving: 'drive',
+    finished: 'drive', trips: 'trips', accounts: 'accounts', settings: 'settings'
+  };
+
+  document.querySelectorAll('[data-nav]').forEach(nav => {
+    nav.innerHTML = NAVIGATION.map(item => `
+      <button class="nav-btn" data-go="${item.id}">
+        <svg class="ico"><use href="#${item.icon}"/></svg>
+        <span>${item.label}</span>
+      </button>`).join('');
+  });
+
+  let current = 'welcome';
+
+  function showScreen(id) {
+    const next = document.querySelector(`[data-screen="${id}"]`);
+    if (!next || id === current) return;
+
+    const previous = document.querySelector(`[data-screen="${current}"]`);
+    previous?.classList.remove('active');
+    previous?.classList.add('exit-left');
+    window.setTimeout(() => previous?.classList.remove('exit-left'), 340);
+
+    next.classList.add('active');
+    next.scrollTop = 0;
+    current = id;
+
+    const owner = NAV_OWNER[id];
+    document.querySelectorAll('.picker-btn').forEach(b => b.classList.toggle('active', b.dataset.go === id));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.go === owner));
+  }
+
+  document.addEventListener('click', event => {
+    const target = event.target.closest('[data-go]');
+    if (target) showScreen(target.dataset.go);
+  });
+</script>
+</body>
+</html>
